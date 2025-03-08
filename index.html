@@ -170,31 +170,38 @@
     let allVideos = [];
 
     // Fetch video data from JSON
-    fetch('videos.json')
-      .then(response => response.json())
-      .then(data => {
-        allVideos = data;
-        displayVideos(data);
-      })
-      .catch(error => console.error('Error loading JSON:', error));
-
+    fetch('https://raw.githubusercontent.com/Sarker5523/firebase/main/videos.json')
+  .then(response => {
+    console.log("Response Status:", response.status); // Debugging
+    return response.json();
+  })
+  .then(data => {
+    console.log("Fetched Data:", data); // Debugging
+    allVideos = data;
+    displayVideos(allVideos); // Ensure this is called
+  })
+  .catch(error => console.error('Error fetching JSON:', error));
     // Display videos on the homepage
-    function displayVideos(videos) {
-      const videoGrid = document.getElementById('video-grid');
-      videoGrid.innerHTML = '';
-      
-      videos.forEach(video => {
-        const videoItem = document.createElement('div');
-        videoItem.classList.add('video-item');
-        videoItem.innerHTML = `
-          <a href="video.html?id=${video.id}">
-            <img src="${video.thumbnail}" alt="${video.name}">
-            <h3>${video.name}</h3>
-          </a>
-        `;
-        videoGrid.appendChild(videoItem);
-      });
-    }
+// Display videos on the homepage
+function displayVideos(videos) {
+  const videoGrid = document.getElementById('video-grid');
+  videoGrid.innerHTML = '';
+
+  // Reverse the order of the videos array so that the last item shows first
+  videos.reverse().forEach(video => {
+    const videoItem = document.createElement('div');
+    videoItem.classList.add('video-item');
+    videoItem.innerHTML = `
+      <a href="video.html?id=${video.id}">
+        <img src="${video.thumbnail}" alt="${video.name}">
+        <h3>${video.name}</h3>
+      </a>
+    `;
+    videoGrid.appendChild(videoItem);
+  });
+}
+
+
 
     // Search for videos and show suggestions
     function searchVideos(event) {
@@ -237,7 +244,10 @@
     }
 
     // Call this function on page load to handle deep links
-    window.onload = handleCustomURLScheme;
+    window.onload = function() {
+  handleCustomURLScheme();
+  displayVideos(allVideos); // ✅ Ensure this runs
+};
   </script>
 </body>
 </html>

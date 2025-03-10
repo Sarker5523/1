@@ -116,7 +116,7 @@
 
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(4, 1fr); /* Changed to 4 columns */
       gap: 20px;
       margin-top: 30px;
       padding: 0 20px;
@@ -141,7 +141,7 @@
       right: 0;
       color: white;
       padding: 3px 10px;
-      font-size: 12px; 
+      font-size: 16px; /* Increased font-size */
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
       transform: translateY(10px);
       text-align: center;
@@ -305,7 +305,7 @@
     // Call this function on page load to handle deep links
     window.onload = function() {
       handleCustomURLScheme();
-      displayVideos(allVideos, currentPage); // ✅ Ensure this runs
+      displayVideos(allVideos, currentPage); // Ensure this runs
     };
   </script>
 </body>

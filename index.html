@@ -151,6 +151,31 @@
       letter-spacing: 1px;
       filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.6));
     }
+
+    .pagination {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .pagination button {
+      background-color: #333;
+      color: #ff8c00;
+      border: none;
+      padding: 8px 12px;
+      margin: 0 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    .pagination button:hover {
+      background-color: #444;
+    }
+
+    .pagination button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -164,44 +189,78 @@
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
 
+  <div id="top-pagination" class="pagination"></div>
   <div class="video-grid" id="video-grid"></div>
+  <div id="bottom-pagination" class="pagination"></div>
 
   <script>
     let allVideos = [];
+    let currentPage = 1;
+    const videosPerPage = 10;
 
     // Fetch video data from JSON
     fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/refs/heads/main/videos.json')
-  .then(response => {
-    console.log("Response Status:", response.status); // Debugging
-    return response.json();
-  })
-  .then(data => {
-    console.log("Fetched Data:", data); // Debugging
-    allVideos = data;
-    displayVideos(allVideos); // Ensure this is called
-  })
-  .catch(error => console.error('Error fetching JSON:', error));
+      .then(response => {
+        console.log("Response Status:", response.status); // Debugging
+        return response.json();
+      })
+      .then(data => {
+        console.log("Fetched Data:", data); // Debugging
+        allVideos = data.reverse();
+        displayVideos(allVideos, currentPage); // Ensure this is called
+      })
+      .catch(error => console.error('Error fetching JSON:', error));
+
     // Display videos on the homepage
-// Display videos on the homepage
-function displayVideos(videos) {
-  const videoGrid = document.getElementById('video-grid');
-  videoGrid.innerHTML = '';
+    function displayVideos(videos, page) {
+      const videoGrid = document.getElementById('video-grid');
+      videoGrid.innerHTML = '';
 
-  // Reverse the order of the videos array so that the last item shows first
-  videos.reverse().forEach(video => {
-    const videoItem = document.createElement('div');
-    videoItem.classList.add('video-item');
-    videoItem.innerHTML = `
-      <a href="video.html?id=${video.id}">
-        <img src="${video.thumbnail}" alt="${video.name}">
-        <h3>${video.name}</h3>
-      </a>
-    `;
-    videoGrid.appendChild(videoItem);
-  });
-}
+      const start = (page - 1) * videosPerPage;
+      const end = start + videosPerPage;
+      const paginatedVideos = videos.slice(start, end);
 
+      paginatedVideos.forEach(video => {
+        const videoItem = document.createElement('div');
+        videoItem.classList.add('video-item');
+        videoItem.innerHTML = `
+          <a href="video.html?id=${video.id}">
+            <img src="${video.thumbnail}" alt="${video.name}">
+            <h3>${video.name}</h3>
+          </a>
+        `;
+        videoGrid.appendChild(videoItem);
+      });
 
+      renderPagination(videos.length, page);
+    }
+
+    // Render pagination controls
+    function renderPagination(totalVideos, page) {
+      const totalPages = Math.ceil(totalVideos / videosPerPage);
+      const topPagination = document.getElementById('top-pagination');
+      const bottomPagination = document.getElementById('bottom-pagination');
+
+      const createButton = (text, pageNumber) => {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.disabled = pageNumber === page;
+        button.onclick = () => {
+          currentPage = pageNumber;
+          displayVideos(allVideos, currentPage);
+        };
+        return button;
+      };
+
+      topPagination.innerHTML = '';
+      bottomPagination.innerHTML = '';
+
+      for (let i = 1; i <= totalPages; i++) {
+        const button = createButton(i, i);
+        topPagination.appendChild(button);
+        bottomPagination.appendChild(button.cloneNode(true));
+      }
+    }
 
     // Search for videos and show suggestions
     function searchVideos(event) {
@@ -239,15 +298,15 @@ function displayVideos(videos) {
       if (searchQuery) {
         const query = decodeURIComponent(searchQuery);
         const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
-        displayVideos(filteredVideos); // Display filtered videos based on query
+        displayVideos(filteredVideos, 1); // Display filtered videos based on query
       }
     }
 
     // Call this function on page load to handle deep links
     window.onload = function() {
-  handleCustomURLScheme();
-  displayVideos(allVideos); // ✅ Ensure this runs
-};
+      handleCustomURLScheme();
+      displayVideos(allVideos, currentPage); // ✅ Ensure this runs
+    };
   </script>
 </body>
 </html>

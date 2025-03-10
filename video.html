@@ -164,6 +164,27 @@
     .suggested-video-item:hover {
       transform: translateY(-4px);
     }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      max-width: 1000px;
+      margin: 20px auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
   </style>
 </head>
 <body>
@@ -173,7 +194,7 @@
     <h1 class="phub-title">
       P<span>HUB</span>
     </h1>
-    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" />
+    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)" />
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
 
@@ -215,7 +236,7 @@
           document.title = video.name;  // <-- Highlighted change
 
           if (video.embed_code) {
-            videoContainer.innerHTML = video.embed_code;
+            videoContainer.innerHTML = `<div class="iframe-container">${video.embed_code}</div>`;
           } else if (video.url) {
             videoPlayer.style.display = "block";
             videoSource.src = video.url;
@@ -256,30 +277,39 @@
         document.getElementById('video-title').innerText = "Error loading video";
         document.getElementById('video-description').innerText = "There was an error loading the video details.";
       });
+
     function handleSearch() {
-  const query = searchInput.value.toLowerCase();
-  const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
+      const query = searchInput.value.toLowerCase();
+      const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
 
-  if (query) {
-    searchResultsContainer.style.display = 'block';
-    searchResultsContainer.innerHTML = '';
-    filteredVideos.slice(0, 5).forEach(video => {
-      const suggestionItem = document.createElement('div');
-      suggestionItem.innerHTML = `
-        <img src="${video.thumbnail}" alt="${video.name}">
-        ${video.name}
-      `;
-      // Redirect to the search-results.html with the query
-      suggestionItem.onclick = () => {
-        window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
-      };
-      searchResultsContainer.appendChild(suggestionItem);
-    });
-  } else {
-    searchResultsContainer.style.display = 'none';
-  }
-}
+      if (query) {
+        searchResultsContainer.style.display = 'block';
+        searchResultsContainer.innerHTML = '';
+        filteredVideos.slice(0, 5).forEach(video => {
+          const suggestionItem = document.createElement('div');
+          suggestionItem.innerHTML = `
+            <img src="${video.thumbnail}" alt="${video.name}">
+            ${video.name}
+          `;
+          // Redirect to the search-results.html with the query
+          suggestionItem.onclick = () => {
+            window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+          };
+          searchResultsContainer.appendChild(suggestionItem);
+        });
+      } else {
+        searchResultsContainer.style.display = 'none';
+      }
+    }
 
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        const query = searchInput.value.toLowerCase();
+        if (query) {
+          window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+        }
+      }
+    }
   </script>
 
 </body>

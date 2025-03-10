@@ -145,6 +145,18 @@
       background-color: #555;
       cursor: not-allowed;
     }
+
+    /* Media queries for responsive design */
+    @media (max-width: 1023px) {
+      .video-grid {
+        grid-template-columns: 1fr; /* Change to 1 column for mobile */
+        gap: 10px;
+        padding: 20px;
+      }
+      .video-item h3 {
+        font-size: 14px; /* Slightly smaller font-size */
+      }
+    }
   </style>
 </head>
 <body>

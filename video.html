@@ -12,7 +12,6 @@
       margin: 0;
       padding: 0;
     }
-
     header {
       text-align: center;
       padding: 10px 20px;
@@ -20,14 +19,12 @@
       color: #ff8c00;
       position: relative;
     }
-
     header h1 {
       font-size: 30px;
       font-weight: bold;
       color: white;
       margin: 0;
     }
-
     header .phub-title span {
       color: #000;
       background-color: #ff8c00;
@@ -35,7 +32,6 @@
       border-radius: 4px;
       border: 2px solid #ff8c00;
     }
-
     .home-btn {
       position: absolute;
       left: 10px;
@@ -50,13 +46,11 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
-
     .home-btn:hover {
       background-color: #444;
       transform: translateY(-4px);
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
     }
-
     .search-bar {
       width: 80%;
       max-width: 400px;
@@ -69,7 +63,6 @@
       background-color: #222;
       color: white;
     }
-
     .search-suggestions {
       position: absolute;
       background-color: #333;
@@ -82,40 +75,33 @@
       display: none;
       z-index: 1;
     }
-
     .search-suggestions div {
       display: flex;
       align-items: center;
       padding: 8px 10px;
       cursor: pointer;
     }
-
     .search-suggestions div:hover {
       background-color: #ff8c00;
     }
-
     .search-suggestions img {
       width: 40px;
       height: 40px;
       border-radius: 4px;
       margin-right: 10px;
     }
-
     .video-container {
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
     }
-
     video {
       width: 100%;
-      max-width: 1000px;
-      height: auto;
+      max-width: 1280px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
-
     .video-details {
       padding: 20px;
       background-color: #333;
@@ -123,60 +109,58 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       margin: 20px;
     }
-
     .video-details h2 {
       font-size: 20px;
       margin: 0;
       padding-bottom: 10px;
       border-bottom: 1px solid #444;
     }
-
     .video-details p {
       font-size: 14px;
       color: #bbb;
     }
-
+    .video-details a {
+      color: #00ff00; /* Green color */
+      text-decoration: none; /* Remove underline */
+    }
+    .video-details a:hover {
+      text-decoration: underline; /* Add underline on hover if needed */
+    }
     .suggested-videos {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
     }
-
     .suggested-video-item {
       cursor: pointer;
       text-align: center;
       transition: transform 0.2s ease-in-out;
     }
-
     .suggested-video-item img {
       width: 100%;
       height: auto;
       border-radius: 8px;
     }
-
     .suggested-video-item h3 {
       font-size: 12px;
       color: white;
       margin: 5px 0 0;
     }
-
     .suggested-video-item:hover {
       transform: translateY(-4px);
     }
-
     .iframe-container {
       position: relative;
       width: 100%;
       padding-bottom: 56.25%; /* 16:9 aspect ratio */
       height: 0;
       overflow: hidden;
-      max-width: 1000px;
+      max-width: 640px;
       margin: 20px auto;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
-
     .iframe-container iframe {
       position: absolute;
       top: 0;
@@ -184,6 +168,19 @@
       width: 100%;
       height: 100%;
       border: 0;
+    }
+
+    /* Media queries for responsive design */
+    @media (min-width: 1024px) {
+      video {
+        height: 360px; /* Fixed height for PC */
+        max-width: 640px;
+      }
+    }
+    @media (max-width: 1023px) {
+      video {
+        height: auto; /* Responsive height for other devices */
+      }
     }
   </style>
 </head>
@@ -208,6 +205,7 @@
   <div class="video-details">
     <h2 id="video-title"></h2>
     <p id="video-description"></p>
+    <p id="video-categories"></p>
   </div>
 
   <div class="suggested-videos" id="suggested-videos"></div>
@@ -231,9 +229,10 @@
         if (video) {
           document.getElementById('video-title').innerText = video.name;
           document.getElementById('video-description').innerText = video.description || "No description available.";
+          document.getElementById('video-categories').innerHTML = `Categories: ${video.categories.map(category => `<a href="search-results.html?category=${encodeURIComponent(category)}">${category}</a>`).join(', ')}`;
 
           // Dynamically set the webpage title to the video's title
-          document.title = video.name;  // <-- Highlighted change
+          document.title = video.name;
 
           if (video.embed_code) {
             videoContainer.innerHTML = `<div class="iframe-container">${video.embed_code}</div>`;
@@ -259,8 +258,8 @@
             if (suggestedVideo) {
               const suggestedVideoItem = document.createElement('div');
               suggestedVideoItem.classList.add('suggested-video-item');
-              suggestedVideoItem.innerHTML = 
-                `<a href="video.html?id=${suggestedVideo.id}">
+              suggestedVideoItem.innerHTML = `
+                <a href="video.html?id=${suggestedVideo.id}">
                   <img src="${suggestedVideo.thumbnail}" alt="${suggestedVideo.name}" />
                   <h3>${suggestedVideo.name}</h3>
                 </a>`;
@@ -291,7 +290,6 @@
             <img src="${video.thumbnail}" alt="${video.name}">
             ${video.name}
           `;
-          // Redirect to the search-results.html with the query
           suggestionItem.onclick = () => {
             window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
           };

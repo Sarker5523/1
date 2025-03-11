@@ -98,13 +98,17 @@
       width: 100%;
       box-sizing: border-box;
     }
+    video {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
     .iframe-container {
       width: 100%;
-      max-width: 800px; /* Set a maximum width */
       position: relative;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
       height: 0;
-      overflow: hidden;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
@@ -114,7 +118,6 @@
       left: 0;
       width: 100%;
       height: 100%;
-      border: 0;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
@@ -125,7 +128,6 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       margin: 20px;
       width: 80%;
-      max-width: 800px; /* Set a maximum width */
       box-sizing: border-box;
     }
     .video-details h2 {
@@ -197,7 +199,7 @@
         padding: 10px;
         height: auto;
       }
-      .iframe-container {
+      video, .iframe-container {
         width: 100%;
         height: auto;
         border-radius: 10px;
@@ -223,6 +225,10 @@
   </header>
 
   <div class="video-container" id="video-container">
+    <video id="video-player" controls style="display: none;">
+      <source id="video-source" src="" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
     <div class="iframe-container" id="iframe-container" style="display: none;"></div>
   </div>
 
@@ -239,39 +245,22 @@
     let allVideos = [];
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
-    
-    function parseCSV(text) {
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-      const headers = lines.shift().split(',').map(header => header.trim());
-      const result = [];
 
-      lines.forEach(line => {
-        const currentline = line.split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          headers.forEach((header, index) => {
-            obj[header] = currentline[index];
-          });
-          result.push(obj);
-        }
-      });
-
-      return result;
-    }
-
-    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/tv_series.csv')
-      .then(response => response.text())
-      .then(text => {
-        allVideos = parseCSV(text);
-        const videoId = new URLSearchParams(window.location.search).get('episode_id');
-        const video = allVideos.find(v => v.episode_id === videoId);
+    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/refs/heads/main/videos.json')
+      .then(response => response.json())
+      .then(data => {
+        allVideos = data;
+        const videoId = new URLSearchParams(window.location.search).get('id');
+        const video = data.find(v => v.id === videoId);
         const videoContainer = document.getElementById('video-container');
+        const videoPlayer = document.getElementById('video-player');
+        const videoSource = document.getElementById('video-source');
         const iframeContainer = document.getElementById('iframe-container');
 
         if (video) {
           document.getElementById('video-title').innerText = video.name;
           document.getElementById('video-description').innerText = video.description || "No description available.";
-          document.getElementById('video-categories').innerHTML = `Categories: ${video.categories.split('|').map(category => `<a href="search-results.html?category=${encodeURIComponent(category)}">${category}</a>`).join(', ')}`;
+          document.getElementById('video-categories').innerHTML = `Categories: ${video.categories.map(category => `<a href="search-results.html?category=${encodeURIComponent(category)}">${category}</a>`).join(', ')}`;
 
           // Dynamically set the webpage title to the video's title
           document.title = video.name;
@@ -283,16 +272,21 @@
             // Extract width and height from the iframe code
             const iframe = iframeContainer.querySelector('iframe');
             if (iframe) {
-              iframe.style.width = '100%';
-              iframe.style.height = '100%';
+              const width = iframe.getAttribute('width');
+              const height = iframe.getAttribute('height');
+              
+              if (width && height) {
+                iframeContainer.style.width = `${width}px`;
+                iframeContainer.style.height = `${height}px`;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+              }
             }
+            videoPlayer.style.display = "none";
           } else if (video.url) {
-            const videoPlayer = document.createElement('video');
-            videoPlayer.controls = true;
-            videoPlayer.style.width = '100%';
-            videoPlayer.style.height = 'auto';
-            videoPlayer.src = video.url;
-            iframeContainer.appendChild(videoPlayer);
+            videoPlayer.style.display = "block";
+            videoSource.src = video.url;
+            iframeContainer.style.display = "none";
 
             if (Hls.isSupported() && video.url.endsWith('.m3u8')) {
               const hls = new Hls();
@@ -307,13 +301,13 @@
 
           const suggestedVideosContainer = document.getElementById('suggested-videos');
           suggestedVideosContainer.innerHTML = '';
-          video.suggestions.split('|').forEach(suggestionId => {
-            const suggestedVideo = allVideos.find(v => v.episode_id === suggestionId);
+          video.suggestions.forEach(suggestionId => {
+            const suggestedVideo = data.find(v => v.id === String(suggestionId));
             if (suggestedVideo) {
               const suggestedVideoItem = document.createElement('div');
               suggestedVideoItem.classList.add('suggested-video-item');
               suggestedVideoItem.innerHTML = `
-                <a href="video.html?episode_id=${suggestedVideo.episode_id}">
+                <a href="video.html?id=${suggestedVideo.id}">
                   <img src="${suggestedVideo.thumbnail}" alt="${suggestedVideo.name}">
                   <h3>${suggestedVideo.name}</h3>
                 </a>`;
@@ -363,5 +357,6 @@
       }
     }
   </script>
+
 </body>
 </html>

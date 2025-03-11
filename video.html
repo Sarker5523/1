@@ -106,8 +106,7 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
     .iframe-container {
-      width: 50%;
-      padding-bottom: 56.25%;
+      width: 100%;
       position: relative;
       height: 0;
       border-radius: 10px;
@@ -117,8 +116,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 50%;
-      height: 50%;
+      width: 100%;
+      height: 100%;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
@@ -272,15 +271,17 @@
 
             // Extract width and height from the iframe code
             const iframe = iframeContainer.querySelector('iframe');
-            const width = iframe.getAttribute('width');
-            const height = iframe.getAttribute('height');
-            
-            if (width && height) {
-              iframeContainer.style.paddingBottom = `calc(${height} / ${width} * 100%)`;
-              iframe.style.width = width;
-              iframe.style.height = height;
+            if (iframe) {
+              const width = iframe.getAttribute('width');
+              const height = iframe.getAttribute('height');
+              
+              if (width && height) {
+                iframeContainer.style.width = `${width}px`;
+                iframeContainer.style.height = `${height}px`;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+              }
             }
-
             videoPlayer.style.display = "none";
           } else if (video.url) {
             videoPlayer.style.display = "block";

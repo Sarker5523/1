@@ -239,7 +239,7 @@
     let allVideos = [];
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
-
+    
     function parseCSV(text) {
       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
       const headers = lines.shift().split(',').map(header => header.trim());

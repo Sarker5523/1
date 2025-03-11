@@ -201,7 +201,7 @@
         height: auto;
       }
       video, .iframe-container {
-        max-width: 100%;
+        width: 100%;
         height: auto;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
@@ -269,6 +269,18 @@
           if (video.embed_code) {
             iframeContainer.style.display = "block";
             iframeContainer.innerHTML = video.embed_code;
+
+            // Extract width and height from the iframe code
+            const iframe = iframeContainer.querySelector('iframe');
+            const width = iframe.getAttribute('width');
+            const height = iframe.getAttribute('height');
+            
+            if (width && height) {
+              iframeContainer.style.paddingBottom = `calc(${height} / ${width} * 100%)`;
+              iframe.style.width = width;
+              iframe.style.height = height;
+            }
+
             videoPlayer.style.display = "none";
           } else if (video.url) {
             videoPlayer.style.display = "block";

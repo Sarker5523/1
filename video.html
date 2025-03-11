@@ -11,12 +11,19 @@
       color: #fff;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
     header {
       text-align: center;
       padding: 10px 20px;
       background-color: #000;
       color: #ff8c00;
+      width: 100%;
+      box-sizing: border-box;
       position: relative;
     }
     header h1 {
@@ -94,15 +101,18 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100%;
+      height: 100%;
       padding: 20px;
-      height: calc(100vh - 80px); /* Adjust height to fill the viewport */
+      box-sizing: border-box;
     }
     video {
       width: 100%;
-      max-width: 100%;
       height: auto; /* Ensure auto height to maintain aspect ratio */
+      max-width: 100%;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      object-fit: cover; /* Ensures the video covers the entire area */
     }
     .iframe-container {
       width: 100%;
@@ -121,6 +131,7 @@
       height: 100%;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      object-fit: cover; /* Ensures the iframe covers the entire area */
     }
     .video-details {
       padding: 20px;
@@ -128,6 +139,8 @@
       border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       margin: 20px;
+      width: 80%;
+      box-sizing: border-box;
     }
     .video-details h2 {
       font-size: 20px;
@@ -152,6 +165,8 @@
       gap: 20px;
       margin-top: 30px;
       padding: 0 20px;
+      width: 100%;
+      box-sizing: border-box;
     }
     .suggested-video-item {
       position: relative;
@@ -213,7 +228,7 @@
     /* New media query for PC screens */
     @media (min-width: 1024px) {
       .video-container, .iframe-container {
-        max-width: 60%; /* Adjust the percentage as needed */
+        max-width: 40%; /* Adjust the percentage as needed */
       }
     }
   </style>

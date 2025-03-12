@@ -1,325 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#141414" />
-  <meta name="apple-mobile-web-app-title" content="PHUB" />
-  <link rel="apple-touch-icon" href="icon.png" />
-  <title>PHUB - Home</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #141414;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      text-align: center;
-      padding: 10px 20px;
-      background-color: #000;
-      color: #ff8c00;
-      position: relative;
-    }
-
-    header h1 {
-      font-size: 20px;
-      margin: 0;
-    }
-
-    .home-btn {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      font-size: 16px;
-      color: #ff8c00;
-      background-color: #333;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-
-    .home-btn:hover {
-      background-color: #444;
-      transform: translateY(-4px);
-      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
-    }
-
-    .home-btn:focus {
-      outline: none;
-    }
-
-    header .phub-title {
-      font-size: 30px;
-      font-weight: bold;
-      color: white;
-    }
-
-    header .phub-title span {
-      color: #000;
-      background-color: #ff8c00;
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 2px solid #ff8c00;
-    }
-
-    .search-bar {
-      width: 80%;
-      max-width: 400px;
-      padding: 8px 10px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 14px;
-      background-color: #222;
-      color: white;
-    }
-
-    .search-suggestions {
-      position: absolute;
-      background-color: #333;
-      color: white;
-      width: 80%;
-      max-width: 400px;
-      margin-top: 40px;
-      padding: 10px 0;
-      border-radius: 5px;
-      display: none;
-      z-index: 1;
-    }
-
-    .search-suggestions div {
-      display: flex;
-      align-items: center;
-      padding: 8px 10px;
-      cursor: pointer;
-    }
-
-    .search-suggestions div:hover {
-      background-color: #ff8c00;
-    }
-
-    .search-suggestions img {
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr); /* Changed to 4 columns */
-      gap: 20px;
-      margin-top: 30px;
-      padding: 0 20px;
-    }
-
-    .video-item {
-      position: relative;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .video-item img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-
-    .video-item h3 {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      color: white;
-      padding: 3px 10px;
-      font-size: 16px; /* Increased font-size */
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-      transform: translateY(10px);
-      text-align: center;
-      font-family: Arial, sans-serif;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.6));
-    }
-
-    .pagination {
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .pagination button {
-      background-color: #333;
-      color: #ff8c00;
-      border: none;
-      padding: 8px 12px;
-      margin: 0 5px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-    }
-
-    .pagination button:hover {
-      background-color: #444;
-    }
-
-    .pagination button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-
-    /* Media queries for responsive design */
-    @media (max-width: 1023px) {
-      .video-grid {
-        grid-template-columns: 1fr; /* Change to 1 column for mobile */
-        gap: 10px;
-        padding: 20px;
-      }
-
-      .video-item h3 {
-        font-size: 14px; /* Slightly smaller font-size */
-      }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video List</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <h1 class="phub-title">
-      P<span>HUB</span>
-    </h1>
-    <input type="text" id="search" class="search-bar" placeholder="Search for videos..." onkeyup="searchVideos(event)">
+    <div class="title-container">
+      <h1>MPlix</h1>
+      <div class="play-button"></div>
+    </div>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
 
-  <div id="top-pagination" class="pagination"></div>
-  <div class="video-grid" id="video-grid"></div>
-  <div id="bottom-pagination" class="pagination"></div>
+  <div class="pagination" id="pagination-top"></div>
+
+  <div class="video-list-container">
+    <div class="video-list" id="video-list"></div>
+  </div>
+
+  <div class="pagination" id="pagination-bottom"></div>
 
   <script>
-    let allVideos = [];
+    const itemsPerPage = 30; // 6x5 grid
     let currentPage = 1;
-    const videosPerPage = 10;
+    let allVideos = [];
 
-    // Fetch video data from JSON
-    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/refs/heads/main/videos.json')
-      .then(response => {
-        console.log("Response Status:", response.status); // Debugging
-        return response.json();
+    const searchInput = document.getElementById('search-input');
+    const searchResultsContainer = document.getElementById('search-suggestions');
+    const videoListContainer = document.getElementById('video-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
+
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(header => header.trim());
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const currentline = lines[i].split(',').map(value => value.trim());
+        if (currentline.length === headers.length) {
+          const obj = {};
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
+          }
+          result.push(obj);
+        }
+      }
+
+      return result;
+    }
+
+    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/tv_series.csv')
+      .then(response => response.text())
+      .then(text => {
+        allVideos = parseCSV(text).reduce((acc, video) => {
+          const existing = acc.find(v => v.id === video.id);
+          if (existing) {
+            existing.episodes.push({
+              episode_id: video.episode_id,
+              name: video.episode_name,
+              embed_code: video.embed_code
+            });
+          } else {
+            acc.push({
+              id: video.id,
+              name: video.name,
+              thumbnail: video.thumbnail,
+              episodes: [{
+                episode_id: video.episode_id,
+                name: video.episode_name,
+                embed_code: video.embed_code
+              }]
+            });
+          }
+          return acc;
+        }, []);
+
+        // Sort videos by id in descending order
+        allVideos.sort((a, b) => b.id - a.id);
+
+        renderVideos();
+        renderPagination();
       })
-      .then(data => {
-        console.log("Fetched Data:", data); // Debugging
-        allVideos = data.reverse();
-        displayVideos(allVideos, currentPage); // Ensure this is called
-      })
-      .catch(error => console.error('Error fetching JSON:', error));
-
-    // Display videos on the homepage
-    function displayVideos(videos, page) {
-      const videoGrid = document.getElementById('video-grid');
-      videoGrid.innerHTML = '';
-
-      const start = (page - 1) * videosPerPage;
-      const end = start + videosPerPage;
-      const paginatedVideos = videos.slice(start, end);
-
-      paginatedVideos.forEach(video => {
-        const videoItem = document.createElement('div');
-        videoItem.classList.add('video-item');
-        videoItem.innerHTML = `
-          <a href="video.html?id=${video.id}">
-            <img src="${video.thumbnail}" alt="${video.name}">
-            <h3>${video.name}</h3>
-          </a>
-        `;
-        videoGrid.appendChild(videoItem);
+      .catch(error => {
+        console.error('Error loading video data:', error);
       });
 
-      renderPagination(videos.length, page);
-    }
+    function renderVideos() {
+      videoListContainer.innerHTML = '';
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const videosToShow = allVideos.slice(startIndex, endIndex);
 
-    // Render pagination controls
-    function renderPagination(totalVideos, page) {
-      const totalPages = Math.ceil(totalVideos / videosPerPage);
-      const topPagination = document.getElementById('top-pagination');
-      const bottomPagination = document.getElementById('bottom-pagination');
-
-      const createButton = (text, pageNumber) => {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.disabled = pageNumber === page;
-        button.onclick = () => {
-          currentPage = pageNumber;
-          displayVideos(allVideos, currentPage);
-        };
-        return button;
-      };
-
-      topPagination.innerHTML = '';
-      bottomPagination.innerHTML = '';
-
-      for (let i = 1; i <= totalPages; i++) {
-        const button = createButton(i, i);
-        topPagination.appendChild(button);
-        bottomPagination.appendChild(button.cloneNode(true));
-      }
-    }
-
-    // Search for videos and show suggestions
-    function searchVideos(event) {
-      const query = document.getElementById('search').value.toLowerCase();
-      const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
-
-      // Display search suggestions as the user types
-      if (query) {
-        document.getElementById('search-suggestions').style.display = 'block';
-        document.getElementById('search-suggestions').innerHTML = '';
-        filteredVideos.slice(0, 5).forEach(video => {
-          const suggestionItem = document.createElement('div');
-          suggestionItem.innerHTML = `
-            <img src="${video.thumbnail}" alt="${video.name}">
-            ${video.name}
-          `;
-          suggestionItem.onclick = () => window.location.href = `video.html?id=${video.id}`;
-          document.getElementById('search-suggestions').appendChild(suggestionItem);
+      if (videosToShow.length > 0) {
+        videosToShow.forEach(video => {
+          const videoItem = document.createElement('div');
+          videoItem.classList.add('video-item');
+          videoItem.innerHTML = `
+            <a href="video.html?id=${video.id}">
+              <img src="${video.thumbnail}" alt="${video.name}">
+              <h3>${video.name}</h3>
+            </a>`;
+          videoListContainer.appendChild(videoItem);
         });
       } else {
-        document.getElementById('search-suggestions').style.display = 'none';
-      }
-
-      // Redirect to search-results page when Enter key is pressed
-      if (event.key === "Enter" && filteredVideos.length > 0) {
-        const queryParam = encodeURIComponent(query);
-        window.location.href = `search-results.html?q=${queryParam}`;
+        videoListContainer.innerHTML = '<p>No videos found.</p>';
       }
     }
 
-    // Handle deep links for iOS Shortcuts (Custom URL Scheme)
-    function handleCustomURLScheme() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const searchQuery = urlParams.get('q'); // Fetch 'q' parameter for search queries
-      if (searchQuery) {
-        const query = decodeURIComponent(searchQuery);
-        const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
-        displayVideos(filteredVideos, 1); // Display filtered videos based on query
+    function renderPagination() {
+      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+
+      if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+          const button = document.createElement('button');
+          button.innerText = i;
+          button.onclick = () => {
+            currentPage = i;
+            renderVideos();
+            renderPagination();
+          };
+          paginationTop.appendChild(button);
+          paginationBottom.appendChild(button);
+        }
       }
     }
 
-    // Call this function on page load to handle deep links
-    window.onload = function() {
-      handleCustomURLScheme();
-      displayVideos(allVideos, currentPage); // Ensure this runs
-    };
+    function handleSearch() {
+      const query = searchInput.value.toLowerCase();
+      fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/tv_series.csv')
+        .then(response => response.text())
+        .then(text => {
+          const data = parseCSV(text);
+          const filteredVideos = data.reduce((acc, video) => {
+            if (video.name.toLowerCase().includes(query)) {
+              const existing = acc.find(v => v.id === video.id);
+              if (existing) {
+                existing.episodes.push({
+                  episode_id: video.episode_id,
+                  name: video.episode_name,
+                  embed_code: video.embed_code
+                });
+              } else {
+                acc.push({
+                  id: video.id,
+                  name: video.name,
+                  thumbnail: video.thumbnail,
+                  episodes: [{
+                    episode_id: video.episode_id,
+                    name: video.episode_name,
+                    embed_code: video.embed_code
+                  }]
+                });
+              }
+            }
+            return acc;
+          }, []);
+
+          // Sort filtered videos by id in descending order
+          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+
+          currentPage = 1;
+          renderVideos();
+          renderPagination();
+        });
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    }
   </script>
 
 </body>

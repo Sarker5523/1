@@ -73,26 +73,26 @@ fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv'
         // Sort videos by id in descending order
 
     function renderVideos() {
-      videoListContainer.innerHTML = '';
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const videosToShow = allVideos.slice(startIndex, endIndex);
+  videoListContainer.innerHTML = '';
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const videosToShow = allVideos.slice(startIndex, endIndex);
 
-      if (videosToShow.length > 0) {
-        videosToShow.forEach(video => {
-          const videoItem = document.createElement('div');
-          videoItem.classList.add('video-item');
-          videoItem.innerHTML = `
-            <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.name}">
-              <h3>${video.name}</h3>
-            </a>`;
-          videoListContainer.appendChild(videoItem);
-        });
-      } else {
-        videoListContainer.innerHTML = '<p>No videos found.</p>';
-      }
-    }
+  if (videosToShow.length > 0) {
+    videosToShow.forEach(video => {
+      const videoItem = document.createElement('div');
+      videoItem.classList.add('video-item');
+      videoItem.innerHTML = `
+        <a href="video.html?id=${video.id}">
+          <img src="${video.thumbnail}" alt="${video.name}">
+          <h3>${video.name}</h3>
+        </a>`;
+      videoListContainer.appendChild(videoItem);
+    });
+  } else {
+    videoListContainer.innerHTML = '<p>No videos found.</p>';
+  }
+}
 
     function renderPagination() {
       const totalPages = Math.ceil(allVideos.length / itemsPerPage);

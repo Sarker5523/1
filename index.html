@@ -71,14 +71,6 @@ fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv'
     console.error('Error loading video data:', error);
   });
         // Sort videos by id in descending order
-        allVideos.sort((a, b) => b.id - a.id);
-
-        renderVideos();
-        renderPagination();
-      })
-      .catch(error => {
-        console.error('Error loading video data:', error);
-      });
 
     function renderVideos() {
       videoListContainer.innerHTML = '';

@@ -37,13 +37,12 @@
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
 
-    function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
+    function fetchVideoDetails() {
+      fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv')
+        .then(response => response.text())
+        .then(text => {
+          const videos = parseCSV(text);
+          const video = videos.find(v => v.id === videoId);
         if (currentline.length === headers.length) {
           const obj = {};
           for (let j = 0; j < headers.length; j++) {

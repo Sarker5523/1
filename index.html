@@ -38,50 +38,38 @@
     const paginationBottom = document.getElementById('pagination-bottom');
 
     function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
+  const lines = text.split('\n').filter(line => line.trim());
+  const headers = lines[0].split(',').map(header => header.trim());
+  const result = [];
 
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-          result.push(obj);
-        }
+  for (let i = 1; i < lines.length; i++) {
+    const currentline = lines[i].split(',').map(value => value.trim());
+    if (currentline.length === headers.length) {
+      const obj = {};
+      for (let j = 0; j < headers.length; j++) {
+        obj[headers[j]] = currentline[j];
       }
-
-      return result;
+      result.push(obj);
     }
+  }
 
-    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv')
-      .then(response => response.text())
-      .then(text => {
-        allVideos = parseCSV(text).reduce((acc, video) => {
-          const existing = acc.find(v => v.id === video.id);
-          if (existing) {
-            existing.episodes.push({
-              episode_id: video.episode_id,
-              name: video.episode_name,
-              embed_code: video.embed_code
-            });
-          } else {
-            acc.push({
-              id: video.id,
-              name: video.name,
-              thumbnail: video.thumbnail,
-              episodes: [{
-                episode_id: video.episode_id,
-                name: video.episode_name,
-                embed_code: video.embed_code
-              }]
-            });
-          }
-          return acc;
-        }, []);
+  return result;
+}
 
+fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv')
+  .then(response => response.text())
+  .then(text => {
+    allVideos = parseCSV(text);
+    if (allVideos.length > 0) {
+      renderVideos();
+      renderPagination();
+    } else {
+      console.error('No videos found in CSV file');
+    }
+  })
+  .catch(error => {
+    console.error('Error loading video data:', error);
+  });
         // Sort videos by id in descending order
         allVideos.sort((a, b) => b.id - a.id);
 

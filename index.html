@@ -11,7 +11,7 @@
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <div class="title-container">
-      <h1>Porn</h1>
+      <h1>Videos</h1>
       <div class="play-button"></div>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
@@ -37,12 +37,13 @@
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
 
-    function fetchVideoDetails() {
-      fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/video.csv')
-        .then(response => response.text())
-        .then(text => {
-          const videos = parseCSV(text);
-          const video = videos.find(v => v.id === videoId);
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(header => header.trim());
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const currentline = lines[i].split(',').map(value => value.trim());
         if (currentline.length === headers.length) {
           const obj = {};
           for (let j = 0; j < headers.length; j++) {
@@ -135,42 +136,14 @@
 
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
-      fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/tv_series.csv')
-        .then(response => response.text())
-        .then(text => {
-          const data = parseCSV(text);
-          const filteredVideos = data.reduce((acc, video) => {
-            if (video.name.toLowerCase().includes(query)) {
-              const existing = acc.find(v => v.id === video.id);
-              if (existing) {
-                existing.episodes.push({
-                  episode_id: video.episode_id,
-                  name: video.episode_name,
-                  embed_code: video.embed_code
-                });
-              } else {
-                acc.push({
-                  id: video.id,
-                  name: video.name,
-                  thumbnail: video.thumbnail,
-                  episodes: [{
-                    episode_id: video.episode_id,
-                    name: video.episode_name,
-                    embed_code: video.embed_code
-                  }]
-                });
-              }
-            }
-            return acc;
-          }, []);
+      const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
 
-          // Sort filtered videos by id in descending order
-          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+      // Sort filtered videos by id in descending order
+      allVideos = filteredVideos.sort((a, b) => b.id - a.id);
 
-          currentPage = 1;
-          renderVideos();
-          renderPagination();
-        });
+      currentPage = 1;
+      renderVideos();
+      renderPagination();
     }
 
     function handleEnter(event) {

@@ -41,7 +41,7 @@
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <div class="dropdown">
-      <div class="home-btn">Actors</div>
+      <div class="home-btn" onclick="toggleDropdown()">Actors</div>
       <div class="dropdown-content" id="actors-dropdown">
         <!-- Actors will be populated here -->
       </div>
@@ -66,6 +66,7 @@
     const itemsPerPage = 30; // 6x5 grid
     let currentPage = 1;
     let allVideos = [];
+    let dropdownVisible = false;
   
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
@@ -199,6 +200,19 @@
         handleSearch();
       }
     }
+
+    function toggleDropdown() {
+      dropdownVisible = !dropdownVisible;
+      actorsDropdown.style.display = dropdownVisible ? 'block' : 'none';
+    }
+
+    document.addEventListener('click', function(event) {
+      const isClickInside = actorsDropdown.contains(event.target) || event.target.classList.contains('home-btn');
+      if (!isClickInside) {
+        actorsDropdown.style.display = 'none';
+        dropdownVisible = false;
+      }
+    });
   </script>
 
 </body>

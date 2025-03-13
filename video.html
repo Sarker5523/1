@@ -3,55 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mplix-Home</title>
+  <title>Video Details</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center; /* Center align video player */
+    }
+    .iframe-container {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
+        .video-details {
+      padding: 10px;
+      background-color: #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      margin: 20px auto; /* Center align title and episode list */
+      width: 60%; /* Decrease the width of the box */
+      box-sizing: border-box;
+      text-align: center; /* Center align title and episode list */
+    }
+    
+    .video-details h2 {
+      font-size: 24px; /* Increase the font size of the video title */
+      margin: 0;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #444;
+    }
+    
+    .episode-list {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center; /* Center align episode list */
+      flex-wrap: wrap;
+      font-size: 18px; /* Adjust the font size for episode buttons */
+    }
+    .episode-list button {
+      background-color: #444;
+      color: #00ab41;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    .episode-list button:hover {
+      background-color: #00ab41;
+      color: #000;
+      transform: translateY(-4px);
+    }
+    .episode-list button.active {
+      background-color: #00ab41;
+      color: #000;
+    }
+    @media (max-width: 600px) {
+      .video-details h2 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+      .video-container {
+        max-width: 94%;
+        padding: 10px;
+        height: auto;
+        margin-left: 10px;
+      }
+      .iframe-container {
+        width: 94%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      }
+    }
+    @media (min-width: 601px) and (max-width: 1200px) {
+  .video-container {
+    max-width: 75%;
+    padding: 20px;
+    height: auto;
+    margin-left: 300px; /* Shift the video player to the right */
+  }
+}
+
+@media (min-width: 1201px) {
+  .video-container {
+    max-width: 60%;
+    padding: 20px;
+    height: auto;
+    margin-left: 300px; /* Shift the video player to the right */
+  }
+}
+    }
+  </style>
 </head>
 <body>
 
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <div class="title-container">
-      <h1>MPlix</h1>
-      <div class="play-button"></div>
+    <div class="mplix-title" style="display: flex; align-items: center;">
+      <h1 style="color: white; margin: 0;">MPlix</h1>
+      <div class="play-button" style="margin-left: 10px;"></div>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
 
-  <div class="pagination" id="pagination-top"></div>
-
-  <div class="video-list-container">
-    <div class="video-list" id="video-list"></div>
+  <div class="video-container" id="video-container">
+    <div class="iframe-container" id="iframe-container" style="display: none;"></div>
   </div>
 
-  <div class="pagination" id="pagination-bottom"></div>
+  <div class="video-details">
+    <h2 id="video-title"></h2>
+    <div class="episode-list" id="episode-list"></div>
+  </div>
 
   <script>
-    const itemsPerPage = 30; // 6x5 grid
-    let currentPage = 1;
-    let allVideos = [];
-
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
-    const videoListContainer = document.getElementById('video-list');
-    const paginationTop = document.getElementById('pagination-top');
-    const paginationBottom = document.getElementById('pagination-bottom');
+    const iframeContainer = document.getElementById('iframe-container');
+    const episodeList = document.getElementById('episode-list');
 
-    function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
+    function loadVideo(video) {
+      if (!video) {
+        document.getElementById('video-title').innerText = "Video not found";
+        return;
+      }
 
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-          result.push(obj);
+      document.getElementById('video-title').innerText = `${video.name} - ${video.episode_name}`;
+
+      // Dynamically set the webpage title to the episode's title
+      document.title = `${video.name} - ${video.episode_name}`;
+
+      if (video.embed_code) {
+        iframeContainer.innerHTML = video.embed_code;
+        iframeContainer.style.display = 'block';
+      } else {
+        iframeContainer.style.display = 'none';
+      }
+
+      // Highlight the current episode button
+      const buttons = episodeList.getElementsByTagName('button');
+      for (let button of buttons) {
+        if (button.dataset.episodeId === video.episode_id) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
         }
       }
+    }
+
+    function loadEpisodes(episodes, currentEpisodeId) {
+      episodeList.innerHTML = '';
+      episodes.forEach(episode => {
+        const button = document.createElement('button');
+        button.innerText = episode.episode_name;
+        button.dataset.episodeId = episode.episode_id;
+        button.onclick = () => {
+          loadVideo(episode);
+        };
+        if (episode.episode_id === currentEpisodeId) {
+          button.classList.add('active');
+        }
+        episodeList.appendChild(button);
+      });
+    }
+
+    function parseCSV(text) {
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+      const headers = lines.shift().split(',').map(header => header.trim());
+      const result = [];
+
+      lines.forEach(line => {
+        const currentline = line.split(',').map(value => value.trim());
+        if (currentline.length === headers.length) {
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = currentline[index];
+          });
+          result.push(obj);
+        }
+      });
 
       return result;
     }
@@ -59,80 +210,22 @@
     fetch('https://docs.google.com/spreadsheets/d/1xsz1l9reLyakcG1cQBZjytMJ6KZF0zX8Zac4a_YE4C0/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        allVideos = parseCSV(text).reduce((acc, video) => {
-          const existing = acc.find(v => v.id === video.id);
-          if (existing) {
-            existing.episodes.push({
-              episode_id: video.episode_id,
-              name: video.episode_name,
-              embed_code: video.embed_code
-            });
-          } else {
-            acc.push({
-              id: video.id,
-              name: video.name,
-              thumbnail: video.thumbnail,
-              episodes: [{
-                episode_id: video.episode_id,
-                name: video.episode_name,
-                embed_code: video.embed_code
-              }]
-            });
-          }
-          return acc;
-        }, []);
-
-        // Sort videos by id in descending order
-        allVideos.sort((a, b) => b.id - a.id);
-
-        renderVideos();
-        renderPagination();
+        const data = parseCSV(text);
+        const videoId = new URLSearchParams(window.location.search).get('id');
+        const series = data.find(v => v.id === videoId);
+        if (series) {
+          const currentEpisode = series;
+          loadVideo(currentEpisode);
+          const episodes = data.filter(v => v.id === series.id);
+          loadEpisodes(episodes, currentEpisode.episode_id);
+        } else {
+          document.getElementById('video-title').innerText = "Video not found";
+        }
       })
       .catch(error => {
         console.error('Error loading video data:', error);
+        document.getElementById('video-title').innerText = "Error loading video";
       });
-
-    function renderVideos() {
-      videoListContainer.innerHTML = '';
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const videosToShow = allVideos.slice(startIndex, endIndex);
-
-      if (videosToShow.length > 0) {
-        videosToShow.forEach(video => {
-          const videoItem = document.createElement('div');
-          videoItem.classList.add('video-item');
-          videoItem.innerHTML = `
-            <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.name}">
-              <h3>${video.name}</h3>
-            </a>`;
-          videoListContainer.appendChild(videoItem);
-        });
-      } else {
-        videoListContainer.innerHTML = '<p>No videos found.</p>';
-      }
-    }
-
-    function renderPagination() {
-      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
-
-      if (totalPages > 1) {
-        for (let i = 1; i <= totalPages; i++) {
-          const button = document.createElement('button');
-          button.innerText = i;
-          button.onclick = () => {
-            currentPage = i;
-            renderVideos();
-            renderPagination();
-          };
-          paginationTop.appendChild(button);
-          paginationBottom.appendChild(button);
-        }
-      }
-    }
 
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
@@ -140,40 +233,22 @@
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);
-          const filteredVideos = data.reduce((acc, video) => {
-            if (video.name.toLowerCase().includes(query)) {
-              const existing = acc.find(v => v.id === video.id);
-              if (existing) {
-                existing.episodes.push({
-                  episode_id: video.episode_id,
-                  name: video.episode_name,
-                  embed_code: video.embed_code
-                });
-              } else {
-                acc.push({
-                  id: video.id,
-                  name: video.name,
-                  thumbnail: video.thumbnail,
-                  episodes: [{
-                    episode_id: video.episode_id,
-                    name: video.episode_name,
-                    embed_code: video.embed_code
-                  }]
-                });
-              }
-            }
-            return acc;
-          }, []);
-
-          // Sort filtered videos by id in descending order
-          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
-
-          currentPage = 1;
-          renderVideos();
-          renderPagination();
+          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query));
+          searchResultsContainer.style.display = 'block';
+          searchResultsContainer.innerHTML = '';
+          filteredVideos.slice(0, 5).forEach(video => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.innerHTML = `
+              <img src="${video.thumbnail}" alt="${video.name}">
+              ${video.name}
+            `;
+            suggestionItem.onclick = () => {
+              window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+            };
+            searchResultsContainer.appendChild(suggestionItem);
+          });
         });
     }
-
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();

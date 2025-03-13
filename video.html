@@ -59,16 +59,14 @@
       flex-wrap: wrap;
       font-size: 18px; /* Adjust the font size for actor names */
     }
-    .actors-list a {
+    .actors-list span {
       color: #00ab41;
       padding: 10px;
       margin: 5px;
-      text-decoration: none;
-      border-radius: 8px;
-      transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+      cursor: pointer;
+      transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
     }
-    .actors-list a:hover {
-      background-color: #00ab41;
+    .actors-list span:hover {
       color: #000;
       transform: translateY(-4px);
     }
@@ -160,7 +158,7 @@
 
       // Populate actors list
       if (video.actors) {
-        actorsList.innerHTML = 'Actors: ' + video.actors.split(',').map(actor => `<a href="search-results.html?q=${encodeURIComponent(actor.trim())}">${actor.trim()}</a>`).join(', ');
+        actorsList.innerHTML = 'Actors: ' + video.actors.split(',').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
       } else {
         actorsList.innerHTML = '';
       }

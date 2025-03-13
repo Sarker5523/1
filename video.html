@@ -52,37 +52,11 @@
       border-bottom: 3px solid #444;
     }
     
-    .episode-list {
-      margin: 20px 0;
-      display: flex;
-      justify-content: center; /* Center align episode list */
-      flex-wrap: wrap;
-      font-size: 18px; /* Adjust the font size for episode buttons */
-    }
-    .episode-list button {
-      background-color: #444;
-      color: #00ab41;
-      border: none;
-      padding: 10px 20px;
-      margin: 5px;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-    }
-    .episode-list button:hover {
-      background-color: #00ab41;
-      color: #000;
-      transform: translateY(-4px);
-    }
-    .episode-list button.active {
-      background-color: #00ab41;
-      color: #000;
-    }
     @media (max-width: 600px) {
       .video-details h2 {
-      font-size: 20px;
-      font-weight: 500;
-    }
+        font-size: 20px;
+        font-weight: 500;
+      }
       .video-container {
         max-width: 94%;
         padding: 10px;
@@ -97,22 +71,20 @@
       }
     }
     @media (min-width: 601px) and (max-width: 1200px) {
-  .video-container {
-    max-width: 75%;
-    padding: 20px;
-    height: auto;
-    margin-left: 300px; /* Shift the video player to the right */
-  }
-}
-
-@media (min-width: 1201px) {
-  .video-container {
-    max-width: 60%;
-    padding: 20px;
-    height: auto;
-    margin-left: 300px; /* Shift the video player to the right */
-  }
-}
+      .video-container {
+        max-width: 75%;
+        padding: 20px;
+        height: auto;
+        margin-left: 300px; /* Shift the video player to the right */
+      }
+    }
+    @media (min-width: 1201px) {
+      .video-container {
+        max-width: 60%;
+        padding: 20px;
+        height: auto;
+        margin-left: 300px; /* Shift the video player to the right */
+      }
     }
   </style>
 </head>
@@ -135,14 +107,12 @@
   <div class="video-details">
     <h2 id="video-title"></h2>
     <div id="video-description"></div> <!-- Added description container -->
-    <div class="episode-list" id="episode-list"></div>
   </div>
 
   <script>
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
     const iframeContainer = document.getElementById('iframe-container');
-    const episodeList = document.getElementById('episode-list');
     const videoDescription = document.getElementById('video-description'); // Added description element
 
     function loadVideo(video) {
@@ -164,32 +134,6 @@
       } else {
         iframeContainer.style.display = 'none';
       }
-
-      // Highlight the current episode button
-      const buttons = episodeList.getElementsByTagName('button');
-      for (let button of buttons) {
-        if (button.dataset.episodeId === video.episode_id) {
-          button.classList.add('active');
-        } else {
-          button.classList.remove('active');
-        }
-      }
-    }
-
-    function loadEpisodes(episodes, currentEpisodeId) {
-      episodeList.innerHTML = '';
-      episodes.forEach(episode => {
-        const button = document.createElement('button');
-        button.innerText = episode.episode_name;
-        button.dataset.episodeId = episode.episode_id;
-        button.onclick = () => {
-          loadVideo(episode);
-        };
-        if (episode.episode_id === currentEpisodeId) {
-          button.classList.add('active');
-        }
-        episodeList.appendChild(button);
-      });
     }
 
     function parseCSV(text) {
@@ -220,8 +164,6 @@
         if (series) {
           const currentEpisode = series;
           loadVideo(currentEpisode);
-          const episodes = data.filter(v => v.id === series.id);
-          loadEpisodes(episodes, currentEpisode.episode_id);
         } else {
           document.getElementById('video-title').innerText = "Video not found";
         }

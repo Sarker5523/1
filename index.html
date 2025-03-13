@@ -22,12 +22,14 @@
 
     .dropdown-content a {
       color: black;
-      padding: 12px 16px;
+      padding: 0; /* Remove padding */
       text-decoration: none;
       display: block;
     }
 
-    .dropdown-content a:hover {background-color: #f1f1f1}
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
 
     .dropdown:hover .dropdown-content {
       display: block;
@@ -64,19 +66,19 @@
     const itemsPerPage = 30; // 6x5 grid
     let currentPage = 1;
     let allVideos = [];
-
+  
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
     const videoListContainer = document.getElementById('video-list');
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
     const actorsDropdown = document.getElementById('actors-dropdown');
-
+  
     function parseCSV(text) {
       const lines = text.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(header => header.trim());
       const result = [];
-
+  
       for (let i = 1; i < lines.length; i++) {
         const currentline = lines[i].split(',').map(value => value.trim());
         if (currentline.length === headers.length) {
@@ -87,10 +89,10 @@
           result.push(obj);
         }
       }
-
+  
       return result;
     }
-
+  
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
@@ -101,10 +103,10 @@
           thumbnail: video.thumbnail,
           embed_code: video.embed_code
         }));
-
+  
         // Extract unique actor names
         const actors = [...new Set(data.map(video => video.actor))].sort();
-
+  
         // Populate actors dropdown
         actors.forEach(actor => {
           const actorItem = document.createElement('a');
@@ -116,23 +118,23 @@
           };
           actorsDropdown.appendChild(actorItem);
         });
-
+  
         // Sort videos by id in descending order
         allVideos.sort((a, b) => b.id - a.id);
-
+  
         renderVideos();
         renderPagination();
       })
       .catch(error => {
         console.error('Error loading video data:', error);
       });
-
+  
     function renderVideos() {
       videoListContainer.innerHTML = '';
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const videosToShow = allVideos.slice(startIndex, endIndex);
-
+  
       if (videosToShow.length > 0) {
         videosToShow.forEach(video => {
           const videoItem = document.createElement('div');
@@ -148,12 +150,12 @@
         videoListContainer.innerHTML = '<p>No videos found.</p>';
       }
     }
-
+  
     function renderPagination() {
       const totalPages = Math.ceil(allVideos.length / itemsPerPage);
       paginationTop.innerHTML = '';
       paginationBottom.innerHTML = '';
-
+  
       if (totalPages > 1) {
         for (let i = 1; i <= totalPages; i++) {
           const button = document.createElement('button');
@@ -168,7 +170,7 @@
         }
       }
     }
-
+  
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
       fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
@@ -182,16 +184,16 @@
               thumbnail: video.thumbnail,
               embed_code: video.embed_code
             }));
-
+  
           // Sort filtered videos by id in descending order
           allVideos = filteredVideos.sort((a, b) => b.id - a.id);
-
+  
           currentPage = 1;
           renderVideos();
           renderPagination();
         });
     }
-
+  
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();

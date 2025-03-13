@@ -136,7 +136,7 @@
 
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
-      fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/tv_series.csv')
+      fetch('https://docs.google.com/spreadsheets/d/1xsz1l9reLyakcG1cQBZjytMJ6KZF0zX8Zac4a_YE4C0/export?format=csv')
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);

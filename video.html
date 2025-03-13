@@ -34,7 +34,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
-        .video-details {
+    .video-details {
       padding: 10px;
       background-color: #333;
       border-radius: 10px;
@@ -134,6 +134,7 @@
 
   <div class="video-details">
     <h2 id="video-title"></h2>
+    <div id="video-description"></div> <!-- Added description container -->
     <div class="episode-list" id="episode-list"></div>
   </div>
 
@@ -142,17 +143,20 @@
     const searchResultsContainer = document.getElementById('search-suggestions');
     const iframeContainer = document.getElementById('iframe-container');
     const episodeList = document.getElementById('episode-list');
+    const videoDescription = document.getElementById('video-description'); // Added description element
 
     function loadVideo(video) {
       if (!video) {
         document.getElementById('video-title').innerText = "Video not found";
+        videoDescription.innerText = ''; // Clear description if video not found
         return;
       }
 
-      document.getElementById('video-title').innerText = `${video.name} - ${video.episode_name}`;
+      document.getElementById('video-title').innerText = `${video.name}`;
+      videoDescription.innerText = video.description; // Set description
 
       // Dynamically set the webpage title to the episode's title
-      document.title = `${video.name} - ${video.episode_name}`;
+      document.title = `${video.name}`;
 
       if (video.embed_code) {
         iframeContainer.innerHTML = video.embed_code;

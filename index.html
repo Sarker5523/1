@@ -5,11 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mplix-Home</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-content a:hover {background-color: #f1f1f1}
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <div class="dropdown">
+      <div class="home-btn">Actors</div>
+      <div class="dropdown-content" id="actors-dropdown">
+        <!-- Actors will be populated here -->
+      </div>
+    </div>
     <div class="title-container">
       <h1>MPlix</h1>
       <div class="play-button"></div>
@@ -36,6 +70,7 @@
     const videoListContainer = document.getElementById('video-list');
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
+    const actorsDropdown = document.getElementById('actors-dropdown');
 
     function parseCSV(text) {
       const lines = text.split('\n').filter(line => line.trim());
@@ -59,12 +94,28 @@
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        allVideos = parseCSV(text).map(video => ({
+        const data = parseCSV(text);
+        allVideos = data.map(video => ({
           id: video.id,
           name: video.name,
           thumbnail: video.thumbnail,
           embed_code: video.embed_code
         }));
+
+        // Extract unique actor names
+        const actors = [...new Set(data.map(video => video.actor))].sort();
+
+        // Populate actors dropdown
+        actors.forEach(actor => {
+          const actorItem = document.createElement('a');
+          actorItem.href = `#`;
+          actorItem.innerText = actor;
+          actorItem.onclick = () => {
+            searchInput.value = actor;
+            handleSearch();
+          };
+          actorsDropdown.appendChild(actorItem);
+        });
 
         // Sort videos by id in descending order
         allVideos.sort((a, b) => b.id - a.id);

@@ -39,10 +39,10 @@
       background-color: #333;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      margin: 20px auto; /* Center align title and episode list */
+      margin: 20px auto; /* Center align title and actor list */
       width: 60%; /* Decrease the width of the box */
       box-sizing: border-box;
-      text-align: center; /* Center align title and episode list */
+      text-align: center; /* Center align title and actor list */
     }
     
     .video-details h2 {
@@ -52,6 +52,26 @@
       border-bottom: 3px solid #444;
     }
     
+    .actors-list {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center; /* Center align actor list */
+      flex-wrap: wrap;
+      font-size: 18px; /* Adjust the font size for actor names */
+    }
+    .actors-list a {
+      color: #00ab41;
+      padding: 10px;
+      margin: 5px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    .actors-list a:hover {
+      background-color: #00ab41;
+      color: #000;
+      transform: translateY(-4px);
+    }
     @media (max-width: 600px) {
       .video-details h2 {
         font-size: 20px;
@@ -107,6 +127,7 @@
   <div class="video-details">
     <h2 id="video-title"></h2>
     <div id="video-description"></div> <!-- Added description container -->
+    <div class="actors-list" id="actors-list"></div> <!-- Added actors list container -->
   </div>
 
   <script>
@@ -114,11 +135,13 @@
     const searchResultsContainer = document.getElementById('search-suggestions');
     const iframeContainer = document.getElementById('iframe-container');
     const videoDescription = document.getElementById('video-description'); // Added description element
+    const actorsList = document.getElementById('actors-list'); // Added actors list element
 
     function loadVideo(video) {
       if (!video) {
         document.getElementById('video-title').innerText = "Video not found";
         videoDescription.innerText = ''; // Clear description if video not found
+        actorsList.innerHTML = ''; // Clear actors list if video not found
         return;
       }
 
@@ -133,6 +156,13 @@
         iframeContainer.style.display = 'block';
       } else {
         iframeContainer.style.display = 'none';
+      }
+
+      // Populate actors list
+      if (video.actors) {
+        actorsList.innerHTML = 'Actors: ' + video.actors.split(',').map(actor => `<a href="search-results.html?q=${encodeURIComponent(actor.trim())}">${actor.trim()}</a>`).join(', ');
+      } else {
+        actorsList.innerHTML = '';
       }
     }
 

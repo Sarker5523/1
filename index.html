@@ -59,28 +59,12 @@
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        allVideos = parseCSV(text).reduce((acc, video) => {
-          const existing = acc.find(v => v.id === video.id);
-          if (existing) {
-            existing.episodes.push({
-              episode_id: video.episode_id,
-              name: video.episode_name,
-              embed_code: video.embed_code
-            });
-          } else {
-            acc.push({
-              id: video.id,
-              name: video.name,
-              thumbnail: video.thumbnail,
-              episodes: [{
-                episode_id: video.episode_id,
-                name: video.episode_name,
-                embed_code: video.embed_code
-              }]
-            });
-          }
-          return acc;
-        }, []);
+        allVideos = parseCSV(text).map(video => ({
+          id: video.id,
+          name: video.name,
+          thumbnail: video.thumbnail,
+          embed_code: video.embed_code
+        }));
 
         // Sort videos by id in descending order
         allVideos.sort((a, b) => b.id - a.id);
@@ -140,30 +124,13 @@
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);
-          const filteredVideos = data.reduce((acc, video) => {
-            if (video.name.toLowerCase().includes(query)) {
-              const existing = acc.find(v => v.id === video.id);
-              if (existing) {
-                existing.episodes.push({
-                  episode_id: video.episode_id,
-                  name: video.episode_name,
-                  embed_code: video.embed_code
-                });
-              } else {
-                acc.push({
-                  id: video.id,
-                  name: video.name,
-                  thumbnail: video.thumbnail,
-                  episodes: [{
-                    episode_id: video.episode_id,
-                    name: video.episode_name,
-                    embed_code: video.embed_code
-                  }]
-                });
-              }
-            }
-            return acc;
-          }, []);
+          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query))
+            .map(video => ({
+              id: video.id,
+              name: video.name,
+              thumbnail: video.thumbnail,
+              embed_code: video.embed_code
+            }));
 
           // Sort filtered videos by id in descending order
           allVideos = filteredVideos.sort((a, b) => b.id - a.id);

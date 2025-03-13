@@ -106,7 +106,7 @@
         }));
   
         // Extract unique actor names
-        const actors = [...new Set(data.map(video => video.actor))].sort();
+        const actors = [...new Set(data.flatMap(video => video.actors.split(';')))].sort();
   
         // Populate actors dropdown
         actors.forEach(actor => {

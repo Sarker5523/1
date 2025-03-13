@@ -1,292 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Results</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #141414;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      text-align: center;
-      padding: 10px 20px;
-      background-color: #000;
-      color: #ff8c00;
-      position: relative;
-    }
-    header h1 {
-      font-size: 30px;
-      font-weight: bold;
+      background-color: #333;
       color: white;
       margin: 0;
+      padding: 20px;
     }
-    header .phub-title span {
-      color: #000;
-      background-color: #ff8c00;
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 2px solid #ff8c00;
-    }
-    .home-btn {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      font-size: 16px;
-      color: #ff8c00;
-      background-color: #333;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    .home-btn:hover {
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
       background-color: #444;
-      transform: translateY(-4px);
-      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     }
-    .search-bar {
-      width: 80%;
-      max-width: 400px;
-      padding: 8px 10px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 14px;
-      background-color: #222;
-      color: white;
-    }
-    .search-suggestions {
-      position: absolute;
-      background-color: #333;
-      color: white;
-      width: 80%;
-      max-width: 400px;
-      margin-top: 40px;
-      padding: 10px 0;
-      border-radius: 5px;
-      display: none;
-      z-index: 1;
-    }
-    .search-suggestions div {
-      display: flex;
-      align-items: center;
-      padding: 8px 10px;
-      cursor: pointer;
-    }
-    .search-suggestions div:hover {
-      background-color: #ff8c00;
-    }
-    .search-suggestions img {
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
-      margin-right: 10px;
-    }
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr); /* Changed to 4 columns */
-      gap: 20px;
-      margin-top: 30px;
-      padding: 0 20px;
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #555;
+      padding-bottom: 10px;
     }
     .video-item {
-      position: relative;
-      cursor: pointer;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
     }
     .video-item img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
     .video-item h3 {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      color: white;
-      padding: 3px 10px;
-      font-size: 16px; /* Increased font-size */
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-      transform: translateY(10px);
-      text-align: center;
-      font-family: Arial, sans-serif;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 0.6));
+      font-size: 18px;
+      margin: 10px 0;
     }
-    .pagination {
-      text-align: center;
-      margin: 20px 0;
+    .video-item a {
+      color: #00ab41;
+      text-decoration: none;
     }
-    .pagination button {
-      background-color: #333;
-      color: #ff8c00;
-      border: none;
-      padding: 8px 12px;
-      margin: 0 5px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-    }
-    .pagination button:hover {
-      background-color: #444;
-    }
-    .pagination button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-
-    /* Media queries for responsive design */
-    @media (max-width: 1023px) {
-      .video-grid {
-        grid-template-columns: 1fr; /* Change to 1 column for mobile */
-        gap: 10px;
-        padding: 20px;
-      }
-      .video-item h3 {
-        font-size: 14px; /* Slightly smaller font-size */
-      }
+    .video-item a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <h1 class="phub-title">
-      P<span>HUB</span>
-    </h1>
-    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)" />
-    <div id="search-suggestions" class="search-suggestions"></div>
-  </header>
-
-  <div class="pagination" id="top-pagination"></div>
-  <div class="video-grid" id="video-grid"></div>
-  <div class="pagination" id="bottom-pagination"></div>
+  <div class="container">
+    <h1>Search Results:</h1>
+    <div id="results"></div>
+  </div>
 
   <script>
-    let allVideos = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
+    const query = new URLSearchParams(window.location.search).get('q');
+    const resultsContainer = document.getElementById('results');
 
-    fetch('https://raw.githubusercontent.com/Sarker5523/My-Playlists/main/videos1.json')
-      .then(response => response.json())
-      .then(data => {
-        allVideos = data;
-        const queryParam = new URLSearchParams(window.location.search).get('q');
-        const categoryParam = new URLSearchParams(window.location.search).get('category');
-        let filteredVideos = [];
+    function parseCSV(text) {
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+      const headers = lines.shift().split(',').map(header => header.trim());
+      const result = [];
 
-        if (queryParam) {
-          const query = decodeURIComponent(queryParam);
-          filteredVideos = data.filter(video => video.name.toLowerCase().includes(query.toLowerCase()));
-        } else if (categoryParam) {
-          const category = decodeURIComponent(categoryParam);
-          filteredVideos = data.filter(video => video.categories && video.categories.includes(category));
+      lines.forEach(line => {
+        const currentline = line.split(',').map(value => value.trim());
+        if (currentline.length === headers.length) {
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header] = currentline[index];
+          });
+          result.push(obj);
         }
+      });
 
-        filteredVideos.reverse(); // Display results in reverse order
-        displayVideos(filteredVideos);
-        setupPagination(filteredVideos.length);
+      return result;
+    }
+
+    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+      .then(response => response.text())
+      .then(text => {
+        const data = parseCSV(text);
+        const filteredVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(query.toLowerCase()));
+
+        if (filteredVideos.length > 0) {
+          filteredVideos.forEach(video => {
+            const videoItem = document.createElement('div');
+            videoItem.classList.add('video-item');
+            videoItem.innerHTML = `
+              <a href="video.html?id=${video.id}">
+                <img src="${video.thumbnail}" alt="${video.name}">
+                <h3>${video.name}</h3>
+              </a>`;
+            resultsContainer.appendChild(videoItem);
+          });
+        } else {
+          resultsContainer.innerHTML = '<p>No results found.</p>';
+        }
       })
-      .catch(error => console.error('Error loading JSON:', error));
-
-    function displayVideos(videos) {
-      const videoGrid = document.getElementById('video-grid');
-      videoGrid.innerHTML = '';
-      const start = (currentPage - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      const videosToShow = videos.slice(start, end);
-      if (videosToShow.length === 0) {
-        videoGrid.innerHTML = '<p>No videos found for the search query.</p>';
-      } else {
-        videosToShow.forEach(video => {
-          const videoItem = document.createElement('div');
-          videoItem.classList.add('video-item');
-          videoItem.innerHTML = `
-            <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.name}">
-              <h3>${video.name}</h3>
-            </a>
-          `;
-          videoGrid.appendChild(videoItem);
-        });
-      }
-    }
-
-    function setupPagination(totalItems) {
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-      const topPagination = document.getElementById('top-pagination');
-      const bottomPagination = document.getElementById('bottom-pagination');
-      topPagination.innerHTML = '';
-      bottomPagination.innerHTML = '';
-
-      for (let i = 1; i <= totalPages; i++) {
-        const button = document.createElement('button');
-        button.innerText = i;
-        button.onclick = () => {
-          currentPage = i;
-          displayVideos(allVideos.filter(video => {
-            const queryParam = new URLSearchParams(window.location.search).get('q');
-            const categoryParam = new URLSearchParams(window.location.search).get('category');
-            if (queryParam) {
-              const query = decodeURIComponent(queryParam);
-              return video.name.toLowerCase().includes(query.toLowerCase());
-            } else if (categoryParam) {
-              const category = decodeURIComponent(categoryParam);
-              return video.categories && video.categories.includes(category);
-            }
-          }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
-        };
-        if (i === currentPage) {
-          button.disabled = true;
-        }
-        topPagination.appendChild(button);
-        bottomPagination.appendChild(button);
-      }
-    }
-
-    function handleSearch() {
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const filteredVideos = allVideos.filter(video => video.name.toLowerCase().includes(query));
-
-      if (query) {
-        document.getElementById('search-suggestions').style.display = 'block';
-        document.getElementById('search-suggestions').innerHTML = '';
-        filteredVideos.slice(0, 5).forEach(video => {
-          const suggestionItem = document.createElement('div');
-          suggestionItem.innerHTML = `
-            <img src="${video.thumbnail}" alt="${video.name}">
-            ${video.name}
-          `;
-          suggestionItem.onclick = () => {
-            window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
-          };
-          document.getElementById('search-suggestions').appendChild(suggestionItem);
-        });
-      } else {
-        document.getElementById('search-suggestions').style.display = 'none';
-      }
-    }
-
-    function handleEnter(event) {
-      if (event.key === "Enter") {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        if (query) {
-          window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
-        }
-      }
-    }
+      .catch(error => {
+        console.error('Error loading video data:', error);
+        resultsContainer.innerHTML = '<p>Error loading search results.</p>';
+      });
   </script>
 
 </body>

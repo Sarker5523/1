@@ -56,7 +56,7 @@
       return result;
     }
 
-    fetch('https://docs.google.com/spreadsheets/d/1xsz1l9reLyakcG1cQBZjytMJ6KZF0zX8Zac4a_YE4C0/export?format=csv')
+    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
         allVideos = parseCSV(text).reduce((acc, video) => {
@@ -136,7 +136,7 @@
 
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
-      fetch('https://docs.google.com/spreadsheets/d/1xsz1l9reLyakcG1cQBZjytMJ6KZF0zX8Zac4a_YE4C0/export?format=csv')
+      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);

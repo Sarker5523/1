@@ -18,19 +18,10 @@ header {
 header .home-btn {
   font-size: 18px;
   color: #00ab41;
-  background-color: #333;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.home-btn:hover {
-  background-color: #444;
-  transform: translateY(-4px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.7);
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .search-bar {
@@ -177,6 +168,27 @@ header .home-btn {
   -webkit-mask-size: cover;
 }
 
+/* Dropdown content grid */
+.dropdown-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.8); /* Dark black semi-transparent background */
+}
+
+.dropdown-content-grid a {
+  color: white;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
+}
+
+.dropdown-content-grid a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* Media queries for responsive design */
 @media (max-width: 600px) {
   .video-list {
@@ -185,7 +197,7 @@ header .home-btn {
     gap: 20px;
   }
   .video-item h3 {
-  font-size: 12px;
+    font-size: 12px;
   }
   .video-item {
     flex: none;
@@ -209,6 +221,7 @@ header .home-btn {
   .title-container h1 {
     margin-right: 5px; /* Reduce space between MPlix and video icon */
     margin-top: 10px;
+  }
   .title-container .play-button { 
     margin-top: 10px;
     margin-right: 5px;
@@ -228,7 +241,7 @@ header .home-btn {
     margin-left: 300px; /* Shift to the right */
   }
   .title-container h1 {
-  font-size: 36px;
+    font-size: 36px;
   }
   .title-container .play-button {
     width: 64px; /* Increased size */

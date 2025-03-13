@@ -5,108 +5,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Results</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #333;
-      color: white;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #444;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    }
-    h1 {
-      font-size: 24px;
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 3px solid #555;
-      padding-bottom: 10px;
-    }
-    .video-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .video-item img {
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
-    }
-    .video-item h3 {
-      font-size: 18px;
-      margin: 10px 0;
-    }
-    .video-item a {
-      color: #00ab41;
-      text-decoration: none;
-    }
-    .video-item a:hover {
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Search Results:</h1>
-    <div id="results"></div>
+  <header>
+    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <div class="title-container">
+      <h1>MPlix</h1>
+      <div class="play-button"></div>
+    </div>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+    <div id="search-suggestions" class="search-suggestions"></div>
+  </header>
+
+  <h2>Search Results:</h2>
+
+  <div class="pagination" id="pagination-top"></div>
+
+  <div class="video-list-container">
+    <div class="video-list" id="video-list"></div>
   </div>
 
+  <div class="pagination" id="pagination-bottom"></div>
+
   <script>
-    const query = new URLSearchParams(window.location.search).get('q');
-    const resultsContainer = document.getElementById('results');
+    const itemsPerPage = 30; // 6x5 grid
+    let currentPage = 1;
+    let allVideos = [];
+
+    const searchInput = document.getElementById('search-input');
+    const searchResultsContainer = document.getElementById('search-suggestions');
+    const videoListContainer = document.getElementById('video-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
 
     function parseCSV(text) {
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-      const headers = lines.shift().split(',').map(header => header.trim());
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(header => header.trim());
       const result = [];
 
-      lines.forEach(line => {
-        const currentline = line.split(',').map(value => value.trim());
+      for (let i = 1; i < lines.length; i++) {
+        const currentline = lines[i].split(',').map(value => value.trim());
         if (currentline.length === headers.length) {
           const obj = {};
-          headers.forEach((header, index) => {
-            obj[header] = currentline[index];
-          });
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
+          }
           result.push(obj);
         }
-      });
+      }
 
       return result;
     }
 
+    const query = new URLSearchParams(window.location.search).get('q');
+
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        const data = parseCSV(text);
-        const filteredVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(query.toLowerCase()));
+        allVideos = parseCSV(text).filter(video => video.name.toLowerCase().includes(query.toLowerCase()))
+          .map(video => ({
+            id: video.id,
+            name: video.name,
+            thumbnail: video.thumbnail,
+            embed_code: video.embed_code
+          }));
 
-        if (filteredVideos.length > 0) {
-          filteredVideos.forEach(video => {
-            const videoItem = document.createElement('div');
-            videoItem.classList.add('video-item');
-            videoItem.innerHTML = `
-              <a href="video.html?id=${video.id}">
-                <img src="${video.thumbnail}" alt="${video.name}">
-                <h3>${video.name}</h3>
-              </a>`;
-            resultsContainer.appendChild(videoItem);
-          });
-        } else {
-          resultsContainer.innerHTML = '<p>No results found.</p>';
-        }
+        // Sort videos by id in descending order
+        allVideos.sort((a, b) => b.id - a.id);
+
+        renderVideos();
+        renderPagination();
       })
       .catch(error => {
         console.error('Error loading video data:', error);
-        resultsContainer.innerHTML = '<p>Error loading search results.</p>';
       });
+
+    function renderVideos() {
+      videoListContainer.innerHTML = '';
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const videosToShow = allVideos.slice(startIndex, endIndex);
+
+      if (videosToShow.length > 0) {
+        videosToShow.forEach(video => {
+          const videoItem = document.createElement('div');
+          videoItem.classList.add('video-item');
+          videoItem.innerHTML = `
+            <a href="video.html?id=${video.id}">
+              <img src="${video.thumbnail}" alt="${video.name}">
+              <h3>${video.name}</h3>
+            </a>`;
+          videoListContainer.appendChild(videoItem);
+        });
+      } else {
+        videoListContainer.innerHTML = '<p>No videos found.</p>';
+      }
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+
+      if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+          const button = document.createElement('button');
+          button.innerText = i;
+          button.onclick = () => {
+            currentPage = i;
+            renderVideos();
+            renderPagination();
+          };
+          paginationTop.appendChild(button);
+          paginationBottom.appendChild(button);
+        }
+      }
+    }
+
+    function handleSearch() {
+      const query = searchInput.value.toLowerCase();
+      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+        .then(response => response.text())
+        .then(text => {
+          const data = parseCSV(text);
+          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query))
+            .map(video => ({
+              id: video.id,
+              name: video.name,
+              thumbnail: video.thumbnail,
+              embed_code: video.embed_code
+            }));
+
+          // Sort filtered videos by id in descending order
+          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+
+          currentPage = 1;
+          renderVideos();
+          renderPagination();
+        });
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    }
   </script>
 
 </body>

@@ -10,13 +10,13 @@
 
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <button class="actors-btn" onclick="toggleDropdown()">Actors</button>
     <div class="title-container">
       <h1>MPlix</h1>
       <div class="play-button"></div>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
-    <button class="actors-btn" onclick="toggleDropdown()">Actors</button>
   </header>
 
   <div id="actors-dropdown" class="dropdown-menu"></div>

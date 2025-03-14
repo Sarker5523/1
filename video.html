@@ -25,17 +25,18 @@
       color: #00ab41; /* Green color for actors' names */
     }
     @media (max-width: 600px) {
-      .iframe-container {
-        width: 30px; /* Adjust width for portrait mode */
-        height: 5%;
-        margin: 0 auto;
+        .video-container {
+        max-width: 94%;
+        padding: 10px;
+        height: auto;
+        margin-left: 10px;
       }
-      .video-container {
-    max-width: 75%;
-    padding: 20px;
-    height: auto;
-    margin-left: 300px; /* Shift the video player to the right */
-  }
+      .iframe-container {
+        width: 94%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      }
     }
     @media (orientation: landscape) and (max-width: 600px) {
       .iframe-container {

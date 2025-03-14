@@ -216,6 +216,12 @@ header .home-btn {
 }
 
 @media (min-width: 601px) and (max-width: 1200px) {
+  .video-container {
+    max-width: 75%;
+    padding: 20px;
+    height: auto;
+    margin-left: 300px; /* Shift the video player to the right */
+  }
   .video-item {
     flex: 1 1 calc(33.33% - 20px); /* Three items per row */
     max-width: calc(33.33% - 20px);
@@ -233,6 +239,12 @@ header .home-btn {
   .title-container .play-button {
     width: 64px; /* Increased size */
     height: 64px; /* Increased size */
+  }
+   .video-container {
+    max-width: 60%;
+    padding: 20px;
+    height: auto;
+    margin-left: 300px; /* Shift the video player to the right */
   }
   .video-item {
     flex: 1 1 calc(16% - 20px); /* Slightly smaller items and more space */

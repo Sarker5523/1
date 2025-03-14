@@ -16,27 +16,29 @@
     }
     .video-details {
       background-color: #2a2a2a; /* Less dark box */
-      width: 100%;
-      bottom: 0;
+      width: 60%; /* Same width as the video player */
+      margin: 0 auto;
+      position: relative;
+      top: 10px;
     }
     .actors-list span {
       color: #00ab41; /* Green color for actors' names */
     }
     @media (max-width: 600px) {
       .iframe-container {
-        width: 80%; /* Adjust width for portrait mode */
+        width: 60%; /* Adjust width for portrait mode */
         height: auto;
+        margin: 0 auto;
       }
     }
     @media (orientation: landscape) and (max-width: 600px) {
       .iframe-container {
-        width: 60%; /* Adjust width for landscape mode */
+        width: 40%; /* Adjust width for landscape mode */
         height: auto;
         margin: 0 auto;
       }
       .video-details {
-        position: relative;
-        top: auto;
+        top: 10px;
       }
     }
   </style>

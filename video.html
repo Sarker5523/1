@@ -6,6 +6,51 @@
   <title>Video Details</title>
   <link rel="stylesheet" href="styles.css">
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #222;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .home-btn {
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .mplix-title h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .search-bar {
+      padding: 8px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      width: 200px;
+    }
+    .search-suggestions {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 8px;
+      display: none;
+    }
+    .search-suggestions div {
+      padding: 8px;
+      cursor: pointer;
+    }
+    .search-suggestions div:hover {
+      background-color: #f0f0f0;
+    }
     .video-container {
       display: flex;
       justify-content: center;
@@ -13,12 +58,13 @@
       padding: 20px;
       width: 100%;
       box-sizing: border-box;
-      text-align: center; /* Center align video player */
+      text-align: center;
+      background-color: #fff;
     }
     .iframe-container {
       width: 100%;
       position: relative;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      padding-bottom: 56.25%;
       height: 0;
       overflow: hidden;
       border-radius: 10px;
@@ -35,29 +81,27 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
     .video-details {
-      padding: 10px;
-      background-color: #333;
+      padding: 20px;
+      background-color: #fff;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      margin: 20px auto; /* Center align title and actor list */
-      width: 60%; /* Decrease the width of the box */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      width: 60%;
       box-sizing: border-box;
-      text-align: center; /* Center align title and actor list */
+      text-align: center;
     }
-    
     .video-details h2 {
-      font-size: 24px; /* Increase the font size of the video title */
-      margin: 0;
+      font-size: 28px;
+      margin: 0 0 10px;
       padding-bottom: 10px;
-      border-bottom: 3px solid #444;
+      border-bottom: 2px solid #eee;
     }
-    
     .actors-list {
       margin: 20px 0;
       display: flex;
-      justify-content: center; /* Center align actor list */
+      justify-content: center;
       flex-wrap: wrap;
-      font-size: 18px; /* Adjust the font size for actor names */
+      font-size: 18px;
     }
     .actors-list span {
       color: #00ab41;
@@ -72,7 +116,7 @@
     }
     @media (max-width: 600px) {
       .video-details h2 {
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 500;
       }
       .video-container {
@@ -93,7 +137,7 @@
         max-width: 75%;
         padding: 20px;
         height: auto;
-        margin-left: 300px; /* Shift the video player to the right */
+        margin-left: 300px;
       }
     }
     @media (min-width: 1201px) {
@@ -101,53 +145,46 @@
         max-width: 60%;
         padding: 20px;
         height: auto;
-        margin-left: 300px; /* Shift the video player to the right */
+        margin-left: 300px;
       }
     }
   </style>
 </head>
 <body>
-
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <div class="mplix-title" style="display: flex; align-items: center;">
-      <h1 style="color: white; margin: 0;">MPlix</h1>
-      <div class="play-button" style="margin-left: 10px;"></div>
+      <h1>MPlix</h1>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
-
   <div class="video-container" id="video-container">
     <div class="iframe-container" id="iframe-container" style="display: none;"></div>
   </div>
-
   <div class="video-details">
     <h2 id="video-title"></h2>
-    <div id="video-description"></div> <!-- Added description container -->
-    <div class="actors-list" id="actors-list"></div> <!-- Added actors list container -->
+    <div id="video-description"></div>
+    <div class="actors-list" id="actors-list"></div>
   </div>
-
   <script>
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
     const iframeContainer = document.getElementById('iframe-container');
-    const videoDescription = document.getElementById('video-description'); // Added description element
-    const actorsList = document.getElementById('actors-list'); // Added actors list element
+    const videoDescription = document.getElementById('video-description');
+    const actorsList = document.getElementById('actors-list');
 
     function loadVideo(video) {
       if (!video) {
         document.getElementById('video-title').innerText = "Video not found";
-        videoDescription.innerText = ''; // Clear description if video not found
-        actorsList.innerHTML = ''; // Clear actors list if video not found
+        videoDescription.innerText = '';
+        actorsList.innerHTML = '';
         return;
       }
 
-      document.getElementById('video-title').innerText = `${video.name}`;
-      videoDescription.innerText = video.description; // Set description
-
-      // Dynamically set the webpage title to the episode's title
-      document.title = `${video.name}`;
+      document.getElementById('video-title').innerText = video.name;
+      videoDescription.innerText = video.description;
+      document.title = video.name;
 
       if (video.embed_code) {
         iframeContainer.innerHTML = video.embed_code;
@@ -156,7 +193,6 @@
         iframeContainer.style.display = 'none';
       }
 
-      // Populate actors list with pipe delimiter
       if (video.actors) {
         actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
       } else {
@@ -167,20 +203,13 @@
     function parseCSV(text) {
       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
       const headers = lines.shift().split(',').map(header => header.trim());
-      const result = [];
-
-      lines.forEach(line => {
+      return lines.map(line => {
         const currentline = line.split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          headers.forEach((header, index) => {
-            obj[header] = currentline[index];
-          });
-          result.push(obj);
-        }
+        return headers.reduce((obj, header, index) => {
+          obj[header] = currentline[index];
+          return obj;
+        }, {});
       });
-
-      return result;
     }
 
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
@@ -189,12 +218,7 @@
         const data = parseCSV(text);
         const videoId = new URLSearchParams(window.location.search).get('id');
         const series = data.find(v => v.id === videoId);
-        if (series) {
-          const currentEpisode = series;
-          loadVideo(currentEpisode);
-        } else {
-          document.getElementById('video-title').innerText = "Video not found";
-        }
+        loadVideo(series);
       })
       .catch(error => {
         console.error('Error loading video data:', error);
@@ -212,10 +236,7 @@
           searchResultsContainer.innerHTML = '';
           filteredVideos.slice(0, 5).forEach(video => {
             const suggestionItem = document.createElement('div');
-            suggestionItem.innerHTML = `
-              <img src="${video.thumbnail}" alt="${video.name}">
-              ${video.name}
-            `;
+            suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}">${video.name}`;
             suggestionItem.onclick = () => {
               window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
             };
@@ -223,12 +244,12 @@
           });
         });
     }
+
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();
       }
     }
   </script>
-
 </body>
 </html>

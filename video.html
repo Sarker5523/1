@@ -34,6 +34,24 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
+    .video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center; /* Center align video player */
+    }
+    .iframe-container {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
     @media (max-width: 600px) {
         .video-container {
         max-width: 94%;

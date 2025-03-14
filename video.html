@@ -156,9 +156,9 @@
         iframeContainer.style.display = 'none';
       }
 
-      // Populate actors list
+      // Populate actors list with pipe delimiter
       if (video.actors) {
-        actorsList.innerHTML = 'Actors: ' + video.actors.split(',').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
+        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
       } else {
         actorsList.innerHTML = '';
       }

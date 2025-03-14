@@ -168,29 +168,6 @@ header .home-btn {
   -webkit-mask-size: cover;
 }
 
-/* Dropdown content grid */
-.dropdown-content-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.8); /* Dark black semi-transparent background */
-}
-
-.dropdown-content-grid a {
-  color: white;
-  padding: 8px 12px;
-  text-decoration: none;
-  display: block;
-  box-sizing: border-box;
-}
-
-.dropdown-content-grid a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-.dropdown-content {
-  display: none; /* Ensure it is hidden initially */
-}
 /* Media queries for responsive design */
 @media (max-width: 600px) {
   .video-list {

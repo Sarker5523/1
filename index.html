@@ -5,6 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mplix-Home</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .actors-btn {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      top: 50px;
+      left: 10px;
+      z-index: 1000;
+    }
+
+    .dropdown-menu a {
+      color: #fff;
+      text-decoration: none;
+      padding: 5px;
+      display: block;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #444;
+    }
+  </style>
 </head>
 <body>
 
@@ -12,13 +48,15 @@
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <button class="actors-btn" onclick="toggleDropdown()">Actors</button>
     <div class="title-container">
-    <div id="actors-dropdown" class="dropdown-menu"></div>
       <h1>MPlix</h1>
       <div class="play-button"></div>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
+
+  <div id="actors-dropdown" class="dropdown-menu"></div>
+
   <div class="pagination" id="pagination-top"></div>
 
   <div class="video-list-container">

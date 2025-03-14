@@ -175,30 +175,31 @@
     const actorsList = document.getElementById('actors-list');
 
     function loadVideo(video) {
-  if (!video) {
-    document.getElementById('video-title').innerText = "Video not found";
-    videoDescription.innerText = '';
-    actorsList.innerHTML = '';
-    return;
-  }
+      if (!video) {
+        document.getElementById('video-title').innerText = "Video not found";
+        videoDescription.innerText = '';
+        actorsList.innerHTML = '';
+        return;
+      }
 
-  document.getElementById('video-title').innerText = video.name;
-  videoDescription.innerText = video.description;
-  document.title = video.name;
+      document.getElementById('video-title').innerText = video.name;
+      videoDescription.innerText = video.description;
+      document.title = video.name;
 
-  if (video.embed_code) {
-    iframeContainer.innerHTML = video.embed_code;
-    iframeContainer.style.display = 'block';
-  } else {
-    iframeContainer.style.display = 'none';
-  }
+      if (video.embed_code) {
+        iframeContainer.innerHTML = video.embed_code;
+        iframeContainer.style.display = 'block';
+      } else {
+        iframeContainer.style.display = 'none';
+      }
 
-  if (video.actors) {
-    actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
-  } else {
-    actorsList.innerHTML = '';
-  }
-}
+      if (video.actors) {
+        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
+      } else {
+        actorsList.innerHTML = '';
+      }
+    }
+
     function parseCSV(text) {
       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
       const headers = lines.shift().split(',').map(header => header.trim());

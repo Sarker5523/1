@@ -222,8 +222,7 @@
     }
 
     document.addEventListener('click', function(event) {
-      const isClickInside = actorsDropdown.contains(event.target) || event.target.classList.contains('home-btn');
-      if (!isClickInside) {
+      if (!event.target.closest('.dropdown')) {
         actorsDropdown.style.display = 'none';
         dropdownVisible = false;
       }

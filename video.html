@@ -16,7 +16,6 @@
     }
     .video-details {
       background-color: #2a2a2a; /* Less dark box */
-      position: absolute;
       width: 100%;
       bottom: 0;
     }
@@ -25,12 +24,19 @@
     }
     @media (max-width: 600px) {
       .iframe-container {
-        padding-bottom: 50%; /* Adjust height for portrait mode */
+        width: 80%; /* Adjust width for portrait mode */
+        height: auto;
       }
     }
     @media (orientation: landscape) and (max-width: 600px) {
       .iframe-container {
-        padding-bottom: 30%; /* Adjust height for landscape mode */
+        width: 60%; /* Adjust width for landscape mode */
+        height: auto;
+        margin: 0 auto;
+      }
+      .video-details {
+        position: relative;
+        top: auto;
       }
     }
   </style>

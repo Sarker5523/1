@@ -14,7 +14,14 @@ header {
   background-color: #000;
   color: #00ab41;
 }
-
+.dropdown-menu {
+  display: none; /* Hide the dropdown initially */
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000;
+}
 header .home-btn {
   font-size: 18px;
   color: #00ab41;

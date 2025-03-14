@@ -16,18 +16,21 @@
     }
     .video-details {
       background-color: #2a2a2a; /* Less dark box */
+      position: absolute;
+      width: 100%;
+      bottom: 0;
     }
     .actors-list span {
       color: #00ab41; /* Green color for actors' names */
     }
     @media (max-width: 600px) {
       .iframe-container {
-        padding-bottom: 75%; /* Adjust height for portrait mode */
+        padding-bottom: 50%; /* Adjust height for portrait mode */
       }
     }
     @media (orientation: landscape) and (max-width: 600px) {
       .iframe-container {
-        padding-bottom: 56.25%; /* Adjust height for landscape mode */
+        padding-bottom: 30%; /* Adjust height for landscape mode */
       }
     }
   </style>

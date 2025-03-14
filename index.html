@@ -6,11 +6,12 @@
   <title>Mplix-Home</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .actors-btn {
+    .home-btn, .actors-btn {
+      display: inline-block;
       margin-left: 10px;
       padding: 10px 20px;
       background-color: #333;
-      color: #fff;
+      color: #00ff00; /* Green color */
       border: none;
       cursor: pointer;
       border-radius: 5px;
@@ -20,7 +21,7 @@
       display: none;
       position: absolute;
       background-color: rgba(0, 0, 0, 0.8);
-      color: #fff;
+      color: #00ff00; /* Green color */
       padding: 10px;
       border-radius: 5px;
       grid-template-columns: repeat(4, 1fr);
@@ -31,7 +32,7 @@
     }
 
     .dropdown-menu a {
-      color: #fff;
+      color: #00ff00; /* Green color */
       text-decoration: none;
       padding: 5px;
       display: block;
@@ -43,7 +44,6 @@
   </style>
 </head>
 <body>
-
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <button class="actors-btn" onclick="toggleDropdown()">Actors</button>
@@ -120,6 +120,7 @@
           actorItem.onclick = () => {
             searchInput.value = actor;
             handleSearch();
+            toggleDropdown(); // Hide dropdown after clicking
           };
           actorsDropdown.appendChild(actorItem);
         });
@@ -221,6 +222,5 @@
       }
     });
   </script>
-
 </body>
 </html>

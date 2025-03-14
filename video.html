@@ -5,6 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Details</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Additional inline styles */
+    body {
+      background-color: #1a1a1a; /* Darker shade of black */
+    }
+    header {
+      background-color: #000;
+      border-bottom: 2px solid #333; /* Slightly less dark bottom */
+    }
+    .video-details {
+      background-color: #2a2a2a; /* Less dark box */
+    }
+    .actors-list span {
+      color: #00ab41; /* Green color for actors' names */
+    }
+    @media (max-width: 600px) {
+      .iframe-container {
+        padding-bottom: 75%; /* Adjust height for portrait mode */
+      }
+    }
+    @media (orientation: landscape) and (max-width: 600px) {
+      .iframe-container {
+        padding-bottom: 56.25%; /* Adjust height for landscape mode */
+      }
+    }
+  </style>
 </head>
 <body>
   <header>

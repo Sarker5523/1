@@ -22,16 +22,16 @@ header {
   padding: 10px;
   z-index: 1000;
 }
-header .home-btn {
-  font-size: 18px;
-  color: #00ab41;
-  cursor: pointer;
-  background: #000; /* Add background color */
-  border: 1px solid #00ab41; /* Add border */
-  padding: 10px 20px; /* Add padding */
-  border-radius: 5px; /* Optional: Add border-radius for rounded corners */
-}
-
+header .home-btn, .category-btn {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 6px 10px;
+      background-color: #333;
+      color: #00ab41; /* Green color */
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+    }
 .search-bar {
   width: 100%;
   max-width: 400px;

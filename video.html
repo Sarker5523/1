@@ -192,10 +192,26 @@
         handleSearch();
       }
     }
+function enterFullscreen(videoElement) {
+  if (videoElement.requestFullscreen) {
+    videoElement.requestFullscreen().then(() => {
+      screen.orientation.lock("landscape").catch(err => console.error("Orientation lock failed:", err));
+    });
+  } else if (videoElement.webkitRequestFullscreen) { // For Safari
+    videoElement.webkitRequestFullscreen();
+    screen.orientation.lock("landscape").catch(err => console.error("Orientation lock failed:", err));
+  }
+}
+
 document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) {
-    screen.orientation.lock('landscape').catch(err => console.error("Orientation lock failed:", err));
+    screen.orientation.lock("landscape").catch(err => console.error("Orientation lock failed:", err));
   }
+});
+
+// Optional: Automatically enter fullscreen on video click
+document.getElementById("iframe-container").addEventListener("click", function () {
+  enterFullscreen(this);
 });
   </script>
 </body>

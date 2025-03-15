@@ -68,21 +68,23 @@
     }
    @media (orientation: landscape) and (max-width: 900px) {
   .video-container {
-    max-width: auto;
+    max-width: 74%; /* Reduced width */
     padding: 10px;
-    height: 20px;
-    position: relative;
+    margin-left: 50px; /* Adjusted for left shift */
   }
+
   .iframe-container {
-    width: 30%; /* Smaller width */
-    height: 30%; /* Smaller height */
-    margin: 0 0 0 10px; /* Shift to the left */
-    position: relative;
+    width: 50%; /* Increased size */
+    height: auto; /* Maintain aspect ratio */
+    margin-left: 50px; /* Align with container */
   }
+
   .video-details {
+    position: relative;
     top: 10px;
   }
 }
+
   </style>
 </head>
 <body>

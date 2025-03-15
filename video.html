@@ -67,25 +67,29 @@
       }
     }
    @media (orientation: landscape) and (max-width: 900px) {
-  .video-container {
-    max-width: 80%; /* Reduced width */
-    padding: 5px;
-    margin-left: 50px; /* Adjusted for left shift */
-    height: 5px;
+   .video-container {
+    width: 60vw; /* Make it smaller */
+    max-width: 500px; /* Prevent it from being too large */
+    margin: 0 auto; /* Center horizontally */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ensure inner content is centered */
+    justify-content: center;
   }
-
   .iframe-container {
-    width: 40%; /* Increased size */
+    width: 80%; /* Smaller width */
+    max-width: 400px; /* Prevent oversized iframes */
     height: auto; /* Maintain aspect ratio */
-    margin-left: 50px; /* Align with container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-
-  .video-details {
+    .video-details {
     position: relative;
     top: 10px;
   }
 }
-
   </style>
 </head>
 <body>

@@ -66,16 +66,6 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
       }
     }
-@media screen and (orientation: portrait) {
-  body {
-    transform: rotate(90deg);
-    transform-origin: center;
-    width: 100vh;
-    height: 100vw;
-    overflow: hidden;
-    position: fixed;
-  }
-}
    @media (orientation: landscape) and (max-width: 900px) {
    .video-container {
     width: 60vw; /* Make it smaller */
@@ -204,22 +194,7 @@
     }
 document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) {
-    screen.orientation.lock("landscape").catch(err => {
-      console.warn("Orientation lock failed:", err);
-      // Fallback: Rotate the UI manually
-      document.body.style.transform = "rotate(90deg)";
-      document.body.style.width = "100vh";
-      document.body.style.height = "100vw";
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-    });
-  } else {
-    // Reset when exiting fullscreen
-    document.body.style.transform = "";
-    document.body.style.width = "";
-    document.body.style.height = "";
-    document.body.style.overflow = "";
-    document.body.style.position = "";
+    screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
   }
 });
   </script>

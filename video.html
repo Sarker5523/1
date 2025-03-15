@@ -68,26 +68,19 @@
     }
    @media (orientation: landscape) and (max-width: 900px) {
   .video-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Force left alignment */
-    justify-content: center;
-    max-width: 80vw;
+    max-width: 94%;
     padding: 10px;
-    position: relative;
-    margin-left: -50px; /* Move it further left */
-  }
-
-  .iframe-container {
-    width: 50vw; /* Adjust as needed */
     height: auto;
-    margin-left: -50px; /* Further force left */
-  }
-
-  .video-details {
     position: relative;
+  }
+  .iframe-container {
+    width: 30%; /* Smaller width */
+    height: 30%; /* Smaller height */
+    margin: 0 0 0 10px; /* Shift to the left */
+    position: relative;
+  }
+  .video-details {
     top: 10px;
-    margin-left: -50px;
   }
 }
   </style>

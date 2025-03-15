@@ -192,6 +192,11 @@
         handleSearch();
       }
     }
+document.addEventListener("fullscreenchange", () => {
+  if (document.fullscreenElement) {
+    screen.orientation.lock('landscape').catch(err => console.error("Orientation lock failed:", err));
+  }
+});
   </script>
 </body>
 </html>

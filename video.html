@@ -68,15 +68,16 @@
     }
     @media (orientation: landscape) and (max-width: 600px) {
   .video-container {
-    max-width: 74%; /* Reduced width */
+    max-width: 80%; /* Ensures proper scaling */
     padding: 10px;
-    margin-left: 50px; /* Adjusted for left shift */
+    position: relative;
+    transform: translateX(-50px); /* Moves it left */
   }
 
   .iframe-container {
-    width: 50%; /* Increased size */
-    height: auto; /* Maintain aspect ratio */
-    margin-left: 50px; /* Align with container */
+    width: 50%; /* Ensures visibility */
+    height: auto; /* Maintains aspect ratio */
+    transform: translateX(-50px); /* Moves iframe left */
   }
 
   .video-details {

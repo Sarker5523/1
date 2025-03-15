@@ -214,7 +214,11 @@ header .home-btn {
     margin-right: 5px;
   }
 }
-
+@media (orientation: landscape) and (max-width: 900px) {
+  .title-container h1 {
+    font-size: 16px;
+  }
+}
 @media (min-width: 601px) and (max-width: 1200px) {
   .video-container {
     max-width: 75%;

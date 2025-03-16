@@ -212,7 +212,7 @@ header .category-btn {
     max-width: 100%;
   }
   header .category-btn {
-    font-size: 10px;
+    font-size: 12px;
       display: inline-block;
       margin-left: 3px;
       padding: 4px 6px;
@@ -224,7 +224,7 @@ header .category-btn {
     }
   
 header .home-btn{
-      font-size: 10px;
+      font-size: 12px;
       display: inline-block;
       margin-left: 1px;
       padding: 4px 6px;
@@ -235,6 +235,7 @@ header .home-btn{
       border-radius: 1px;
     }
   .search-bar {
+    font-size: 12px;
     padding: 3px 6px; /* Adjust padding to make height smaller */
     width: 80%; /* Adjust width */
     margin-left: 10%; /* Add margin to the left */
@@ -257,6 +258,29 @@ header .home-btn{
   .video-item h3 {
     font-size: 12px;
   }
+  header .category-btn {
+    font-size: 12px;
+      display: inline-block;
+      margin-left: 3px;
+      padding: 4px 6px;
+      background-color: #333;
+      color: #00ab41; /* Green color */
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+  
+header .home-btn{
+      font-size: 12px;
+      display: inline-block;
+      margin-left: 1px;
+      padding: 4px 6px;
+      background-color: #333;
+      color: #00ab41; /* Green color */
+      border: none;
+      cursor: pointer;
+      border-radius: 1px;
+    }
 }
 @media (min-width: 601px) and (max-width: 1200px) {
   .video-container {

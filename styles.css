@@ -211,7 +211,7 @@ header .category-btn {
     max-width: 100%;
   }
   
-header .home-btn, .category-btn {
+header .home-btn, header .category-btn {
       font-size: 10px;
       display: inline-block;
       margin-left: 8px;
@@ -245,7 +245,7 @@ header .home-btn, .category-btn {
   .video-item h3 {
     font-size: 12px;
   }
-  header .home-btn,header .category-btn {
+  header .home-btn, header .category-btn {
       font-size: 10px;
       display: inline-block;
       margin-left: 8px;

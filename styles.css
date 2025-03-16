@@ -7,6 +7,7 @@ body {
 }
 
 header {
+  gap: 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -23,14 +24,6 @@ header {
   z-index: 1000;
 }
 header .home-btn {
-  margin-right: 2px; /* Reduce space between buttons */
-}
-
-header .category-btn {
-  margin-left: 0; /* Ensure no extra spacing */
-}
-
-header .home-btn, .category-btn {
       font-size: 20px;
       float: left;
       display: inline-block;
@@ -41,7 +34,21 @@ header .home-btn, .category-btn {
       border: none;
       cursor: pointer;
       border-radius: 2px;
-    }
+}
+
+header .category-btn {
+      font-size: 20px;
+      float: left;
+      display: inline-block;
+      margin-left: 0px;
+      padding: 10px 15px;
+      background-color: #333;
+      color: #00ab41; /* Green color */
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      display: inline-block;
+}
 .search-bar {
   width: 100%;
   max-width: 400px;

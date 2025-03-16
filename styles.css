@@ -24,8 +24,9 @@ header {
 }
 header .home-btn, .category-btn {
       font-size: 20px;
+      float: left;
       display: inline-block;
-      margin-left: 2px;
+      margin-left: 0px;
       padding: 10px 15px;
       background-color: #333;
       color: #00ab41; /* Green color */

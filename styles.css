@@ -185,7 +185,10 @@ header .home-btn, .category-btn {
     gap: 20px;
   }
   .video-item h3 {
-    font-size: 12px;
+    font-size: 8px;
+    padding: 4px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
   }
   .video-item {
     flex: none;

@@ -63,7 +63,10 @@
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        allVideos = parseCSV(text).filter(video => video.name.toLowerCase().includes(query.toLowerCase()))
+        allVideos = parseCSV(text).filter(video => 
+  video.name.toLowerCase().includes(query.toLowerCase()) || 
+  (video.actors && video.actors.toLowerCase().includes(query.toLowerCase()))
+);
           .map(video => ({
             id: video.id,
             name: video.name,
@@ -129,7 +132,10 @@
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);
-          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query))
+          const filteredVideos = data.filter(video => 
+  video.name.toLowerCase().includes(query) || 
+  (video.actors && video.actors.toLowerCase().includes(query))
+);
             .map(video => ({
               id: video.id,
               name: video.name,

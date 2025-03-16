@@ -66,8 +66,7 @@
         allVideos = parseCSV(text).filter(video => 
   video.name.toLowerCase().includes(query.toLowerCase()) || 
   (video.actors && video.actors.toLowerCase().includes(query.toLowerCase()))
-);
-          .map(video => ({
+).map(video => ({
             id: video.id,
             name: video.name,
             thumbnail: video.thumbnail,
@@ -85,73 +84,115 @@
       });
 
     function renderVideos() {
-      videoListContainer.innerHTML = '';
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const videosToShow = allVideos.slice(startIndex, endIndex);
+  videoListContainer.innerHTML = '';
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const videosToShow = filteredVideos.slice(startIndex, endIndex); // Use filteredVideos instead of allVideos
 
-      if (videosToShow.length > 0) {
-        videosToShow.forEach(video => {
-          const videoItem = document.createElement('div');
-          videoItem.classList.add('video-item');
-          videoItem.innerHTML = `
-            <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.name}">
-              <h3>${video.name}</h3>
-            </a>`;
-          videoListContainer.appendChild(videoItem);
-        });
-      } else {
-        videoListContainer.innerHTML = '<p>No videos found.</p>';
-      }
-    }
-
+  if (videosToShow.length > 0) {
+    videosToShow.forEach(video => {
+      const videoItem = document.createElement('div');
+      videoItem.classList.add('video-item');
+      videoItem.innerHTML = `
+        <a href="video.html?id=${video.id}">
+          <img src="${video.thumbnail}" alt="${video.name}">
+          <h3>${video.name}</h3>
+        </a>`;
+      videoListContainer.appendChild(videoItem);
+    });
+  } else {
+    videoListContainer.innerHTML = '<p>No videos found.</p>';
+  }
+}
     function renderPagination() {
-      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
+  const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
+  paginationTop.innerHTML = '';
+  paginationBottom.innerHTML = '';
 
-      if (totalPages > 1) {
-        for (let i = 1; i <= totalPages; i++) {
-          const button = document.createElement('button');
-          button.innerText = i;
-          button.onclick = () => {
-            currentPage = i;
-            renderVideos();
-            renderPagination();
-          };
-          paginationTop.appendChild(button);
-          paginationBottom.appendChild(button);
-        }
-      }
+  if (totalPages > 1) {
+    for (let i = 1; i <= totalPages; i++) {
+      const button = document.createElement('button');
+      button.innerText = i;
+      button.onclick = () => {
+        currentPage = i;
+        renderVideos();
+        renderPagination();
+        updateURL(); // Update the URL with the current page
+      };
+      paginationTop.appendChild(button);
+      paginationBottom.appendChild(button);
     }
+  }
+}
+function updateURL() {
+  const newURL = `search-results?page=${currentPage}`;
+  history.pushState({ page: currentPage }, '', newURL); // Update the browser's URL
+}
+function getPageFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q') || ''; // Default to empty if no query is provided
+  const page = parseInt(urlParams.get('page'), 10) || 1; // Default to page 1 if no page is provided or invalid
 
+  searchInput.value = query; // Ensure the search input field is populated with the query
+  currentPage = page;
+
+  return query; // Return the search query
+}
+window.onload = function() {
+  const query = getPageFromURL(); // Get the query from the URL
+  fetchData(query); // Fetch data based on the query
+};
+
+function fetchData(query) {
+  fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+    .then(response => response.text())
+    .then(text => {
+      const data = parseCSV(text);
+      filteredVideos = data.filter(video => 
+        video.name.toLowerCase().includes(query) || 
+        (video.actors && video.actors.toLowerCase().includes(query))
+      ).map(video => ({
+        id: video.id,
+        name: video.name,
+        thumbnail: video.thumbnail,
+        embed_code: video.embed_code
+      }));
+
+      filteredVideos.sort((a, b) => b.id - a.id);
+
+      renderVideos();
+      renderPagination();
+    });
+}
     function handleSearch() {
-      const query = searchInput.value.toLowerCase();
-      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-        .then(response => response.text())
-        .then(text => {
-          const data = parseCSV(text);
-          const filteredVideos = data.filter(video => 
-  video.name.toLowerCase().includes(query) || 
-  (video.actors && video.actors.toLowerCase().includes(query))
-);
-            .map(video => ({
-              id: video.id,
-              name: video.name,
-              thumbnail: video.thumbnail,
-              embed_code: video.embed_code
-            }));
+  const query = searchInput.value.toLowerCase();
+  fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+    .then(response => response.text())
+    .then(text => {
+      const data = parseCSV(text);
+      filteredVideos = data.filter(video => 
+        video.name.toLowerCase().includes(query) || 
+        (video.actors && video.actors.toLowerCase().includes(query))
+      ).map(video => ({
+        id: video.id,
+        name: video.name,
+        thumbnail: video.thumbnail,
+        embed_code: video.embed_code
+      }));
 
-          // Sort filtered videos by id in descending order
-          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+      filteredVideos.sort((a, b) => b.id - a.id);
 
-          currentPage = 1;
-          renderVideos();
-          renderPagination();
-        });
-    }
+      currentPage = 1; // Reset to page 1 on a new search
+      renderVideos();
+      renderPagination();
+      updateURL(query); // Update the URL with the search query and reset page to 1
+    });
+}
 
+function updateURL(query) {
+  const newURL = `search-results?q=${encodeURIComponent(query)}&page=${currentPage}`;
+  history.pushState({ page: currentPage }, '', newURL); // Update the browser's URL with query and page
+}
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();

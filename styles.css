@@ -226,13 +226,13 @@ header .category-btn {
 header .home-btn, 
       font-size: 10px;
       display: inline-block;
-      margin-left: 4px;
+      margin-left: 3px;
       padding: 4px 6px;
       background-color: #333;
       color: #00ab41; /* Green color */
       border: none;
       cursor: pointer;
-      border-radius: 3px;
+      border-radius: 2px;
     }
   .search-bar {
     padding: 3px 6px; /* Adjust padding to make height smaller */

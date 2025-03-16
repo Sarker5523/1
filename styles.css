@@ -232,7 +232,7 @@ header .home-btn,
       color: #00ab41; /* Green color */
       border: none;
       cursor: pointer;
-      border-radius: 1px;
+      border-radius: 3px;
     }
   .search-bar {
     padding: 3px 6px; /* Adjust padding to make height smaller */

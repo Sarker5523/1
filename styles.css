@@ -22,6 +22,14 @@ header {
   padding: 10px;
   z-index: 1000;
 }
+header .home-btn {
+  margin-right: 2px; /* Reduce space between buttons */
+}
+
+header .category-btn {
+  margin-left: 0; /* Ensure no extra spacing */
+}
+
 header .home-btn, .category-btn {
       font-size: 20px;
       float: left;

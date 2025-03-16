@@ -56,7 +56,8 @@
 
   <script>
     const itemsPerPage = 30; // 6x5 grid
-    let currentPage = 1;
+    const urlParams = new URLSearchParams(window.location.search);
+let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
     let dropdownVisible = false;
 
@@ -147,25 +148,21 @@
     }
 
     function renderPagination() {
-      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
+  const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+  paginationTop.innerHTML = '';
+  paginationBottom.innerHTML = '';
 
-      if (totalPages > 1) {
-        for (let i = 1; i <= totalPages; i++) {
-          const button = document.createElement('button');
-          button.innerText = i;
-          button.onclick = () => {
-            currentPage = i;
-            renderVideos();
-            renderPagination();
-          };
-          paginationTop.appendChild(button);
-          paginationBottom.appendChild(button);
-        }
-      }
+  if (totalPages > 1) {
+    for (let i = 1; i <= totalPages; i++) {
+      const button = document.createElement('a');
+      button.innerText = i;
+      button.href = `index.html?page=${i}`;
+      button.style.margin = '5px';
+      paginationTop.appendChild(button.cloneNode(true));
+      paginationBottom.appendChild(button);
     }
-
+  }
+}
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
       fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')

@@ -23,7 +23,7 @@ header {
   z-index: 1000;
 }
 header .home-btn, .category-btn {
-      font-size: 26px;
+      font-size: 20px;
       display: inline-block;
       margin-left: 10px;
       padding: 10px 15px;

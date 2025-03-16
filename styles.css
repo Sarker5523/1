@@ -226,7 +226,7 @@ header .home-btn, header .category-btn {
   .search-bar {
     padding: 3px 6px; /* Adjust padding to make height smaller */
     width: 80%; /* Adjust width */
-    margin-left: 30%; /* Add margin to the left */
+    margin-left: 10%; /* Add margin to the left */
   }
   .title-container {
     display: flex;

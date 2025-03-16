@@ -211,17 +211,28 @@ header .category-btn {
     flex: none;
     max-width: 100%;
   }
-  
-header .home-btn, header .category-btn {
-      font-size: 10px;
+  header .category-btn {
+    font-size: 10px;
       display: inline-block;
-      margin-left: 4px;
+      margin-left: 3px;
       padding: 4px 6px;
       background-color: #333;
       color: #00ab41; /* Green color */
       border: none;
       cursor: pointer;
       border-radius: 2px;
+    }
+  
+header .home-btn, 
+      font-size: 10px;
+      display: inline-block;
+      margin-left: 4px;
+      padding: 2px 4px;
+      background-color: #333;
+      color: #00ab41; /* Green color */
+      border: none;
+      cursor: pointer;
+      border-radius: 1px;
     }
   .search-bar {
     padding: 3px 6px; /* Adjust padding to make height smaller */

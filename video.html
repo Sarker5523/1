@@ -15,11 +15,6 @@
       justify-content: space-between;
       padding: 10px;
     }
-    .home-btn {
-      color: #00ab41;
-      font-size: 16px;
-      cursor: pointer;
-    }
     .title-container h1 {
       color: white;
       font-size: 24px;
@@ -61,11 +56,13 @@
 <body>
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+     <button class="category-btn" onclick="toggleDropdown()">Category</button>
     <div class="title-container">
       <h1>MPlix</h1>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
   </header>
+  <div id="category-dropdown" class="dropdown-menu"></div>
 
   <div class="video-container">
     <div class="iframe-container" id="iframe-container"></div>

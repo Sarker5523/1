@@ -197,12 +197,11 @@ function handleSearch() {
 }
     function handleEnter(event) {
   if (event.key === "Enter") {
-    const query = searchInput.value.trim();
-    if (query) {
-      window.open(`search.html?q=${encodeURIComponent(query)}`, "_blank"); // Open in new tab
-    }
+    handleSearch(); // Call the search function
+    history.pushState({}, "", `?q=${encodeURIComponent(searchInput.value)}`); // Update URL
   }
 }
+
 
     function toggleDropdown() {
       dropdownVisible = !dropdownVisible;
@@ -218,13 +217,14 @@ function handleSearch() {
         dropdownVisible = false;
       }
     });
-
     window.onload = function() {
-      const query = new URLSearchParams(window.location.search).get('q') || '';
-      searchInput.value = query;
-      handleSearch();
-    };
-
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q') || '';
+  if (query) {
+    searchInput.value = query;
+    handleSearch(); // Automatically show results on page load
+  }
+};
   </script>
 
 </body>

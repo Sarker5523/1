@@ -5,93 +5,148 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Details</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Home bar styles */
+    header {
+      background-color: #000;
+      border-bottom: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    .home-btn {
+      color: #00ab41;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .title-container h1 {
+      color: white;
+      font-size: 24px;
+      margin: 0;
+    }
+    .search-bar {
+      padding: 5px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #333;
+    }
+    .video-container {
+      width: 80%;
+      margin: 20px auto;
+      text-align: center;
+    }
+    .iframe-container iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+      border-radius: 10px;
+    }
+    .video-details {
+      background-color: #2a2a2a;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 5px;
+      color: white;
+    }
+    .actors-list span {
+      color: #00ab41;
+      cursor: pointer;
+    }
+    .actors-list span:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="index.html" class="home-btn">Home</a>
-    <div class="mplix-title" style="display: flex; align-items: center;">
+    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <div class="title-container">
       <h1>MPlix</h1>
     </div>
-    <a href="categories.html" class="category-btn">Categories</a>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
-    <div id="search-suggestions" class="search-suggestions"></div>
   </header>
-  <div class="video-container" id="video-container">
-    <div class="iframe-container" id="iframe-container" style="display: none;"></div>
+
+  <div class="video-container">
+    <div class="iframe-container" id="iframe-container"></div>
+    <div class="video-details" id="video-details">
+      <h2 id="video-title"></h2>
+      <div id="video-description"></div>
+      <div class="actors-list" id="actors-list"></div>
+    </div>
   </div>
-  <div class="video-details">
-    <h2 id="video-title"></h2>
-    <div id="video-description"></div>
-    <div class="actors-list" id="actors-list"></div>
-  </div>
+
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
     let allVideos = [];
 
-    // Fetch the video data from the CSV file
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
-        allVideos = parseCSV(text); // Store parsed videos into allVideos array
-        const videoId = new URLSearchParams(window.location.search).get('id');
-        const series = allVideos.find(v => v.id === videoId);
-        loadVideo(series);
+        allVideos = parseCSV(text);
+        const video = allVideos.find(v => v.id === videoId);
+        if (video) {
+          loadVideo(video);
+        } else {
+          document.getElementById('video-title').innerText = "Video not found";
+        }
       })
       .catch(error => {
         console.error('Error loading video data:', error);
-        document.getElementById('video-title').innerText = "Error loading video";
       });
 
-    const searchInput = document.getElementById('search-input');
-    const searchResultsContainer = document.getElementById('search-suggestions');
-    const iframeContainer = document.getElementById('iframe-container');
-    const videoDescription = document.getElementById('video-description');
-    const actorsList = document.getElementById('actors-list');
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(header => header.trim());
+      const result = [];
 
-    function loadVideo(video) {
-      if (!video) {
-        document.getElementById('video-title').innerText = "Video not found";
-        videoDescription.innerText = '';
-        actorsList.innerHTML = '';
-        return;
+      for (let i = 1; i < lines.length; i++) {
+        const currentline = lines[i].split(',').map(value => value.trim());
+        if (currentline.length === headers.length) {
+          const obj = {};
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
+          }
+          result.push(obj);
+        }
       }
 
+      return result;
+    }
+
+    function loadVideo(video) {
       document.getElementById('video-title').innerText = video.name;
-      videoDescription.innerText = video.description;
+      document.getElementById('video-description').innerText = video.description;
       document.title = video.name;
 
       if (video.embed_code) {
-        iframeContainer.innerHTML = video.embed_code;
-        iframeContainer.style.display = 'block';
+        document.getElementById('iframe-container').innerHTML = video.embed_code;
       } else {
-        iframeContainer.style.display = 'none';
+        document.getElementById('iframe-container').innerHTML = '<p>No video available.</p>';
       }
 
       if (video.actors) {
-        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
-      } else {
-        actorsList.innerHTML = '';
+        const actors = video.actors.split('|');
+        const actorsList = document.getElementById('actors-list');
+        actorsList.innerHTML = 'Actors: ' + actors.map(actor => 
+          `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`
+        ).join(', ');
       }
     }
 
-    function parseCSV(text) {
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-      const headers = lines.shift().split(',').map(header => header.trim());
-      return lines.map(line => {
-        const currentline = line.split(',').map(value => value.trim());
-        return headers.reduce((obj, header, index) => {
-          obj[header] = currentline[index];
-          return obj;
-        }, {});
-      });
+    function handleSearch() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filteredVideos = allVideos.filter(video => 
+        video.name.toLowerCase().includes(query) || 
+        (video.actors && video.actors.toLowerCase().includes(query))
+      );
+      // Update the video list with filtered videos or show no results message
     }
 
     function handleEnter(event) {
       if (event.key === "Enter") {
-        event.preventDefault();
-        const query = searchInput.value.trim();
-        if (query) {
-          window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
-        }
+        handleSearch();
       }
     }
   </script>

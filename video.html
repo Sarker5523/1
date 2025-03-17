@@ -94,7 +94,6 @@
 </head>
 <body>
   <header>
-    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <div class="mplix-title" style="display: flex; align-items: center;">
       <h1>MPlix</h1>
     </div>
@@ -110,6 +109,22 @@
     <div class="actors-list" id="actors-list"></div>
   </div>
   <script>
+     let allVideos = [];
+
+  // Fetch the video data from the CSV file
+  fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+    .then(response => response.text())
+    .then(text => {
+      allVideos = parseCSV(text); // Store parsed videos into allVideos array
+      const videoId = new URLSearchParams(window.location.search).get('id');
+      const series = allVideos.find(v => v.id === videoId);
+      loadVideo(series);
+    })
+    .catch(error => {
+      console.error('Error loading video data:', error);
+      document.getElementById('video-title').innerText = "Error loading video";
+    });
+
     const searchInput = document.getElementById('search-input');
     const searchResultsContainer = document.getElementById('search-suggestions');
     const iframeContainer = document.getElementById('iframe-container');
@@ -142,58 +157,62 @@
       }
     }
 
-    function parseCSV(text) {
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-      const headers = lines.shift().split(',').map(header => header.trim());
-      return lines.map(line => {
-        const currentline = line.split(',').map(value => value.trim());
-        return headers.reduce((obj, header, index) => {
-          obj[header] = currentline[index];
-          return obj;
-        }, {});
-      });
+   function parseCSV(text) {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+    const headers = lines.shift().split(',').map(header => header.trim());
+    return lines.map(line => {
+      const currentline = line.split(',').map(value => value.trim());
+      return headers.reduce((obj, header, index) => {
+        obj[header] = currentline[index];
+        return obj;
+      }, {});
+    });
+  }
+
+  // Handle search for filtering videos
+  function handleSearch() {
+    const query = searchInput.value.toLowerCase();
+    searchResultsContainer.innerHTML = ''; // Clear previous results
+
+    if (!query) {
+      searchResultsContainer.style.display = 'none'; // Hide if empty
+      return;
     }
 
-    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-      .then(response => response.text())
-      .then(text => {
-        const data = parseCSV(text);
-        const videoId = new URLSearchParams(window.location.search).get('id');
-        const series = data.find(v => v.id === videoId);
-        loadVideo(series);
-      })
-      .catch(error => {
-        console.error('Error loading video data:', error);
-        document.getElementById('video-title').innerText = "Error loading video";
-      });
+    const filteredVideos = allVideos.filter(video => 
+      video.name.toLowerCase().includes(query) || 
+      (video.category && video.category.toLowerCase().includes(query)) || 
+      (video.actors && video.actors.toLowerCase().includes(query)) // Actor search
+    );
 
-    function handleSearch() {
-  const query = searchInput.value.toLowerCase();
+    searchResultsContainer.style.display = filteredVideos.length ? 'block' : 'none';
 
-  filteredVideos = allVideos.filter(video => 
-    video.name.toLowerCase().includes(query) || 
-    (video.category && video.category.toLowerCase().includes(query)) || 
-    (video.actors && video.actors.toLowerCase().includes(query)) // Actor search
-  ).sort((a, b) => b.id - a.id);
+    filteredVideos.slice(0, 5).forEach(video => {
+      const suggestionItem = document.createElement('div');
+      suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}">${video.name}`;
+      suggestionItem.onclick = () => {
+        window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+      };
+      searchResultsContainer.appendChild(suggestionItem);
+    });
+  }
 
-  currentPage = 1; // Reset to first page
-  renderVideos();
-  renderPagination();
-}
+  // Handle Enter key for search
   function handleEnter(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    const query = searchInput.value.trim();
-    if (query) {
-      window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const query = searchInput.value.trim();
+      if (query) {
+        window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+      }
     }
   }
-}
-document.addEventListener("fullscreenchange", () => {
-  if (document.fullscreenElement) {
-    screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
-  }
-});
+
+  document.addEventListener("fullscreenchange", () => {
+    if (document.fullscreenElement) {
+      screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
+    }
+  });
   </script>
 </body>
 </html>

@@ -195,14 +195,13 @@ function handleSearch() {
   renderVideos();
   renderPagination();
 }
-    function handleEnter(event) {
+  function handleEnter(event) {
   if (event.key === "Enter") {
-    handleSearch(); // Call the search function
-    history.pushState({}, "", `?q=${encodeURIComponent(searchInput.value)}`); // Update URL
+    event.preventDefault(); // Stop the default form submission
+    handleSearch(); // Perform search
+    history.pushState({}, "", `?q=${encodeURIComponent(searchInput.value)}`); // Update URL without reloading
   }
 }
-
-
     function toggleDropdown() {
       dropdownVisible = !dropdownVisible;
       categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';

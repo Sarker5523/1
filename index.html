@@ -182,15 +182,18 @@ let currentPage = parseInt(urlParams.get('page')) || 1;
         .then(response => response.text())
         .then(text => {
           const data = parseCSV(text);
-          const filteredVideos = data.filter(video => video.category.toLowerCase().includes(query) || video.name.toLowerCase().includes(query))
-            .map(video => ({
-              id: video.id,
-              name: video.name,
-              thumbnail: video.thumbnail,
-              embed_code: video.embed_code,
-              category: video.category
-            }));
-
+         const filteredVideos = data.filter(video => 
+  video.category.toLowerCase().includes(query) || 
+  video.name.toLowerCase().includes(query) ||
+  (video.actors && video.actors.toLowerCase().includes(query)) // Check actors field
+).map(video => ({
+  id: video.id,
+  name: video.name,
+  thumbnail: video.thumbnail,
+  embed_code: video.embed_code,
+  category: video.category,
+  actors: video.actors // Ensure actors field is preserved if needed later
+}));
           // Sort filtered videos by id in descending order
           allVideos = filteredVideos.sort((a, b) => b.id - a.id);
 

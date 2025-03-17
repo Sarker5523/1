@@ -79,7 +79,7 @@
 <body>
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-     <button class="category-btn" onclick="toggleDropdown()">Category</button>
+    <button class="category-btn" onclick="toggleDropdown()">Category</button>
     <div class="title-container">
       <h1>MPlix</h1>
     </div>
@@ -100,7 +100,15 @@
     const urlParams = new URLSearchParams(window.location.search);
     const videoId = urlParams.get('id');
     let allVideos = [];
+    let dropdownVisible = false;
 
+    // Function to toggle category dropdown visibility
+    function toggleDropdown() {
+      dropdownVisible = !dropdownVisible;
+      document.getElementById('category-dropdown').style.display = dropdownVisible ? 'grid' : 'none';
+    }
+
+    // Fetch video data from CSV
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
@@ -111,11 +119,29 @@
         } else {
           document.getElementById('video-title').innerText = "Video not found";
         }
+
+        // Extract unique category names
+        const categories = [...new Set(allVideos.map(video => video.category))].sort();
+        const categoryDropdown = document.getElementById('category-dropdown');
+
+        // Populate category dropdown
+        categories.forEach(category => {
+          const categoryItem = document.createElement('a');
+          categoryItem.href = '#';
+          categoryItem.innerText = category;
+          categoryItem.onclick = () => {
+            document.getElementById('search-input').value = category;
+            handleSearch(); // Perform search with the selected category
+            toggleDropdown(); // Hide dropdown after clicking
+          };
+          categoryDropdown.appendChild(categoryItem);
+        });
       })
       .catch(error => {
         console.error('Error loading video data:', error);
       });
 
+    // Parse CSV text into an array of video objects
     function parseCSV(text) {
       const lines = text.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(header => header.trim());
@@ -131,10 +157,10 @@
           result.push(obj);
         }
       }
-
       return result;
     }
 
+    // Load video details on the page
     function loadVideo(video) {
       document.getElementById('video-title').innerText = video.name;
       document.getElementById('video-description').innerText = video.description;
@@ -155,15 +181,18 @@
       }
     }
 
+    // Handle search input
     function handleSearch() {
       const query = document.getElementById('search-input').value.toLowerCase();
       const filteredVideos = allVideos.filter(video => 
         video.name.toLowerCase().includes(query) || 
-        (video.actors && video.actors.toLowerCase().includes(query))
+        (video.actors && video.actors.toLowerCase().includes(query)) ||
+        video.category.toLowerCase().includes(query)
       );
       // Update the video list with filtered videos or show no results message
     }
 
+    // Handle "Enter" key press for search
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();

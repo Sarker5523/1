@@ -188,10 +188,14 @@
     }
 
     function handleEnter(event) {
-      if (event.key === "Enter") {
-        handleSearch();
-      }
+  if (event.key === "Enter") {
+    event.preventDefault(); // Prevent form submission
+    const query = searchInput.value.trim();
+    if (query) {
+      window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
     }
+  }
+}
 document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) {
     screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));

@@ -181,14 +181,14 @@
       }
     }
 
-    function handleSearch() {
-  const query = searchInput.value.toLowerCase();
+function handleSearch() {
+  const query = searchInput.value.trim().toLowerCase(); // Trim spaces
 
   // Filter videos by name, category, or actor
   filteredVideos = allVideos.filter(video => 
-    video.name.toLowerCase().includes(query) || 
-    (video.category && video.category.toLowerCase().includes(query)) || 
-    (video.actors && video.actors.toLowerCase().includes(query)) // Added actor search
+    video.name?.toLowerCase().includes(query) || 
+    video.category?.toLowerCase().includes(query) || 
+    video.actors?.toLowerCase().includes(query)
   ).sort((a, b) => b.id - a.id);
 
   currentPage = 1; // Reset to the first page for new search

@@ -20,6 +20,29 @@
       font-size: 24px;
       margin: 0;
     }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #00ab41; /* Green color */
+      padding: 10px;
+      border-radius: 5px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      top: 35px;
+      left: 8px;
+      z-index: 1000;
+    }
+    .dropdown-menu a {
+      color: #00ab41; /* Green color */
+      text-decoration: none;
+      padding: 5px;
+      display: block;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #444;
+    }
     .search-bar {
       padding: 5px;
       font-size: 14px;

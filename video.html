@@ -168,28 +168,21 @@
       });
 
     function handleSearch() {
-      const query = searchInput.value.toLowerCase();
-      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-        .then(response => response.text())
-        .then(text => {
-          const data = parseCSV(text);
-          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query));
-          searchResultsContainer.style.display = 'block';
-          searchResultsContainer.innerHTML = '';
-          filteredVideos.slice(0, 5).forEach(video => {
-            const suggestionItem = document.createElement('div');
-            suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}">${video.name}`;
-            suggestionItem.onclick = () => {
-              window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
-            };
-            searchResultsContainer.appendChild(suggestionItem);
-          });
-        });
-    }
+  const query = searchInput.value.toLowerCase();
 
-    function handleEnter(event) {
+  filteredVideos = allVideos.filter(video => 
+    video.name.toLowerCase().includes(query) || 
+    (video.category && video.category.toLowerCase().includes(query)) || 
+    (video.actors && video.actors.toLowerCase().includes(query)) // Actor search
+  ).sort((a, b) => b.id - a.id);
+
+  currentPage = 1; // Reset to first page
+  renderVideos();
+  renderPagination();
+}
+  function handleEnter(event) {
   if (event.key === "Enter") {
-    event.preventDefault(); // Prevent form submission
+    event.preventDefault();
     const query = searchInput.value.trim();
     if (query) {
       window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;

@@ -196,10 +196,13 @@ function handleSearch() {
   renderPagination();
 }
     function handleEnter(event) {
-      if (event.key === "Enter") {
-        handleSearch();
-      }
+  if (event.key === "Enter") {
+    const query = searchInput.value.trim();
+    if (query) {
+      window.open(`search.html?q=${encodeURIComponent(query)}`, "_blank"); // Open in new tab
     }
+  }
+}
 
     function toggleDropdown() {
       dropdownVisible = !dropdownVisible;

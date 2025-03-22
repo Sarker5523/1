@@ -49,7 +49,8 @@
       z-index: 1000;
       width: 200px;
       font-size: 12px;
-      top: 50px; /* Ensure it appears right below the search bar */
+      left: initial;
+      transform: translateX(0); /* Ensure it appears right below the search bar */
     }
     .search-suggestions div {
       padding: 5px;
@@ -199,7 +200,7 @@
         loadVideo(series);
 
         // Populate category dropdown
-        const categories = [...new Set(data.map(video => video.category))].filter(category => category && !category.includes('description') && !category.includes('thumbnail')).sort();
+        const categories = [...new Set(data.map(video => video.category))].filter(category => category && !category.toLowerCase().includes('description') && !category.toLowerCase().includes('thumbnail')).sort();
         categoryDropdown.innerHTML = ''; // Clear existing categories
         categories.forEach(category => {
           const categoryItem = document.createElement('a');

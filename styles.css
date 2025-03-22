@@ -255,6 +255,15 @@ header .home-btn{
   }
 }
 @media (orientation: landscape) and (max-width: 900px) {
+  .video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+    }
   .video-item h3 {
     font-size: 12px;
   }

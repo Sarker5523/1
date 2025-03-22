@@ -126,7 +126,7 @@
       background-color: #444;
     }
     @media (orientation: landscape) and (max-width: 900px) {
-      .video-container, video-details {
+      .video-container {
         display: flex;
         justify-content: center;
         flex-direction: column;
@@ -137,9 +137,8 @@
         margin: 0 auto;
         box-sizing: border-box;
         text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
       }
-      .iframe-container {
+      .iframe-container, .video-details {
         width: 80%; /* Smaller width */ 
         max-width: 400px; /* Prevent oversized iframes */
         height: auto; 

@@ -6,198 +6,197 @@
   <title>Video Details</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Home bar styles */
+    /* Additional inline styles */
+    body {
+      background-color: #1a1a1a; /* Darker shade of black */
+    }
     header {
       background-color: #000;
-      border-bottom: 2px solid #333;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-    }
-    .title-container h1 {
-      color: white;
-      font-size: 24px;
-      margin: 0;
-    }
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: #00ab41; /* Green color */
-      padding: 10px;
-      border-radius: 5px;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      top: 35px;
-      left: 8px;
-      z-index: 1000;
-    }
-    .dropdown-menu a {
-      color: #00ab41; /* Green color */
-      text-decoration: none;
-      padding: 5px;
-      display: block;
-    }
-
-    .dropdown-menu a:hover {
-      background-color: #444;
-    }
-    .search-bar {
-      padding: 5px;
-      font-size: 14px;
-      border-radius: 5px;
-      border: 1px solid #333;
-    }
-    .video-container {
-      width: 80%;
-      margin: 20px auto;
-      text-align: center;
-    }
-    .iframe-container iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
-      border-radius: 10px;
+      border-bottom: 2px solid #333; /* Slightly less dark bottom */
     }
     .video-details {
-      background-color: #2a2a2a;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 5px;
-      color: white;
+      background-color: #2a2a2a; /* Less dark box */
+      width: 90%; /* Same width as the video player */
+      margin: 0 auto;
+      position: relative;
+      top: 10px;
     }
     .actors-list span {
-      color: #00ab41;
-      cursor: pointer;
+      color: #00ab41; /* Green color for actors' names */
     }
-    .actors-list span:hover {
-      text-decoration: underline;
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
+    .video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center; /* Center align video player */
+    }
+    .iframe-container {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+    }
+    @media (max-width: 600px) {
+        .video-container {
+        max-width: 94%;
+        padding: 10px;
+        height: auto;
+        margin-left: 10px;
+      }
+      .iframe-container {
+        width: 94%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      }
+    }
+   @media (orientation: landscape) and (max-width: 900px) {
+   .video-container {
+    width: 60vw; /* Make it smaller */
+    max-width: 500px; /* Prevent it from being too large */
+    margin: 0 auto; /* Center horizontally */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ensure inner content is centered */
+    justify-content: center;
+  }
+  .iframe-container {
+    width: 80%; /* Smaller width */
+    max-width: 400px; /* Prevent oversized iframes */
+    height: auto; /* Maintain aspect ratio */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+    .video-details {
+    position: relative;
+    top: 10px;
+  }
+}
   </style>
 </head>
 <body>
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <button class="category-btn" onclick="toggleDropdown()">Category</button>
-    <div class="title-container">
+    <div class="mplix-title" style="display: flex; align-items: center;">
       <h1>MPlix</h1>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+    <div id="search-suggestions" class="search-suggestions"></div>
   </header>
-  <div id="category-dropdown" class="dropdown-menu"></div>
-
-  <div class="video-container">
-    <div class="iframe-container" id="iframe-container"></div>
-    <div class="video-details" id="video-details">
-      <h2 id="video-title"></h2>
-      <div id="video-description"></div>
-      <div class="actors-list" id="actors-list"></div>
-    </div>
+  <div class="video-container" id="video-container">
+    <div class="iframe-container" id="iframe-container" style="display: none;"></div>
   </div>
-
+  <div class="video-details">
+    <h2 id="video-title"></h2>
+    <div id="video-description"></div>
+    <div class="actors-list" id="actors-list"></div>
+  </div>
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('id');
-    let allVideos = [];
-    let dropdownVisible = false;
+    const searchInput = document.getElementById('search-input');
+    const searchResultsContainer = document.getElementById('search-suggestions');
+    const iframeContainer = document.getElementById('iframe-container');
+    const videoDescription = document.getElementById('video-description');
+    const actorsList = document.getElementById('actors-list');
 
-    // Function to toggle category dropdown visibility
-    function toggleDropdown() {
-      dropdownVisible = !dropdownVisible;
-      document.getElementById('category-dropdown').style.display = dropdownVisible ? 'grid' : 'none';
-    }
-
-    // Fetch video data from CSV
-    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-      .then(response => response.text())
-      .then(text => {
-        allVideos = parseCSV(text);
-        const video = allVideos.find(v => v.id === videoId);
-        if (video) {
-          loadVideo(video);
-        } else {
-          document.getElementById('video-title').innerText = "Video not found";
-        }
-
-        // Extract unique category names
-        const categories = [...new Set(allVideos.map(video => video.category))].sort();
-        const categoryDropdown = document.getElementById('category-dropdown');
-
-        // Populate category dropdown
-        categories.forEach(category => {
-          const categoryItem = document.createElement('a');
-          categoryItem.href = '#';
-          categoryItem.innerText = category;
-          categoryItem.onclick = () => {
-            document.getElementById('search-input').value = category;
-            handleSearch(); // Perform search with the selected category
-            toggleDropdown(); // Hide dropdown after clicking
-          };
-          categoryDropdown.appendChild(categoryItem);
-        });
-      })
-      .catch(error => {
-        console.error('Error loading video data:', error);
-      });
-
-    // Parse CSV text into an array of video objects
-    function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-          result.push(obj);
-        }
-      }
-      return result;
-    }
-
-    // Load video details on the page
     function loadVideo(video) {
+      if (!video) {
+        document.getElementById('video-title').innerText = "Video not found";
+        videoDescription.innerText = '';
+        actorsList.innerHTML = '';
+        return;
+      }
+
       document.getElementById('video-title').innerText = video.name;
-      document.getElementById('video-description').innerText = video.description;
+      videoDescription.innerText = video.description;
       document.title = video.name;
 
       if (video.embed_code) {
-        document.getElementById('iframe-container').innerHTML = video.embed_code;
+        iframeContainer.innerHTML = video.embed_code;
+        iframeContainer.style.display = 'block';
       } else {
-        document.getElementById('iframe-container').innerHTML = '<p>No video available.</p>';
+        iframeContainer.style.display = 'none';
       }
 
       if (video.actors) {
-        const actors = video.actors.split('|');
-        const actorsList = document.getElementById('actors-list');
-        actorsList.innerHTML = 'Actors: ' + actors.map(actor => 
-          `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`
-        ).join(', ');
+        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
+      } else {
+        actorsList.innerHTML = '';
       }
     }
 
-    // Handle search input
-    function handleSearch() {
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const filteredVideos = allVideos.filter(video => 
-        video.name.toLowerCase().includes(query) || 
-        (video.actors && video.actors.toLowerCase().includes(query)) ||
-        video.category.toLowerCase().includes(query)
-      );
-      // Update the video list with filtered videos or show no results message
+    function parseCSV(text) {
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+      const headers = lines.shift().split(',').map(header => header.trim());
+      return lines.map(line => {
+        const currentline = line.split(',').map(value => value.trim());
+        return headers.reduce((obj, header, index) => {
+          obj[header] = currentline[index];
+          return obj;
+        }, {});
+      });
     }
 
-    // Handle "Enter" key press for search
+    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+      .then(response => response.text())
+      .then(text => {
+        const data = parseCSV(text);
+        const videoId = new URLSearchParams(window.location.search).get('id');
+        const series = data.find(v => v.id === videoId);
+        loadVideo(series);
+      })
+      .catch(error => {
+        console.error('Error loading video data:', error);
+        document.getElementById('video-title').innerText = "Error loading video";
+      });
+
+    function handleSearch() {
+      const query = searchInput.value.toLowerCase();
+      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+        .then(response => response.text())
+        .then(text => {
+          const data = parseCSV(text);
+          const filteredVideos = data.filter(video => video.name.toLowerCase().includes(query));
+          searchResultsContainer.style.display = 'block';
+          searchResultsContainer.innerHTML = '';
+          filteredVideos.slice(0, 5).forEach(video => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}">${video.name}`;
+            suggestionItem.onclick = () => {
+              window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
+            };
+            searchResultsContainer.appendChild(suggestionItem);
+          });
+        });
+    }
+
     function handleEnter(event) {
       if (event.key === "Enter") {
         handleSearch();
       }
     }
+document.addEventListener("fullscreenchange", () => {
+  if (document.fullscreenElement) {
+    screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
+  }
+});
   </script>
 </body>
 </html>

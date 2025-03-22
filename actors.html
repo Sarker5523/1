@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actor Videos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+  /* Include any additional styles here */
+  .pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #00ab41;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+
+  .pagination a:hover {
+    background-color: #007a2a;
+  }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <button class="category-btn" onclick="toggleDropdown()">Category</button>
+    <div class="title-container">
+      <h1>MPlix</h1>
+      <div class="play-button"></div>
+    </div>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+    <div id="search-suggestions" class="search-suggestions"></div>
+  </header>
+
+  <div id="category-dropdown" class="dropdown-menu"></div>
+
+  <div class="pagination" id="pagination-top"></div>
+
+  <div class="video-list-container">
+    <div class="video-list" id="video-list"></div>
+  </div>
+
+  <div class="pagination" id="pagination-bottom"></div>
+
+  <script>
+    const itemsPerPage = 30;
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page')) || 1;
+    let allVideos = [];
+    let dropdownVisible = false;
+    const searchInput = document.getElementById('search-input');
+    const searchResultsContainer = document.getElementById('search-suggestions');
+    const videoListContainer = document.getElementById('video-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
+    const categoryDropdown = document.getElementById('category-dropdown');
+    const actorQuery = decodeURIComponent(urlParams.get('q') || '').toLowerCase();
+
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(header => header.trim());
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const currentline = lines[i].split(',').map(value => value.trim());
+        if (currentline.length === headers.length) {
+          const obj = {};
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
+          }
+          result.push(obj);
+        }
+      }
+
+      return result;
+    }
+
+    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+      .then(response => response.text())
+      .then(text => {
+        const data = parseCSV(text);
+        allVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(actorQuery)).map(video => ({
+          id: video.id,
+          name: video.name,
+          thumbnail: video.thumbnail,
+          embed_code: video.embed_code,
+          category: video.category,
+          actors: video.actors
+        }));
+
+        // Extract unique category names
+        const categories = [...new Set(data.map(video => video.category))].sort();
+
+        // Populate category dropdown
+        categories.forEach(category => {
+          const categoryItem = document.createElement('a');
+          categoryItem.href = `#`;
+          categoryItem.innerText = category;
+          categoryItem.onclick = () => {
+            searchInput.value = category;
+            handleSearch();
+            toggleDropdown();
+          };
+          categoryDropdown.appendChild(categoryItem);
+        });
+
+        renderVideos();
+        renderPagination();
+      })
+      .catch(error => {
+        console.error('Error loading video data:', error);
+      });
+
+    function renderVideos() {
+      videoListContainer.innerHTML = '';
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const videosToShow = allVideos.slice(startIndex, endIndex);
+
+      if (videosToShow.length > 0) {
+        videosToShow.forEach(video => {
+          const videoItem = document.createElement('div');
+          videoItem.classList.add('video-item');
+          videoItem.innerHTML = `
+            <a href="video.html?id=${video.id}">
+              <img src="${video.thumbnail}" alt="${video.name}">
+              <h3>${video.name}</h3>
+            </a>`;
+          videoListContainer.appendChild(videoItem);
+        });
+      } else {
+        videoListContainer.innerHTML = '<p>No videos found.</p>';
+      }
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+
+      if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+          const button = document.createElement('a');
+          button.innerText = i;
+          button.href = `actors.html?q=${actorQuery}&page=${i}`;
+          button.style.margin = '5px';
+          paginationTop.appendChild(button.cloneNode(true));
+          paginationBottom.appendChild(button);
+        }
+      }
+    }
+
+    function handleSearch() {
+      const query = searchInput.value.toLowerCase();
+      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+        .then(response => response.text())
+        .then(text => {
+          const data = parseCSV(text);
+          const filteredVideos = data.filter(video => 
+            video.category.toLowerCase().includes(query) || 
+            video.name.toLowerCase().includes(query) || 
+            (video.actors && video.actors.toLowerCase().includes(query))
+          ).map(video => ({
+            id: video.id,
+            name: video.name,
+            thumbnail: video.thumbnail,
+            embed_code: video.embed_code,
+            category: video.category,
+            actors: video.actors
+          }));
+
+          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+
+          currentPage = 1;
+          renderVideos();
+          renderPagination();
+        });
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    }
+
+    function toggleDropdown() {
+      dropdownVisible = !dropdownVisible;
+      categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
+      if (dropdownVisible) {
+        categoryDropdown.style.gridTemplateColumns = 'repeat(4, 1fr)';
+      }
+    }
+
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.dropdown-menu') && !event.target.closest('.category-btn')) {
+        categoryDropdown.style.display = 'none';
+        dropdownVisible = false;
+      }
+    });
+  </script>
+</body>
+</html>

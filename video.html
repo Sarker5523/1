@@ -23,42 +23,44 @@
       background-color: #00ab41; /* Green button */
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 5px 10px;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
     }
     .home-btn:hover, .category-btn:hover {
       background-color: #007a2a; /* Darker green on hover */
     }
     .title-container h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
     }
     .search-bar {
-      padding: 10px;
+      padding: 5px;
       border-radius: 5px;
       border: 1px solid #ccc;
-      width: 300px;
+      width: 200px;
+      font-size: 14px;
     }
     .search-suggestions {
       position: absolute;
-      background-color: #fff;
-      color: #000;
+      background-color: #000;
+      color: #fff;
       border: 1px solid #ccc;
       border-radius: 5px;
-      max-height: 200px;
+      max-height: 150px;
       overflow-y: auto;
       z-index: 1000;
-      width: 94%;
+      width: 200px;
       left: 3%;
+      font-size: 12px;
     }
     .search-suggestions div {
       padding: 5px;
       cursor: pointer;
     }
     .search-suggestions div:hover {
-      background-color: #f0f0f0;
+      background-color: #333;
     }
     .video-container {
       display: flex;
@@ -94,6 +96,7 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      font-size: 14px;
     }
     .actors-list span {
       color: #00ab41;
@@ -114,6 +117,7 @@
       top: 35px;
       left: 8px;
       z-index: 1000;
+      font-size: 12px;
     }
     .dropdown-menu a {
       color: #00ab41;
@@ -231,7 +235,7 @@
           searchResultsContainer.innerHTML = '';
           filteredVideos.slice(0, 5).forEach(video => {
             const suggestionItem = document.createElement('div');
-            suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}" style="width: 50px; height: auto; margin-right: 10px;">${video.name}`;
+            suggestionItem.innerHTML = `<img src="${video.thumbnail}" alt="${video.name}" style="width: 30px; height: auto; margin-right: 10px;">${video.name}`;
             suggestionItem.onclick = () => {
               window.location.href = `search-results.html?q=${encodeURIComponent(query)}`;
             };
@@ -249,9 +253,6 @@
     function toggleDropdown() {
       dropdownVisible = !dropdownVisible;
       categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
-      if (dropdownVisible) {
-        categoryDropdown.style.gridTemplateColumns = 'repeat(4, 1fr)';
-      }
     }
 
     document.addEventListener('click', function(event) {

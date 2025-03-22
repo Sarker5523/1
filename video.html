@@ -125,6 +125,29 @@
     .dropdown-menu a:hover {
       background-color: #444;
     }
+    }
+@media (orientation: landscape) and (max-width: 900px) {
+  .video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .iframe-container {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+      margin: 0 auto;
+    }
+  }
   </style>
 </head>
 <body>

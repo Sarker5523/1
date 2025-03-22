@@ -23,6 +23,7 @@
     }
     .actors-list span {
       color: #00ab41; /* Green color for actors' names */
+      cursor: pointer;
     }
     .iframe-container iframe {
       position: absolute;
@@ -53,7 +54,7 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
     @media (max-width: 600px) {
-        .video-container {
+      .video-container {
         max-width: 94%;
         padding: 10px;
         height: auto;
@@ -66,41 +67,71 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
       }
     }
-   @media (orientation: landscape) and (max-width: 900px) {
-   .video-container {
-    width: 60vw; /* Make it smaller */
-    max-width: 500px; /* Prevent it from being too large */
-    margin: 0 auto; /* Center horizontally */
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Ensure inner content is centered */
-    justify-content: center;
-  }
-  .iframe-container {
-    width: 80%; /* Smaller width */
-    max-width: 400px; /* Prevent oversized iframes */
-    height: auto; /* Maintain aspect ratio */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-    .video-details {
-    position: relative;
-    top: 10px;
-  }
-}
+    @media (orientation: landscape) and (max-width: 900px) {
+      .video-container {
+        width: 60vw; /* Make it smaller */
+        max-width: 500px; /* Prevent it from being too large */
+        margin: 0 auto; /* Center horizontally */
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Ensure inner content is centered */
+        justify-content: center;
+      }
+      .iframe-container {
+        width: 80%; /* Smaller width */
+        max-width: 400px; /* Prevent oversized iframes */
+        height: auto; /* Maintain aspect ratio */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .video-details {
+        position: relative;
+        top: 10px;
+      }
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #00ab41; /* Green color */
+      padding: 10px;
+      border-radius: 5px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      top: 35px;
+      left: 8px;
+      z-index: 1000;
+    }
+
+    .dropdown-menu a {
+      color: #00ab41; /* Green color */
+      text-decoration: none;
+      padding: 5px;
+      display: block;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #444;
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <div class="mplix-title" style="display: flex; align-items: center;">
+    <button class="category-btn" onclick="toggleDropdown()">Category</button>
+    <div class="title-container">
       <h1>MPlix</h1>
+      <div class="play-button"></div>
     </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
+
+  <div id="category-dropdown" class="dropdown-menu"></div>
+
   <div class="video-container" id="video-container">
     <div class="iframe-container" id="iframe-container" style="display: none;"></div>
   </div>
@@ -115,6 +146,8 @@
     const iframeContainer = document.getElementById('iframe-container');
     const videoDescription = document.getElementById('video-description');
     const actorsList = document.getElementById('actors-list');
+    const categoryDropdown = document.getElementById('category-dropdown');
+    let dropdownVisible = false;
 
     function loadVideo(video) {
       if (!video) {
@@ -136,7 +169,7 @@
       }
 
       if (video.actors) {
-        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='search-results.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
+        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor => `<span onclick="window.location.href='actors.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`).join(', ');
       } else {
         actorsList.innerHTML = '';
       }
@@ -192,11 +225,27 @@
         handleSearch();
       }
     }
-document.addEventListener("fullscreenchange", () => {
-  if (document.fullscreenElement) {
-    screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
-  }
-});
+
+    function toggleDropdown() {
+      dropdownVisible = !dropdownVisible;
+      categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
+      if (dropdownVisible) {
+        categoryDropdown.style.gridTemplateColumns = 'repeat(4, 1fr)';
+      }
+    }
+
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.dropdown-menu') && !event.target.closest('.category-btn')) {
+        categoryDropdown.style.display = 'none';
+        dropdownVisible = false;
+      }
+    });
+
+    document.addEventListener("fullscreenchange", () => {
+      if (document.fullscreenElement) {
+        screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
+      }
+    });
   </script>
 </body>
 </html>

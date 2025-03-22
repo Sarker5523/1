@@ -16,7 +16,6 @@
       padding: 10px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       border-bottom: 2px solid #333;
     }
     .home-btn, .category-btn {
@@ -27,13 +26,10 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 14px;
+      margin-right: 10px;
     }
     .home-btn:hover, .category-btn:hover {
       background-color: #007a2a; /* Darker green on hover */
-    }
-    .title-container h1 {
-      margin: 0;
-      font-size: 20px;
     }
     .search-bar {
       padding: 5px;
@@ -52,8 +48,8 @@
       overflow-y: auto;
       z-index: 1000;
       width: 200px;
-      left: 3%;
       font-size: 12px;
+      top: 50px; /* Ensure it appears right below the search bar */
     }
     .search-suggestions div {
       padding: 5px;
@@ -134,9 +130,6 @@
   <header>
     <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
     <button class="category-btn" onclick="toggleDropdown()">Category</button>
-    <div class="title-container">
-      <h1>MPlix</h1>
-    </div>
     <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
     <div id="search-suggestions" class="search-suggestions"></div>
   </header>
@@ -206,7 +199,7 @@
         loadVideo(series);
 
         // Populate category dropdown
-        const categories = [...new Set(data.map(video => video.category))].sort();
+        const categories = [...new Set(data.map(video => video.category))].filter(category => category && !category.includes('description') && !category.includes('thumbnail')).sort();
         categoryDropdown.innerHTML = ''; // Clear existing categories
         categories.forEach(category => {
           const categoryItem = document.createElement('a');

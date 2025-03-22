@@ -140,7 +140,7 @@
   <div id="category-dropdown" class="dropdown-menu"></div>
 
   <div class="video-container" id="video-container">
-    <div class="iframe-container" id="iframe-container" style="display: none;"></div>
+    <div class="iframe-container" id="iframe-container"></div>
   </div>
   <div class="video-details">
     <h2 id="video-title"></h2>
@@ -170,9 +170,8 @@
 
       if (video.embed_code) {
         iframeContainer.innerHTML = video.embed_code;
-        iframeContainer.style.display = 'block';
       } else {
-        iframeContainer.style.display = 'none';
+        iframeContainer.innerHTML = '<p>Video embed code not available.</p>';
       }
 
       if (video.actors) {
@@ -204,6 +203,7 @@
 
         // Populate category dropdown
         const categories = [...new Set(data.map(video => video.category))].sort();
+        categoryDropdown.innerHTML = ''; // Clear existing categories
         categories.forEach(category => {
           const categoryItem = document.createElement('a');
           categoryItem.href = `#`;

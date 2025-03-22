@@ -49,8 +49,8 @@
       z-index: 1000;
       width: 200px;
       font-size: 12px;
-      left: initial;
-      transform: translateX(0); /* Ensure it appears right below the search bar */
+      top: 45px; /* Ensure it appears right below the search bar */
+      left: 10px;
     }
     .search-suggestions div {
       padding: 5px;
@@ -200,9 +200,8 @@
         loadVideo(series);
 
         // Populate category dropdown
-        const categories = [...new Set(data.map(video => video.category))].sort();
-
-        // Populate category dropdown
+        const categories = [...new Set(data.map(video => video.category))].filter(category => category && !category.toLowerCase().includes('description') && !category.toLowerCase().includes('thumbnail')).sort();
+        categoryDropdown.innerHTML = ''; // Clear existing categories
         categories.forEach(category => {
           const categoryItem = document.createElement('a');
           categoryItem.href = `#`;
@@ -214,7 +213,7 @@
           };
           categoryDropdown.appendChild(categoryItem);
         });
-        
+      })
       .catch(error => {
         console.error('Error loading video data:', error);
       });

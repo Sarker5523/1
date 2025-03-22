@@ -200,8 +200,9 @@
         loadVideo(series);
 
         // Populate category dropdown
-        const categories = [...new Set(data.map(video => video.category))].filter(category => category && !category.toLowerCase().includes('description') && !category.toLowerCase().includes('thumbnail')).sort();
-        categoryDropdown.innerHTML = ''; // Clear existing categories
+        const categories = [...new Set(data.map(video => video.category))].sort();
+
+        // Populate category dropdown
         categories.forEach(category => {
           const categoryItem = document.createElement('a');
           categoryItem.href = `#`;
@@ -213,7 +214,7 @@
           };
           categoryDropdown.appendChild(categoryItem);
         });
-      })
+        
       .catch(error => {
         console.error('Error loading video data:', error);
       });

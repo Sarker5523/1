@@ -125,6 +125,22 @@
     .dropdown-menu a:hover {
       background-color: #444;
     }
+    /* Custom simulated fullscreen */
+.simulated-fullscreen {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000;
+  z-index: 9999;
+}
+
+.simulated-fullscreen .iframe-container {
+  width: 100% !important;
+  height: 100% !important;
+  padding-bottom: 0 !important;
+}
     @media (orientation: landscape) and (max-width: 900px) {
       .video-container {
         display: flex;
@@ -170,6 +186,7 @@
 
   <div class="video-container" id="video-container">
     <div class="iframe-container" id="iframe-container"></div>
+    <button id="fullscreenToggle" style="margin-top: 10px;">Toggle Fullscreen</button>
   </div>
   <div class="video-details">
     <h2 id="video-title"></h2>
@@ -292,6 +309,17 @@
         screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
       }
     });
+    const fullscreenToggle = document.getElementById('fullscreenToggle');
+const videoContainer = document.getElementById('video-container');
+
+fullscreenToggle.addEventListener('click', () => {
+  videoContainer.classList.toggle('simulated-fullscreen');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    videoContainer.classList.remove('simulated-fullscreen');
+  }
+});
   </script>
 </body>
 </html>

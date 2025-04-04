@@ -11,6 +11,9 @@
       color: #ffffff; /* White text */
       font-family: Arial, sans-serif;
     }
+    body.simulated-fullscreen-active {
+  overflow: hidden;
+}
     header {
       background-color: #000;
       padding: 10px;
@@ -303,21 +306,32 @@
         dropdownVisible = false;
       }
     });
-
-    document.addEventListener("fullscreenchange", () => {
-      if (document.fullscreenElement) {
-        screen.orientation.lock("landscape").catch(err => console.warn("Orientation lock failed:", err));
-      }
-    });
-    const fullscreenToggle = document.getElementById('fullscreenToggle');
+const fullscreenToggle = document.getElementById('fullscreenToggle');
 const videoContainer = document.getElementById('video-container');
+const body = document.body;
 
 fullscreenToggle.addEventListener('click', () => {
-  videoContainer.classList.toggle('simulated-fullscreen');
+  const isFullscreen = videoContainer.classList.toggle('simulated-fullscreen');
+  body.classList.toggle('simulated-fullscreen-active', isFullscreen);
+  
+  // Hide header/UI for a more immersive experience
+  document.querySelector('header').style.display = isFullscreen ? 'none' : '';
 });
+
+// Optionally exit fullscreen with Escape key
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     videoContainer.classList.remove('simulated-fullscreen');
+    body.classList.remove('simulated-fullscreen-active');
+    document.querySelector('header').style.display = ''; // Show header/UI again
+  }
+});
+window.addEventListener('orientationchange', () => {
+  if (videoContainer.classList.contains('simulated-fullscreen')) {
+    videoContainer.classList.remove('simulated-fullscreen'); // Remove fullscreen temporarily
+    setTimeout(() => {
+      videoContainer.classList.add('simulated-fullscreen'); // Reapply fullscreen after orientation change
+    }, 100); // Small delay for smooth transition
   }
 });
   </script>

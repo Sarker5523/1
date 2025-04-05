@@ -128,49 +128,6 @@
     .dropdown-menu a:hover {
       background-color: #444;
     }
- .simulated-fullscreen {
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: #000;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  transition: all 0.3s ease-in-out;
-}
-
-.simulated-fullscreen .iframe-container {
-  width: 100%;
-  height: 100%;
-  padding-bottom: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  overflow: hidden;
-  position: relative !important;
-}
-.iframe-container .fullscreenToggle {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent */
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 100;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.iframe-container .fullscreenToggle:hover {
-  background-color: rgba(0, 0, 0, 0.8);
-}
     @media (orientation: landscape) and (max-width: 900px) {
       .video-container {
         display: flex;
@@ -215,9 +172,7 @@
   <div id="category-dropdown" class="dropdown-menu"></div>
 
   <div class="video-container" id="video-container">
-    <div class="iframe-container" id="iframe-container">
-    <button id="fullscreenToggle" class="fullscreenToggle">⛶</button>
-    </div>
+    <div class="iframe-container" id="iframe-container"></div>
   </div>
   <div class="video-details">
     <h2 id="video-title"></h2>
@@ -246,10 +201,7 @@
       document.title = video.name;
 
       if (video.embed_code) {
-        iiframeContainer.innerHTML = `
-  ${video.embed_code}
-  <button id="fullscreenToggle" class="fullscreenToggle">⛶</button>
-`;
+        iframeContainer.innerHTML = video.embed_code;
       } else {
         iframeContainer.innerHTML = '<p>Video embed code not available.</p>';
       }
@@ -272,7 +224,6 @@
         }, {});
       });
     }
-
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
       .then(text => {
@@ -337,39 +288,6 @@
         dropdownVisible = false;
       }
     });
-const fullscreenToggle = document.getElementById('fullscreenToggle');
-    fullscreenToggle.addEventListener('click', () => {
-const videoContainer = document.getElementById('video-container');
-const body = document.body;
-
-  const isFullscreen = videoContainer.classList.toggle('simulated-fullscreen');
-  body.classList.toggle('simulated-fullscreen-active', isFullscreen);
-  
-  // Hide header/UI for a more immersive experience
-  document.querySelector('header').style.display = isFullscreen ? 'none' : '';
-});
-
-// Exit fullscreen with Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    videoContainer.classList.remove('simulated-fullscreen');
-    body.classList.remove('simulated-fullscreen-active');
-    document.querySelector('header').style.display = ''; // Show header/UI again
-  }
-});
-
-// Automatically go fullscreen on landscape
-window.addEventListener('orientationchange', () => {
-  if (window.orientation === 90 || window.orientation === -90) {
-    if (!videoContainer.classList.contains('simulated-fullscreen')) {
-      videoContainer.classList.add('simulated-fullscreen');
-      body.classList.add('simulated-fullscreen-active');
-    }
-  } else {
-    videoContainer.classList.remove('simulated-fullscreen');
-    body.classList.remove('simulated-fullscreen-active');
-  }
-});
   </script>
 </body>
 </html>

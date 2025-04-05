@@ -246,7 +246,10 @@
       document.title = video.name;
 
       if (video.embed_code) {
-        iframeContainer.innerHTML = video.embed_code;
+        iiframeContainer.innerHTML = `
+  ${video.embed_code}
+  <button id="fullscreenToggle" class="fullscreenToggle">⛶</button>
+`;
       } else {
         iframeContainer.innerHTML = '<p>Video embed code not available.</p>';
       }
@@ -335,10 +338,10 @@
       }
     });
 const fullscreenToggle = document.getElementById('fullscreenToggle');
+    fullscreenToggle.addEventListener('click', () => {
 const videoContainer = document.getElementById('video-container');
 const body = document.body;
 
-fullscreenToggle.addEventListener('click', () => {
   const isFullscreen = videoContainer.classList.toggle('simulated-fullscreen');
   body.classList.toggle('simulated-fullscreen-active', isFullscreen);
   

@@ -128,9 +128,7 @@
     .dropdown-menu a:hover {
       background-color: #444;
     }
-    /* Custom simulated fullscreen */
-/* Ensure the video container takes full screen */
-.simulated-fullscreen {
+ .simulated-fullscreen {
   position: fixed !important;
   top: 0;
   left: 0;
@@ -143,16 +141,17 @@
   align-items: center;
   margin: 0;
   padding: 0;
+  transition: all 0.3s ease-in-out;
 }
 
-/* Make sure the iframe fills the entire container */
-.simulated-fullscreen, .iframe-container {
+.simulated-fullscreen .iframe-container {
   width: 100%;
   height: 100%;
   padding-bottom: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   overflow: hidden;
+  position: relative !important;
 }
     @media (orientation: landscape) and (max-width: 900px) {
       .video-container {

@@ -116,7 +116,7 @@
   category: video.category,
   actors: video.actors // Include actors field
 }));
-
+allVideos.sort((a, b) => b.id - a.id);
         // Extract unique category names
         const categories = [...new Set(data.map(video => video.category))].sort();
 

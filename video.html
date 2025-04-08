@@ -296,8 +296,11 @@
     const playerIframe = document.getElementById('playerIframeId');
 const playerOrigin = new URL(playerIframe.src).origin;
 
-// Check if there's a saved watch time in localStorage and seek to that time
-const savedTime = localStorage.getItem('videoTime');
+// Get the video id from the URL query parameter
+const videoId = new URLSearchParams(window.location.search).get('id');
+
+// Check if there's a saved watch time for this specific video id in localStorage
+const savedTime = localStorage.getItem(`videoTime_${videoId}`);
 if (savedTime) {
   // Send the seek command to start the video from the saved time
   playerIframe.contentWindow.postMessage({ command: 'seek', value: savedTime }, playerOrigin);
@@ -316,8 +319,8 @@ window.addEventListener('message', (e) => {
   if (e.data.currentTime !== undefined) {
     const currentTime = e.data.currentTime;
 
-    // Save the watched time in localStorage
-    localStorage.setItem('videoTime', currentTime);
+    // Save the watched time for the current video id in localStorage
+    localStorage.setItem(`videoTime_${videoId}`, currentTime);
   }
 
   // When the player sends the video duration
@@ -328,7 +331,7 @@ window.addEventListener('message', (e) => {
 
 // Optional: Clear the saved time once the video ends (you can listen to the `ended` event)
 window.addEventListener('beforeunload', () => {
-  localStorage.removeItem('videoTime');
+  localStorage.removeItem(`videoTime_${videoId}`);
 });
   </script>
 </body>

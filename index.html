@@ -1,29 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mplix-Home</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-  .pagination a {
-  display: inline-block;
-  padding: 8px 12px;
-  margin: 5px;
-  background-color: #00ab41;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-}
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px 0;
+    }
 
-.pagination a:hover {
-  background-color: #007a2a;
-}
+    .pagination a, .pagination span {
+      display: inline-block;
+      padding: 8px 12px;
+      margin: 5px;
+      background-color: #00ab41;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .pagination .active {
+      background-color: #007a2a;
+      font-weight: bold;
+    }
+
+    .pagination .disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+
     .dropdown-menu {
       display: none;
       position: absolute;
       background-color: rgba(0, 0, 0, 0.8);
-      color: #00ab41; /* Green color */
+      color: #00ab41;
       padding: 10px;
       border-radius: 5px;
       grid-template-columns: repeat(4, 1fr);
@@ -34,7 +50,7 @@
     }
 
     .dropdown-menu a {
-      color: #00ab41; /* Green color */
+      color: #00ab41;
       text-decoration: none;
       padding: 5px;
       display: block;
@@ -42,6 +58,11 @@
 
     .dropdown-menu a:hover {
       background-color: #444;
+    }
+
+    .video-item p {
+      color: white;
+      font-size: 0.9em;
     }
   </style>
 </head>
@@ -68,74 +89,56 @@
   <div class="pagination" id="pagination-bottom"></div>
 
   <script>
-    const itemsPerPage = 30; // 6x5 grid
+    const itemsPerPage = 30;
     const urlParams = new URLSearchParams(window.location.search);
-let currentPage = parseInt(urlParams.get('page')) || 1;
+    let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
     let dropdownVisible = false;
 
     const searchInput = document.getElementById('search-input');
-    const searchResultsContainer = document.getElementById('search-suggestions');
     const videoListContainer = document.getElementById('video-list');
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
     const categoryDropdown = document.getElementById('category-dropdown');
 
-    function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-          result.push(obj);
-        }
-      }
-
-      return result;
-    }
-
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
-      .then(text => {
-        const data = parseCSV(text);
-        allVideos = data.map(video => ({
-          id: video.id,
-          name: video.name,
-          thumbnail: video.thumbnail,
-          embed_code: video.embed_code,
-          category: video.category
-        }));
+      .then(csvText => {
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            const data = results.data;
 
-        // Extract unique category names
-        const categories = [...new Set(data.map(video => video.category))].sort();
+            allVideos = data.map(video => ({
+              id: video.id,
+              name: video.name?.replace(/^"|"$/g, ''),
+              thumbnail: video.thumbnail,
+              embed_code: video.embed_code,
+              category: video.category?.replace(/^"|"$/g, ''),
+              actors: video.actors?.replace(/^"|"$/g, '') || '',
+              description: video.description?.replace(/^"|"$/g, '') || ''
+            }));
 
-        // Populate category dropdown
-        categories.forEach(category => {
-          const categoryItem = document.createElement('a');
-          categoryItem.href = `#`;
-          categoryItem.innerText = category;
-          categoryItem.onclick = () => {
-            searchInput.value = category;
-            handleSearch();
-            toggleDropdown(); // Hide dropdown after clicking
-          };
-          categoryDropdown.appendChild(categoryItem);
+            const categories = [...new Set(allVideos.map(v => v.category))].sort();
+            categoryDropdown.innerHTML = '';
+            categories.forEach(category => {
+              const categoryItem = document.createElement('a');
+              categoryItem.href = '#';
+              categoryItem.innerText = category;
+              categoryItem.onclick = () => {
+                searchInput.value = category;
+                handleSearch();
+                toggleDropdown();
+              };
+              categoryDropdown.appendChild(categoryItem);
+            });
+
+            allVideos.sort((a, b) => b.id - a.id);
+            renderVideos();
+            renderPagination();
+          }
         });
-
-        // Sort videos by id in descending order
-        allVideos.sort((a, b) => b.id - a.id);
-
-        renderVideos();
-        renderPagination();
-      })
-      .catch(error => {
-        console.error('Error loading video data:', error);
       });
 
     function renderVideos() {
@@ -152,6 +155,7 @@ let currentPage = parseInt(urlParams.get('page')) || 1;
             <a href="video.html?id=${video.id}">
               <img src="${video.thumbnail}" alt="${video.name}">
               <h3>${video.name}</h3>
+              <p>${video.description}</p>
             </a>`;
           videoListContainer.appendChild(videoItem);
         });
@@ -161,45 +165,79 @@ let currentPage = parseInt(urlParams.get('page')) || 1;
     }
 
     function renderPagination() {
-  const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-  paginationTop.innerHTML = '';
-  paginationBottom.innerHTML = '';
+      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
 
-  if (totalPages > 1) {
-    for (let i = 1; i <= totalPages; i++) {
-      const button = document.createElement('a');
-      button.innerText = i;
-      button.href = `index.html?page=${i}`;
-      button.style.margin = '5px';
-      paginationTop.appendChild(button.cloneNode(true));
-      paginationBottom.appendChild(button);
+      const maxPagesToShow = 7;
+      let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+      let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+      if (endPage - startPage < maxPagesToShow - 1) {
+        startPage = Math.max(1, endPage - maxPagesToShow + 1);
+      }
+
+      const createButton = (page, label = page, isDisabled = false, isActive = false) => {
+        const btn = document.createElement('a');
+        btn.innerText = label;
+        if (isDisabled) {
+          btn.classList.add('disabled');
+        } else {
+          btn.href = `?page=${page}`;
+        }
+        if (isActive) btn.classList.add('active');
+        return btn;
+      };
+
+      if (currentPage > 1) {
+        paginationTop.appendChild(createButton(currentPage - 1, 'Prev'));
+        paginationBottom.appendChild(createButton(currentPage - 1, 'Prev'));
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const btn = createButton(i, i, false, i === currentPage);
+        paginationTop.appendChild(btn.cloneNode(true));
+        paginationBottom.appendChild(btn);
+      }
+
+      if (currentPage < totalPages) {
+        paginationTop.appendChild(createButton(currentPage + 1, 'Next'));
+        paginationBottom.appendChild(createButton(currentPage + 1, 'Next'));
+      }
     }
-  }
-}
+
     function handleSearch() {
       const query = searchInput.value.toLowerCase();
       fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
         .then(response => response.text())
-        .then(text => {
-          const data = parseCSV(text);
-         const filteredVideos = data.filter(video => 
-  video.category.toLowerCase().includes(query) || 
-  video.name.toLowerCase().includes(query) ||
-  (video.actors && video.actors.toLowerCase().includes(query)) // Check actors field
-).map(video => ({
-  id: video.id,
-  name: video.name,
-  thumbnail: video.thumbnail,
-  embed_code: video.embed_code,
-  category: video.category,
-  actors: video.actors // Ensure actors field is preserved if needed later
-}));
-          // Sort filtered videos by id in descending order
-          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
+        .then(csvText => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const data = results.data;
+              allVideos = data
+                .filter(video =>
+                  video.name?.toLowerCase().includes(query) ||
+                  video.category?.toLowerCase().includes(query) ||
+                  video.actors?.toLowerCase().includes(query)
+                )
+                .map(video => ({
+                  id: video.id,
+                  name: video.name?.replace(/^"|"$/g, ''),
+                  thumbnail: video.thumbnail,
+                  embed_code: video.embed_code,
+                  category: video.category?.replace(/^"|"$/g, ''),
+                  actors: video.actors?.replace(/^"|"$/g, '') || '',
+                  description: video.description?.replace(/^"|"$/g, '') || ''
+                }));
 
-          currentPage = 1;
-          renderVideos();
-          renderPagination();
+              allVideos.sort((a, b) => b.id - a.id);
+              currentPage = 1;
+              renderVideos();
+              renderPagination();
+            }
+          });
         });
     }
 
@@ -212,9 +250,6 @@ let currentPage = parseInt(urlParams.get('page')) || 1;
     function toggleDropdown() {
       dropdownVisible = !dropdownVisible;
       categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
-      if (dropdownVisible) {
-        categoryDropdown.style.gridTemplateColumns = 'repeat(4, 1fr)';
-      }
     }
 
     document.addEventListener('click', function(event) {

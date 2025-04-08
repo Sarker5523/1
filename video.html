@@ -220,7 +220,13 @@
       }
 
       document.getElementById('video-title').innerText = video.name;
-      videoDescription.innerText = video.description;
+      // Remove any surrounding double quotes
+let cleanedDescription = video.description;
+if (cleanedDescription.startsWith('"') && cleanedDescription.endsWith('"')) {
+  cleanedDescription = cleanedDescription.slice(1, -1); // Remove the surrounding quotes
+}
+
+videoDescription.innerText = cleanedDescription;
       document.title = video.name;
 
       if (video.embed_code) {

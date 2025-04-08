@@ -202,7 +202,43 @@
         }, {});
       });
     }
+const playerIframe = document.getElementById('playerIframeId');
+const playerOrigin = new URL(playerIframe.src).origin;
 
+// Check if there's a saved watch time in localStorage and seek to that time
+const savedTime = localStorage.getItem('videoTime');
+if (savedTime) {
+  // Send the seek command to start the video from the saved time
+  playerIframe.contentWindow.postMessage({ command: 'seek', value: savedTime }, playerOrigin);
+}
+
+// Listen for messages from the iframe (player)
+window.addEventListener('message', (e) => {
+  if (e.origin !== playerOrigin) return;
+
+  // When the player is ready
+  if (e.data.playerStatus === 'Ready') {
+    console.log('Player is ready');
+  }
+
+  // When the player sends currentTime
+  if (e.data.currentTime !== undefined) {
+    const currentTime = e.data.currentTime;
+
+    // Save the watched time in localStorage
+    localStorage.setItem('videoTime', currentTime);
+  }
+
+  // When the player sends the video duration
+  if (e.data.duration !== undefined) {
+    console.log('Video duration:', e.data.duration);
+  }
+});
+
+// Optional: Clear the saved time once the video ends (you can listen to the `ended` event)
+window.addEventListener('beforeunload', () => {
+  localStorage.removeItem('videoTime');
+});
     function loadVideo(video) {
       if (!video) {
         document.getElementById('video-title').innerText = "Video not found";

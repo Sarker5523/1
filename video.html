@@ -12,8 +12,8 @@
       font-family: Arial, sans-serif;
     }
     body.simulated-fullscreen-active {
-  overflow: hidden;
-}
+      overflow: hidden;
+    }
     header {
       background-color: #000;
       padding: 10px;
@@ -197,7 +197,7 @@
       }
 
       document.getElementById('video-title').innerText = video.name;
-      videoDescription.innerText = video.description.replace(/^"|"$/g, ''); // Removing quotes
+      videoDescription.innerText = video.description;
       document.title = video.name;
 
       if (video.embed_code) {
@@ -230,6 +230,12 @@
         const data = parseCSV(text);
         const videoId = new URLSearchParams(window.location.search).get('id');
         const series = data.find(v => v.id === videoId);
+
+        // Handle description field by removing any surrounding double quotes
+        if (series) {
+          series.description = series.description?.replace(/^"|"$/g, '');
+        }
+
         loadVideo(series);
 
         // Populate category dropdown
@@ -243,12 +249,4 @@
             searchInput.value = category;
             handleSearch();
             toggleDropdown(); // Hide dropdown after clicking
-          };
-          categoryDropdown.appendChild(categoryItem);
-        });
-      })
-      .catch(error => {
-        console.error('Error loading video data:', error);
-      });
-
-    function
+         

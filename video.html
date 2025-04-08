@@ -223,7 +223,7 @@
       // Remove any surrounding double quotes
 let cleanedDescription = video.description;
 if (cleanedDescription.startsWith('"') && cleanedDescription.endsWith('"')) {
-  cleanedDescription = cleanedDescription.slice(1, -1); // Remove the surrounding quotes
+  cleanedDescription = cleanedDescription.slice(2, -2); // Remove the surrounding quotes
 }
 
 videoDescription.innerText = cleanedDescription;

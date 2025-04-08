@@ -12,8 +12,8 @@
       font-family: Arial, sans-serif;
     }
     body.simulated-fullscreen-active {
-  overflow: hidden;
-}
+      overflow: hidden;
+    }
     header {
       background-color: #000;
       padding: 10px;
@@ -214,10 +214,23 @@
     }
 
     function parseCSV(text) {
+      // Regular expression for handling quoted commas and new lines
+      const regex = /(".*?"|[^",\n]+)(?=\s*,|\s*$)/g;
       const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
       const headers = lines.shift().split(',').map(header => header.trim());
       return lines.map(line => {
-        const currentline = line.split(',').map(value => value.trim());
+        const currentline = [];
+        let match;
+        
+        while (match = regex.exec(line)) {
+          let field = match[0];
+          if (field.startsWith('"') && field.endsWith('"')) {
+            field = field.slice(1, -1);  // Remove the quotes around the field
+          }
+          currentline.push(field.trim());
+        }
+        
         return headers.reduce((obj, header, index) => {
           obj[header] = currentline[index];
           return obj;
@@ -230,12 +243,6 @@
         const data = parseCSV(text);
         const videoId = new URLSearchParams(window.location.search).get('id');
         const series = data.find(v => v.id === videoId);
-
-        // Handle description field by removing any surrounding double quotes
-        if (series) {
-          series.description = series.description?.replace(/^"|"$/g, '');
-        }
-
         loadVideo(series);
 
         // Populate category dropdown

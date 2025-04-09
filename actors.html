@@ -20,6 +20,11 @@
   .pagination a:hover {
     background-color: #007a2a;
   }
+
+  .video-item p {
+    color: white;
+    font-size: 0.9em;
+  }
   </style>
 </head>
 <body>
@@ -83,18 +88,17 @@
         const data = parseCSV(text);
         allVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(actorQuery)).map(video => ({
           id: video.id,
-          name: video.name,
+          name: video.name?.replace(/^"|"$/g, ''),
           thumbnail: video.thumbnail,
           embed_code: video.embed_code,
-          category: video.category,
-          actors: video.actors
+          category: video.category?.replace(/^"|"$/g, ''),
+          actors: video.actors?.replace(/^"|"$/g, '') || '',
+          description: video.description?.replace(/^"|"$/g, '') || ''
         }));
-        allVideos.sort((a, b) => b.id - a.id);
+        allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
 
-        // Extract unique category names
         const categories = [...new Set(data.map(video => video.category))].sort();
 
-        // Populate category dropdown
         categories.forEach(category => {
           const categoryItem = document.createElement('a');
           categoryItem.href = `#`;
@@ -128,6 +132,7 @@
             <a href="video.html?id=${video.id}">
               <img src="${video.thumbnail}" alt="${video.name}">
               <h3>${video.name}</h3>
+              <p>${video.description}</p>
             </a>`;
           videoListContainer.appendChild(videoItem);
         });
@@ -165,15 +170,15 @@
             (video.actors && video.actors.toLowerCase().includes(query))
           ).map(video => ({
             id: video.id,
-            name: video.name,
+            name: video.name?.replace(/^"|"$/g, ''),
             thumbnail: video.thumbnail,
             embed_code: video.embed_code,
-            category: video.category,
-            actors: video.actors
+            category: video.category?.replace(/^"|"$/g, ''),
+            actors: video.actors?.replace(/^"|"$/g, '') || '',
+            description: video.description?.replace(/^"|"$/g, '') || ''
           }));
 
-          allVideos = filteredVideos.sort((a, b) => b.id - a.id);
-
+          allVideos = filteredVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
           currentPage = 1;
           renderVideos();
           renderPagination();

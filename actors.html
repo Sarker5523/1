@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Actor Videos</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-  /* Include any additional styles here */
   .pagination a {
     display: inline-block;
     padding: 8px 12px;
@@ -19,11 +19,6 @@
 
   .pagination a:hover {
     background-color: #007a2a;
-  }
-
-  .video-item p {
-    color: white;
-    font-size: 0.9em;
   }
   </style>
 </head>
@@ -63,56 +58,45 @@
     const categoryDropdown = document.getElementById('category-dropdown');
     const actorQuery = decodeURIComponent(urlParams.get('q') || '').toLowerCase();
 
-    function parseCSV(text) {
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(header => header.trim());
-      const result = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const currentline = lines[i].split(',').map(value => value.trim());
-        if (currentline.length === headers.length) {
-          const obj = {};
-          for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentline[j];
-          }
-          result.push(obj);
-        }
-      }
-
-      return result;
-    }
-
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())
-      .then(text => {
-        const data = parseCSV(text);
-        allVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(actorQuery)).map(video => ({
-          id: video.id,
-          name: video.name?.replace(/^"|"$/g, ''),
-          thumbnail: video.thumbnail,
-          embed_code: video.embed_code,
-          category: video.category?.replace(/^"|"$/g, ''),
-          actors: video.actors?.replace(/^"|"$/g, '') || '',
-          description: video.description?.replace(/^"|"$/g, '') || ''
-        }));
-        allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+      .then(csvText => {
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            const data = results.data;
 
-        const categories = [...new Set(data.map(video => video.category))].sort();
+            allVideos = data.filter(video => video.actors && video.actors.toLowerCase().includes(actorQuery)).map(video => ({
+              id: video.id,
+              name: video.name?.replace(/^"|"$/g, ''),
+              thumbnail: video.thumbnail,
+              embed_code: video.embed_code,
+              category: video.category?.replace(/^"|"$/g, ''),
+              actors: video.actors?.replace(/^"|"$/g, '') || '',
+              description: video.description?.replace(/^"|"$/g, '') || ''
+            }));
 
-        categories.forEach(category => {
-          const categoryItem = document.createElement('a');
-          categoryItem.href = `#`;
-          categoryItem.innerText = category;
-          categoryItem.onclick = () => {
-            searchInput.value = category;
-            handleSearch();
-            toggleDropdown();
-          };
-          categoryDropdown.appendChild(categoryItem);
+            allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+
+            const categories = [...new Set(data.map(v => v.category))].sort();
+            categoryDropdown.innerHTML = '';
+            categories.forEach(category => {
+              const categoryItem = document.createElement('a');
+              categoryItem.href = '#';
+              categoryItem.innerText = category;
+              categoryItem.onclick = () => {
+                searchInput.value = category;
+                handleSearch();
+                toggleDropdown();
+              };
+              categoryDropdown.appendChild(categoryItem);
+            });
+
+            renderVideos();
+            renderPagination();
+          }
         });
-
-        renderVideos();
-        renderPagination();
       })
       .catch(error => {
         console.error('Error loading video data:', error);
@@ -132,7 +116,6 @@
             <a href="video.html?id=${video.id}">
               <img src="${video.thumbnail}" alt="${video.name}">
               <h3>${video.name}</h3>
-              <p>${video.description}</p>
             </a>`;
           videoListContainer.appendChild(videoItem);
         });
@@ -162,26 +145,34 @@
       const query = searchInput.value.toLowerCase();
       fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
         .then(response => response.text())
-        .then(text => {
-          const data = parseCSV(text);
-          const filteredVideos = data.filter(video => 
-            video.category.toLowerCase().includes(query) || 
-            video.name.toLowerCase().includes(query) || 
-            (video.actors && video.actors.toLowerCase().includes(query))
-          ).map(video => ({
-            id: video.id,
-            name: video.name?.replace(/^"|"$/g, ''),
-            thumbnail: video.thumbnail,
-            embed_code: video.embed_code,
-            category: video.category?.replace(/^"|"$/g, ''),
-            actors: video.actors?.replace(/^"|"$/g, '') || '',
-            description: video.description?.replace(/^"|"$/g, '') || ''
-          }));
+        .then(csvText => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const data = results.data;
+              allVideos = data
+                .filter(video =>
+                  video.name?.toLowerCase().includes(query) ||
+                  video.category?.toLowerCase().includes(query) ||
+                  video.actors?.toLowerCase().includes(query)
+                )
+                .map(video => ({
+                  id: video.id,
+                  name: video.name?.replace(/^"|"$/g, ''),
+                  thumbnail: video.thumbnail,
+                  embed_code: video.embed_code,
+                  category: video.category?.replace(/^"|"$/g, ''),
+                  actors: video.actors?.replace(/^"|"$/g, '') || '',
+                  description: video.description?.replace(/^"|"$/g, '') || ''
+                }));
 
-          allVideos = filteredVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-          currentPage = 1;
-          renderVideos();
-          renderPagination();
+              allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+              currentPage = 1;
+              renderVideos();
+              renderPagination();
+            }
+          });
         });
     }
 

@@ -207,7 +207,7 @@
 
   <div class="video-details">
     <h2 id="video-title"></h2>
-    <div id="video-description"></div>
+    <div id="video-description" style="padding-top: 10px;"></div>
     <div class="actors-list" id="actors-list"></div>
   </div>
 
@@ -250,7 +250,7 @@
       }
 
       document.getElementById('video-title').innerText = video.name;
-      videoDescription.innerText = ''; // Not displaying description
+      videoDescription.innerText = video.description || '';
       document.title = video.name;
 
       iframeContainer.innerHTML = video.embed_code ? video.embed_code : '<p>Video embed code not available.</p>';

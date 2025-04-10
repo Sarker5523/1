@@ -105,14 +105,14 @@
       padding: 20px;
       width: 100%;
       box-sizing: border-box;
-      text-align: center; /* Center align video player */
+      text-align: center;
       margin-left: auto;
       margin-right: auto;
     }
     .iframe-container {
-     width: 100%;
+      width: 100%;
       position: relative;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      padding-bottom: 56.25%;
       height: 0;
       overflow: hidden;
       border-radius: 10px;
@@ -129,22 +129,22 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
     }
     .video-details {
-      display: flex; /* Match flex behavior */
-      justify-content: center; /* Center content horizontally */
-      align-items: center; /* Center content vertically */
-      flex-direction: column; /* Stack elements inside */
-      padding: 10px; /* Match padding */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 10px;
       background-color: #333;
       border-radius: 20px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      width: 100%; /* Match the video container width */
+      width: 100%;
       box-sizing: border-box;
-      text-align: center; /* Center text inside */
+      text-align: center;
       margin-left: auto;
       margin-right: auto;
     }
     .video-details h2 {
-      font-size: 24px; /* Increase the font size of the video title */
+      font-size: 24px;
       margin: 0;
       padding-bottom: 10px;
       border-bottom: 3px solid #444;
@@ -156,7 +156,8 @@
     .actors-list span:hover {
       text-decoration: underline;
     }
-  @media (max-width: 600px) {
+
+    @media (max-width: 600px) {
       .video-details {
         max-width: 80%;
         padding: 2px;
@@ -178,7 +179,7 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
       }
     }
-     
+
     @media (min-width: 601px) and (max-width: 1200px) {
       .video-details {
         max-width: 75%;
@@ -220,6 +221,7 @@
   <div class="video-container">
     <div class="iframe-container" id="iframe-container"></div>
   </div>
+
   <div class="video-details">
     <h2 id="video-title"></h2>
     <div id="video-description"></div>
@@ -265,11 +267,7 @@
       }
 
       document.getElementById('video-title').innerText = video.name;
-      let cleanedDescription = video.description;
-      if (cleanedDescription.startsWith('"') && cleanedDescription.endsWith('"')) {
-        cleanedDescription = cleanedDescription.slice(2, -2);
-      }
-      videoDescription.innerText = cleanedDescription;
+      videoDescription.innerText = '';
       document.title = video.name;
 
       iframeContainer.innerHTML = video.embed_code ? video.embed_code : '<p>Video embed code not available.</p>';
@@ -346,46 +344,6 @@
         dropdownVisible = false;
       }
     });
-    const playerIframe = document.getElementById('playerIframeId');
-const playerOrigin = new URL(playerIframe.src).origin;
-
-// Get the video id from the URL query parameter
-const videoId = new URLSearchParams(window.location.search).get('id');
-
-// Check if there's a saved watch time for this specific video id in localStorage
-const savedTime = localStorage.getItem(`videoTime_${videoId}`);
-if (savedTime) {
-  // Send the seek command to start the video from the saved time
-  playerIframe.contentWindow.postMessage({ command: 'seek', value: savedTime }, playerOrigin);
-}
-
-// Listen for messages from the iframe (player)
-window.addEventListener('message', (e) => {
-  if (e.origin !== playerOrigin) return;
-
-  // When the player is ready
-  if (e.data.playerStatus === 'Ready') {
-    console.log('Player is ready');
-  }
-
-  // When the player sends currentTime
-  if (e.data.currentTime !== undefined) {
-    const currentTime = e.data.currentTime;
-
-    // Save the watched time for the current video id in localStorage
-    localStorage.setItem(`videoTime_${videoId}`, currentTime);
-  }
-
-  // When the player sends the video duration
-  if (e.data.duration !== undefined) {
-    console.log('Video duration:', e.data.duration);
-  }
-});
-
-// Optional: Clear the saved time once the video ends (you can listen to the `ended` event)
-window.addEventListener('beforeunload', () => {
-  localStorage.removeItem(`videoTime_${videoId}`);
-});
   </script>
 </body>
 </html>

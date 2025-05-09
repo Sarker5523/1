@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actor Videos</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+  .pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    background-color: #00ab41;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+
+  .pagination a:hover {
+    background-color: #007a2a;
+  }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
+    <button class="category-btn" onclick="toggleDropdown()">Category</button>
+    <div class="title-container">
+      <h1>MPlix</h1>
+      <div class="play-button"></div>
+    </div>
+    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+    <div id="search-suggestions" class="search-suggestions"></div>
+  </header>
+
+  <div id="category-dropdown" class="dropdown-menu"></div>
+
+  <div class="pagination" id="pagination-top"></div>
+
+  <div class="video-list-container">
+    <div class="video-list" id="video-list"></div>
+  </div>
+
+  <div class="pagination" id="pagination-bottom"></div>
+
+  <script>
+    const itemsPerPage = 30;
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page')) || 1;
+    let allVideos = [];
+    let dropdownVisible = false;
+    const searchInput = document.getElementById('search-input');
+    const searchResultsContainer = document.getElementById('search-suggestions');
+    const videoListContainer = document.getElementById('video-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
+    const categoryDropdown = document.getElementById('category-dropdown');
+    const studioQuery = decodeURIComponent(urlParams.get('q') || '').toLowerCase();
+
+    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+      .then(response => response.text())
+      .then(csvText => {
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            const data = results.data;
+
+            allVideos = data.filter(video => video.category && video.category.toLowerCase() === studioQuery).map(video => ({
+              id: video.id,
+              name: video.name?.replace(/^"|"$/g, ''),
+              thumbnail: video.thumbnail,
+              embed_code: video.embed_code,
+              category: video.category?.replace(/^"|"$/g, ''),
+              actors: video.actors?.replace(/^"|"$/g, '') || '',
+              description: video.description?.replace(/^"|"$/g, '') || ''
+            }));
+
+            allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+
+            const categories = [...new Set(data.map(v => v.category))].sort();
+            categoryDropdown.innerHTML = '';
+            categories.forEach(category => {
+              const categoryItem = document.createElement('a');
+              categoryItem.href = '#';
+              categoryItem.innerText = category;
+              categoryItem.onclick = () => {
+                searchInput.value = category;
+                handleSearch();
+                toggleDropdown();
+              };
+              categoryDropdown.appendChild(categoryItem);
+            });
+
+            renderVideos();
+            renderPagination();
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error loading video data:', error);
+      });
+
+    function renderVideos() {
+      videoListContainer.innerHTML = '';
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const videosToShow = allVideos.slice(startIndex, endIndex);
+
+      if (videosToShow.length > 0) {
+        videosToShow.forEach(video => {
+          const videoItem = document.createElement('div');
+          videoItem.classList.add('video-item');
+          videoItem.innerHTML = `
+            <a href="video.html?id=${video.id}">
+              <img src="${video.thumbnail}" alt="${video.name}">
+              <h3>${video.name}</h3>
+            </a>`;
+          videoListContainer.appendChild(videoItem);
+        });
+      } else {
+        videoListContainer.innerHTML = '<p>No videos found.</p>';
+      }
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+
+      if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+          const button = document.createElement('a');
+          button.innerText = i;
+          button.href = `actors.html?q=${actorQuery}&page=${i}`;
+          button.style.margin = '5px';
+          paginationTop.appendChild(button.cloneNode(true));
+          paginationBottom.appendChild(button);
+        }
+      }
+    }
+
+    function handleSearch() {
+      const query = searchInput.value.toLowerCase();
+      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
+        .then(response => response.text())
+        .then(csvText => {
+          Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const data = results.data;
+              allVideos = data
+                .filter(video =>
+                  video.name?.toLowerCase().includes(query) ||
+                  video.category?.toLowerCase().includes(query) ||
+                  video.actors?.toLowerCase().includes(query)
+                )
+                .map(video => ({
+                  id: video.id,
+                  name: video.name?.replace(/^"|"$/g, ''),
+                  thumbnail: video.thumbnail,
+                  embed_code: video.embed_code,
+                  category: video.category?.replace(/^"|"$/g, ''),
+                  actors: video.actors?.replace(/^"|"$/g, '') || '',
+                  description: video.description?.replace(/^"|"$/g, '') || ''
+                }));
+
+              allVideos.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+              currentPage = 1;
+              renderVideos();
+              renderPagination();
+            }
+          });
+        });
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        handleSearch();
+      }
+    }
+
+    function toggleDropdown() {
+      dropdownVisible = !dropdownVisible;
+      categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
+      if (dropdownVisible) {
+        categoryDropdown.style.gridTemplateColumns = 'repeat(4, 1fr)';
+      }
+    }
+
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.dropdown-menu') && !event.target.closest('.category-btn')) {
+        categoryDropdown.style.display = 'none';
+        dropdownVisible = false;
+      }
+    });
+  </script>
+</body>
+</html>

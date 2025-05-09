@@ -156,7 +156,18 @@
     .actors-list span:hover {
       text-decoration: underline;
     }
-
+    .category-list {
+      text-align: left;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .category-list span {
+      color: #00ab41;
+      cursor: pointer;
+    }
+    .category-list span:hover {
+      text-decoration: underline;
+    }
     @media (max-width: 600px) {
       .video-details {
         max-width: 80%;
@@ -209,6 +220,7 @@
     <h2 id="video-title"></h2>
     <div id="video-description" style="padding-top: 10px; text-align: left;"></div>
     <div class="actors-list" id="actors-list" style="text-align: left"></div>
+    <div class="category-list" id="category-list" style="text-align: left"></div>
   </div>
 
   <script>
@@ -242,27 +254,38 @@
     }
 
     function loadVideo(video) {
-      if (!video) {
-        document.getElementById('video-title').innerText = "Video not found";
-        videoDescription.innerText = '';
-        actorsList.innerHTML = '';
-        return;
-      }
+  if (!video) {
+    document.getElementById('video-title').innerText = "Video not found";
+    videoDescription.innerText = '';
+    actorsList.innerHTML = '';
+    return;
+  }
 
-      document.getElementById('video-title').innerText = video.name;
-      videoDescription.innerText = video.description || '';
-      document.title = video.name;
+  document.getElementById('video-title').innerText = video.name;
+  videoDescription.innerText = video.description || '';
+  document.title = video.name;
 
-      iframeContainer.innerHTML = video.embed_code ? video.embed_code : '<p>Video embed code not available.</p>';
+  iframeContainer.innerHTML = video.embed_code ? video.embed_code : '<p>Video embed code not available.</p>';
 
-      if (video.actors) {
-        actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor =>
-          `<span onclick="window.location.href='actors.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`
-        ).join(', ');
-      } else {
-        actorsList.innerHTML = '';
-      }
-    }
+  if (video.actors) {
+    actorsList.innerHTML = 'Actors: ' + video.actors.split('|').map(actor =>
+      `<span onclick="window.location.href='actors.html?q=${encodeURIComponent(actor.trim())}'">${actor.trim()}</span>`
+    ).join(', ');
+  } else {
+    actorsList.innerHTML = '';
+  }
+
+  // 👉 Add this part for category
+  const categoryList = document.getElementById('category-list');
+  if (video.category) {
+    categoryList.innerHTML = 'Category: ' + video.category.split('|').map(cat =>
+      `<span onclick="window.location.href='studio.html?q=${encodeURIComponent(cat.trim())}'">${cat.trim()}</span>`
+    ).join(', ');
+  } else {
+    categoryList.innerHTML = '';
+  }
+}
+
 
     fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
       .then(response => response.text())

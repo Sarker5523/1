@@ -273,8 +273,9 @@
   }
 
   document.getElementById('video-title').innerText = video.name;
-  videoDescription.innerText = (video.description || '').replace(/^"(.*)"$/, '$1');
-
+  videoDescription.innerText = (video.description || '')
+  .trim()
+  .replace(/^["“](.*)["”]$/, '$1');
   document.title = video.name;
 
   iframeContainer.innerHTML = video.embed_code ? video.embed_code : '<p>Video embed code not available.</p>';

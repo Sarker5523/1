@@ -253,7 +253,7 @@
         while (match = regex.exec(line)) {
           let field = match[0];
           if (field.startsWith('"') && field.endsWith('"')) {
-            field = field.slice(1, -1);
+            field = field.slice(2, -2);
           }
           currentline.push(field.trim());
         }

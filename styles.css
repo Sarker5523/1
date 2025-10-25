@@ -1,85 +1,41 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #141414;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background-color: #111827;
   color: #fff;
   margin: 0;
   padding: 0;
 }
 
-header {
-  gap: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 15px;
-  background-color: #000;
-  color: #00ab41;
-}
-.dropdown-menu {
-  display: none; /* Hide the dropdown initially */
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 6px;
-  z-index: 1000;
-}
-header .home-btn {
-      font-size: 20px;
-      float: left;
-      display: inline-block;
-      margin-left: 0px;
-      padding: 10px 15px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
+nav {
+  background-color: #1f2937;
+  border-bottom: 1px solid #374151;
 }
 
-header .category-btn {
-      margin-right: 20px;
-      font-size: 20px;
-      float: left;
-      display: inline-block;
-      margin-left: 0px;
-      padding: 10px 15px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
-      display: inline-block;
-}
-.search-bar {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px 16px;
-  margin: 0 20px;
-  border-radius: 5px;
-  border: none;
-  font-size: 16px;
-  background-color: #222;
-  color: white;
-  flex-grow: 1;
+.max-w-screen-xl {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px;
 }
 
 .search-suggestions {
   position: absolute;
-  background-color: #333;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #374151;
   color: white;
-  width: 100%;
-  max-width: 400px;
-  margin-top: 40px;
-  padding: 10px 0;
-  border-radius: 5px;
-  display: none;
-  z-index: 1;
+  border-radius: 4px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .search-suggestions div {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px;
   cursor: pointer;
 }
 
@@ -88,35 +44,35 @@ header .category-btn {
 }
 
 .search-suggestions img {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 4px;
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .video-list-container {
   max-width: 1920px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px;
 }
 
 .video-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 16px;
   box-sizing: border-box;
 }
 
 .video-item {
   background-color: transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  flex: 1 1 calc(16.66% - 20px); /* Six items per row */
-  max-width: calc(16.66% - 20px);
-  position: relative; /* Added to position the title */
+  flex: 1 1 calc(16.66% - 16px);
+  max-width: calc(16.66% - 16px);
+  position: relative;
 }
 
 .video-item:hover {
@@ -128,202 +84,55 @@ header .category-btn {
   width: 100%;
   height: auto;
   border-radius: 8px;
-  border: none; /* Remove border */
-}
-
-.video-item h3 {
-  font-size: 18px;
-  margin: 0;
-  padding: 10px;
-  color: #fff;
-  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-  display: block; /* Always display the title */
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.pagination button {
-  background-color: #333;
-  color: #00ab41;
   border: none;
-  padding: 10px 20px;
-  margin: 0 5px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-}
-
-.pagination button:hover {
-  background-color: #00ab41;
-  color: #000;
-  transform: translateY(-4px);
-}
-
-.title-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  margin-left: 20px; /* Shift to the right */
-}
-
-.title-container h1 {
-  color: white;
-  font-size: 20px; /* Increased font size */
-  margin: 0;
-  margin-right: 10px;
-}
-
-.title-container .play-button {
-  width: 30px; /* Increased size */
-  height: 30px; /* Increased size */
-  background-color: #00ab41;
-  mask: url('https://img.icons8.com/ios-filled/50/ffffff/play-button-circled--v1.png') no-repeat center;
-  -webkit-mask: url('https://img.icons8.com/ios-filled/50/ffffff/play-button-circled--v1.png') no-repeat center;
-  mask-size: cover;
-  -webkit-mask-size: cover;
 }
 
 /* Media queries for responsive design */
 @media (max-width: 600px) {
   .video-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Two columns for mobile */
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .video-item h3 {
-    font-size: 10px;
-    padding: 4px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+    font-size: 9px;
+    padding: 3px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
   }
   .video-item {
     flex: none;
     max-width: 100%;
   }
-  header .category-btn {
-    font-size: 12px;
-      display: inline-block;
-      margin-left: 3px;
-      padding: 4px 6px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
-    }
-  
-header .home-btn{
-      font-size: 12px;
-      display: inline-block;
-      margin-left: 1px;
-      padding: 4px 6px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 1px;
-    }
-  .search-bar {
-    font-size: 12px;
-    padding: 3px 6px; /* Adjust padding to make height smaller */
-    width: 80%; /* Adjust width */
-    margin-left: 10%; /* Add margin to the left */
+  .actress-box {
+    min-width: 36px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 0.6em;
+    padding: 0 5px;
+    border-radius: 5px;
+    top: 6px;
+    left: 6px;
   }
-  .title-container {
-    display: flex;
-    align-items: center;
-    margin-left: 0; /* Remove margin-left */
+  .max-w-screen-xl {
+    padding: 6px;
   }
-  .title-container h1 {
-    margin-right: 5px; /* Reduce space between MPlix and video icon */
-    margin-top: 10px;
-  }
-  .title-container .play-button { 
-    margin-top: 10px;
-    margin-right: 5px;
-  }
-}
-@media (orientation: landscape) and (max-width: 900px) {
-  .video-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      width: 100%;
-      box-sizing: border-box;
-      text-align: center;
-    }
-  .video-item h3 {
-    font-size: 12px;
-  }
-  header .category-btn {
-    font-size: 12px;
-      display: inline-block;
-      margin-left: 3px;
-      padding: 4px 6px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 2px;
-    }
-  
-header .home-btn{
-      font-size: 12px;
-      display: inline-block;
-      margin-left: 1px;
-      padding: 4px 6px;
-      background-color: #333;
-      color: #00ab41; /* Green color */
-      border: none;
-      cursor: pointer;
-      border-radius: 1px;
-    }
-}
-@media (min-width: 601px) and (max-width: 1200px) {
-  .video-container {
-    max-width: 75%;
-    padding: 20px;
-    height: auto;
-    margin-left: 300px; /* Shift the video player to the right */
-  }
-  .video-item {
-    flex: 1 1 calc(33.33% - 20px); /* Three items per row */
-    max-width: calc(33.33% - 20px);
+  .search-suggestions img {
+    width: 28px;
+    height: 28px;
   }
 }
 
-/* PC/TV specific styles */
-@media (min-width: 1201px) {
-  .title-container {
-    margin-left: 300px; /* Shift to the right */
-  }
-  .title-container h1 {
-    font-size: 22px;
-  }
-  .title-container .play-button {
-    width: 64px; /* Increased size */
-    height: 64px; /* Increased size */
-  }
-   .video-container {
-    max-width: 60%;
-    padding: 20px;
-    height: auto;
-    margin-left: 300px; /* Shift the video player to the right */
-  }
+@media (min-width: 601px) and (max-width: 1200px) {
   .video-item {
-    flex: 1 1 calc(16% - 20px); /* Slightly smaller items and more space */
-    max-width: calc(16% - 20px); /* Slightly more space between items */
+    flex: 1 1 calc(33.33% - 16px);
+    max-width: calc(33.33% - 16px);
+  }
+}
+
+@media (min-width: 1201px) {
+  .video-item {
+    flex: 1 1 calc(16% - 16px);
+    max-width: calc(16% - 16px);
   }
 }

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mplix-Home</title>
+  <title>Home</title>
+  <!-- Tailwind CSS CDN -->
+  <!-- Flowbite CSS CDN -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
   <style>
     .pagination {
@@ -23,6 +25,11 @@
       text-decoration: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .pagination a:hover {
+      background-color: #007a2a;
     }
 
     .pagination .active {
@@ -35,50 +42,144 @@
       cursor: not-allowed;
     }
 
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      background-color: rgba(0, 0, 0, 0.8);
-      color: #00ab41;
-      padding: 10px;
-      border-radius: 5px;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      top: 35px;
-      left: 8px;
-      z-index: 1000;
+    .video-item {
+      text-align: center;
+      position: relative;
     }
 
-    .dropdown-menu a {
-      color: #00ab41;
-      text-decoration: none;
-      padding: 5px;
+    .video-item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
       display: block;
     }
 
-    .dropdown-menu a:hover {
-      background-color: #444;
+    .video-item h3 {
+      color: white;
+      font-size: 1.1em;
+      margin: 0;
+      padding: 8px;
+      background-color: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      line-height: 1.2;
     }
 
-    .video-item p {
+    .actress-box {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #00ab41;
       color: white;
-      font-size: 0.9em;
+      min-width: 50px;
+      height: 24px;
+      line-height: 24px;
+      border-radius: 8px;
+      font-size: 0.7em;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #374151;
+      border: 1px solid #4b5563;
+      border-radius: 0.5rem;
+      margin-top: 0.25rem;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 50;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-suggestions div {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .search-suggestions div:hover {
+      background-color: #00ab41;
+    }
+
+    .search-suggestions img {
+      width: 40px;
+      height: 40px;
+      border-radius: 0.25rem;
+      margin-right: 0.75rem;
     }
   </style>
 </head>
-<body>
-  <header>
-    <div class="home-btn" onclick="window.location.href='index.html'">Home</div>
-    <button class="category-btn" onclick="toggleDropdown()">Category</button>
-    <div class="title-container">
-      <h1>MPlix</h1>
-      <div class="play-button"></div>
+<body class="bg-gray-900">
+  <!-- Exact "Navbar with search" from Flowbite docs, with green colors and custom links -->
+  <nav class="bg-white border-gray-200 dark:bg-gray-900">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
+        <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
+        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
+      </a>
+      <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
+        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search" aria-expanded="false" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
+          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+          <span class="sr-only">Search</span>
+        </button>
+        <div class="relative hidden md:block">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+            <span class="sr-only">Search icon</span>
+          </div>
+          <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+          <!-- Suggestions container positioned relative to search input -->
+          <div id="search-suggestions" class="search-suggestions hidden"></div>
+        </div>
+        <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+          </svg>
+        </button>
+      </div>
+      <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
+        <div class="relative mt-3 md:hidden">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            </svg>
+          </div>
+          <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+          <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
+        </div>
+        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li>
+            <a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Home</a>
+          </li>
+          <li>
+            <a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a>
+          </li>
+          <li>
+            <a href="performers.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <input type="text" id="search-input" class="search-bar" placeholder="Search..." oninput="handleSearch()" onkeydown="handleEnter(event)">
-    <div id="search-suggestions" class="search-suggestions"></div>
-  </header>
-
-  <div id="category-dropdown" class="dropdown-menu"></div>
+  </nav>
 
   <div class="pagination" id="pagination-top"></div>
 
@@ -88,58 +189,129 @@
 
   <div class="pagination" id="pagination-bottom"></div>
 
+  <!-- Flowbite JavaScript CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
+    const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
     const itemsPerPage = 30;
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
-    let dropdownVisible = false;
+    let searchTimeout;
 
-    const searchInput = document.getElementById('search-input');
+    const searchInput = document.getElementById('search-navbar');
+    const searchInputMobile = document.getElementById('search-navbar-mobile');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
     const videoListContainer = document.getElementById('video-list');
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
-    const categoryDropdown = document.getElementById('category-dropdown');
 
-    fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-      .then(response => response.text())
-      .then(csvText => {
-        Papa.parse(csvText, {
-          header: true,
-          skipEmptyLines: true,
-          complete: function(results) {
-            const data = results.data;
+    // Sync mobile and desktop search inputs
+    function syncSearchInputs(source) {
+      if (source === searchInput && searchInputMobile) {
+        searchInputMobile.value = source.value;
+      } else if (source === searchInputMobile && searchInput) {
+        searchInput.value = source.value;
+      }
+    }
 
-            allVideos = data.map(video => ({
-              id: video.id,
-              name: video.name?.replace(/^"|"$/g, ''),
-              thumbnail: video.thumbnail,
-              embed_code: video.embed_code,
-              category: video.category?.replace(/^"|"$/g, ''),
-              actors: video.actors?.replace(/^"|"$/g, '') || '',
-              description: video.description?.replace(/^"|"$/g, '') || ''
-            }));
+    // Debounced search
+    function debouncedSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(handleSearch, 300);
+    }
 
-            const categories = [...new Set(allVideos.map(v => v.category))].sort();
-            categoryDropdown.innerHTML = '';
-            categories.forEach(category => {
-              const categoryItem = document.createElement('a');
-              categoryItem.href = '#';
-              categoryItem.innerText = category;
-              categoryItem.onclick = () => {
-                searchInput.value = category;
-                handleSearch();
-                toggleDropdown();
+    // Fetch video data from video.json
+    fetch('video.json')
+      .then(response => response.json())
+      .then(jsonData => {
+        allVideos = jsonData.videos.map(video => ({
+          video_Id: video.video_Id,
+          id: video.data._id,
+          title: video.data.title || 'Untitled Video',
+          type: video.data.type || 'Unknown',
+          rating: video.data.rating || 0,
+          site_id: video.data.site_id || video.data.site?.id || 0,
+          url: video.data.url || '#',
+          trailer: video.data.trailer || '',
+          thumbnail: video.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+          site: {
+            id: video.data.site?.id || 0,
+            name: video.data.site?.name || 'Unknown Studio',
+            short_name: video.data.site?.short_name || 'Unknown',
+            rating: video.data.site?.rating || 0,
+            logo: video.data.site?.logo || '',
+            parent: video.data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
+          },
+          performers: video.data.performers?.map(p => p._id) || [],
+          actressName: ''
+        }));
+
+        // Fetch additional scene details and actress/actor name
+        Promise.all(allVideos.map(video => 
+          Promise.all([
+            fetch(`https://api.theporndb.net/scenes/${video.id}?add_to_collection=true`, {
+              headers: {
+                'accept': 'application/json',
+                'Authorization': API_TOKEN
+              }
+            })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error ${response.status} for scene ${video.id}`);
+              return response.json();
+            })
+            .then(sceneData => {
+              const data = sceneData.data || {};
+              video.description = data.description || 'No description available';
+              video.thumbnail = data.image || video.thumbnail;
+              video.title = data.title || video.title;
+              video.type = data.type || video.type;
+              video.rating = data.rating || video.rating;
+              video.url = data.url || video.url;
+              video.trailer = data.trailer || video.trailer;
+              video.site_id = data.site?.id || video.site_id;
+              video.site = {
+                id: data.site?.id || video.site.id,
+                name: data.site?.name || video.site.name,
+                short_name: data.site?.short_name || video.site.short_name,
+                rating: data.site?.rating || video.site.rating,
+                logo: data.site?.logo || video.site.logo,
+                parent: data.site?.parent || video.site.parent
               };
-              categoryDropdown.appendChild(categoryItem);
-            });
-
-            allVideos.sort((a, b) => b.id - a.id);
-            renderVideos();
-            renderPagination();
-          }
+            })
+            .catch(error => {
+              console.error(`Error fetching scene ${video.id}:`, error.message);
+              video.description = 'Error fetching description';
+              video.thumbnail = video.thumbnail || 'https://via.placeholder.com/300x200?text=Error';
+            }),
+            video.performers.length > 0 ? 
+              fetch(`https://api.theporndb.net/performers/${video.performers[0]}`, {
+                headers: {
+                  'accept': 'application/json',
+                  'Authorization': API_TOKEN
+                }
+              })
+              .then(response => {
+                if (!response.ok) throw new Error(`HTTP error ${response.status} for performer ${video.performers[0]}`);
+                return response.json();
+              })
+              .then(performerData => {
+                video.actressName = performerData.data?.name || 'Unknown';
+              })
+              .catch(error => {
+                console.error(`Error fetching performer ${video.performers[0]} for video ${video.id}:`, error.message);
+                video.actressName = 'Unknown';
+              }) : 
+              Promise.resolve(video.actressName = 'Unknown')
+          ])
+        )).then(() => {
+          allVideos.sort((a, b) => b.id - a.id);
+          renderVideos();
+          renderPagination();
         });
-      });
+      })
+      .catch(error => console.error('Error fetching video.json:', error));
 
     function renderVideos() {
       videoListContainer.innerHTML = '';
@@ -151,10 +323,12 @@
         videosToShow.forEach(video => {
           const videoItem = document.createElement('div');
           videoItem.classList.add('video-item');
+          const actress = video.actressName || 'Unknown';
           videoItem.innerHTML = `
             <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.name}">
-              <h3>${video.name}</h3>
+              <img src="${video.thumbnail}" alt="${video.title}">
+              <h3>${video.title}</h3>
+              <div class="actress-box">${actress}</div>
             </a>`;
           videoListContainer.appendChild(videoItem);
         });
@@ -205,58 +379,99 @@
       }
     }
 
-    function handleSearch() {
-      const query = searchInput.value.toLowerCase();
-      fetch('https://docs.google.com/spreadsheets/d/18eoxtLK6TcLW6gO0gt9hlp-CPCDCFNC6frXzhJAEi80/export?format=csv')
-        .then(response => response.text())
-        .then(csvText => {
-          Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-              const data = results.data;
-              allVideos = data
-                .filter(video =>
-                  video.name?.toLowerCase().includes(query) ||
-                  video.category?.toLowerCase().includes(query) ||
-                  video.actors?.toLowerCase().includes(query)
-                )
-                .map(video => ({
-                  id: video.id,
-                  name: video.name?.replace(/^"|"$/g, ''),
-                  thumbnail: video.thumbnail,
-                  embed_code: video.embed_code,
-                  category: video.category?.replace(/^"|"$/g, ''),
-                  actors: video.actors?.replace(/^"|"$/g, '') || '',
-                  description: video.description?.replace(/^"|"$/g, '') || ''
-                }));
+    async function handleSearch() {
+      const query = (searchInput?.value || searchInputMobile?.value || '').trim();
+      if (!query) {
+        [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
+        return;
+      }
 
-              allVideos.sort((a, b) => b.id - a.id);
-              currentPage = 1;
-              renderVideos();
-              renderPagination();
-            }
-          });
+      // Local filter for immediate feedback
+      const localResults = allVideos.filter(video =>
+        video.title.toLowerCase().includes(query.toLowerCase()) ||
+        video.site.name.toLowerCase().includes(query.toLowerCase()) ||
+        (video.site.parent?.name || '').toLowerCase().includes(query.toLowerCase()) ||
+        video.actressName.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 5);
+
+      // API search for additional results
+      try {
+        const [scenesResponse, performersResponse, sitesResponse] = await Promise.all([
+          fetch(`https://api.theporndb.net/scenes?query=${encodeURIComponent(query)}`, {
+            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
+          }),
+          fetch(`https://api.theporndb.net/performers?query=${encodeURIComponent(query)}`, {
+            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
+          }),
+          fetch(`https://api.theporndb.net/sites?query=${encodeURIComponent(query)}`, {
+            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
+          })
+        ]);
+
+        const [scenesData, performersData, sitesData] = await Promise.all([
+          scenesResponse.json(),
+          performersResponse.json(),
+          sitesResponse.json()
+        ]);
+
+        // Cross-check and combine API results
+        const apiResults = [
+          ...(scenesData.data || []).filter(scene => allVideos.some(v => v.id === scene._id)).map(scene => ({
+            id: scene._id,
+            title: scene.title,
+            thumbnail: scene.image || 'https://via.placeholder.com/300x200?text=No+Image'
+          })),
+          ...(performersData.data || []).flatMap(performer => allVideos.filter(v => v.performers.includes(performer._id)).map(v => ({
+            id: v.id,
+            title: v.title,
+            thumbnail: v.thumbnail
+          }))),
+          ...(sitesData.data || []).flatMap(site => allVideos.filter(v => v.site_id === site._id || v.site.id === site._id).map(v => ({
+            id: v.id,
+            title: v.title,
+            thumbnail: v.thumbnail
+          })))
+        ].slice(0, 5);
+
+        const combinedResults = [...new Set([...localResults, ...apiResults].map(r => r.id))].map(id => allVideos.find(v => v.id === id)).slice(0, 5);
+
+        // Render suggestions for both desktop and mobile
+        const renderSuggestions = (container, results) => {
+          container.innerHTML = results.length ? results.map(video => `
+            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="window.location.href='video.html?id=${video.id}'">
+              <img src="${video.thumbnail}" alt="${video.title}" class="w-10 h-10 rounded mr-2">
+              <span class="text-white text-sm">${video.title}</span>
+            </div>
+          `).join('') : '<div class="p-2 text-white text-sm">No results found</div>';
+          container.classList.toggle('hidden', results.length === 0);
+        };
+
+        renderSuggestions(searchSuggestions, combinedResults);
+        renderSuggestions(searchSuggestionsMobile, combinedResults);
+      } catch (error) {
+        console.error('Error fetching search results:', error.message);
+        [searchSuggestions, searchSuggestionsMobile].forEach(container => {
+          container.innerHTML = '<div class="p-2 text-white text-sm">Error fetching results</div>';
+          container.classList.remove('hidden');
         });
+      }
     }
 
     function handleEnter(event) {
       if (event.key === "Enter") {
-        handleSearch();
+        const query = (searchInput?.value || searchInputMobile?.value || '').trim();
+        if (query) {
+          window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+        }
+        [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
       }
     }
 
-    function toggleDropdown() {
-      dropdownVisible = !dropdownVisible;
-      categoryDropdown.style.display = dropdownVisible ? 'grid' : 'none';
-    }
-
-    document.addEventListener('click', function(event) {
-      if (!event.target.closest('.dropdown-menu') && !event.target.closest('.category-btn')) {
-        categoryDropdown.style.display = 'none';
-        dropdownVisible = false;
-      }
-    });
+    // Event listeners
+    searchInput?.addEventListener('input', debouncedSearch);
+    searchInputMobile?.addEventListener('input', debouncedSearch);
+    searchInput?.addEventListener('input', () => syncSearchInputs(searchInput));
+    searchInputMobile?.addEventListener('input', () => syncSearchInputs(searchInputMobile));
   </script>
 </body>
 </html>

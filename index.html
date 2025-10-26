@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
-  <!-- Tailwind CSS CDN -->
   <!-- Flowbite CSS CDN -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
@@ -55,7 +54,7 @@
     }
 
     .video-item h3 {
-      --base-font-size: 0.7 em;
+      --base-font-size: 0.7em;
       color: white;
       font-size: var(--base-font-size);
       margin: 0;
@@ -264,26 +263,27 @@
             })
             .then(sceneData => {
               const data = sceneData.data || {};
-              video.description = data.description || 'No description available';
-              video.thumbnail = data.image || video.thumbnail;
-              video.title = data.title || video.title;
-              video.type = data.type || video.type;
-              video.rating = data.rating || video.rating;
-              video.url = data.url || video.url;
-              video.trailer = data.trailer || video.trailer;
-              video.site_id = data.site?.id || video.site_id;
+              // Only update fields if JSON data is missing or invalid
+              video.description = video.description || data.description || 'No description available';
+              video.thumbnail = video.thumbnail && video.thumbnail !== 'https://via.placeholder.com/300x200?text=No+Image' ? video.thumbnail : (data.image || 'https://via.placeholder.com/300x200?text=No+Image');
+              video.title = video.title && video.title !== 'Untitled Video' ? video.title : (data.title || 'Untitled Video');
+              video.type = video.type && video.type !== 'Unknown' ? video.type : (data.type || 'Unknown');
+              video.rating = video.rating || data.rating || 0;
+              video.url = video.url && video.url !== '#' ? video.url : (data.url || '#');
+              video.trailer = video.trailer || data.trailer || '';
+              video.site_id = video.site_id || data.site?.id || 0;
               video.site = {
-                id: data.site?.id || video.site.id,
-                name: data.site?.name || video.site.name,
-                short_name: data.site?.short_name || video.site.short_name,
-                rating: data.site?.rating || video.site.rating,
-                logo: data.site?.logo || video.site.logo,
-                parent: data.site?.parent || video.site.parent
+                id: video.site.id || data.site?.id || 0,
+                name: video.site.name && video.site.name !== 'Unknown Studio' ? video.site.name : (data.site?.name || 'Unknown Studio'),
+                short_name: video.site.short_name && video.site.short_name !== 'Unknown' ? video.site.short_name : (data.site?.short_name || 'Unknown'),
+                rating: video.site.rating || data.site?.rating || 0,
+                logo: video.site.logo || data.site?.logo || '',
+                parent: video.site.parent && video.site.parent.name !== 'Unknown' ? video.site.parent : (data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' })
               };
             })
             .catch(error => {
               console.error(`Error fetching scene ${video.id}:`, error.message);
-              video.description = 'Error fetching description';
+              video.description = video.description || 'Error fetching description';
               video.thumbnail = video.thumbnail || 'https://via.placeholder.com/300x200?text=Error';
             }),
             video.performers.length > 0 ? 
@@ -298,16 +298,17 @@
                 return response.json();
               })
               .then(performerData => {
-                video.actressName = performerData.data?.name || 'Unknown';
+                video.actressName = video.actressName || performerData.data?.name || 'Unknown';
               })
               .catch(error => {
                 console.error(`Error fetching performer ${video.performers[0]} for video ${video.id}:`, error.message);
-                video.actressName = 'Unknown';
+                video.actressName = video.actressName || 'Unknown';
               }) : 
-              Promise.resolve(video.actressName = 'Unknown')
+              Promise.resolve(video.actressName = video.actressName || 'Unknown')
           ])
         )).then(() => {
-          allVideos.sort((a, b) => b.id - a.id);
+          // Reverse the array to show last JSON entry first
+          allVideos.reverse();
           renderVideos();
           renderPagination();
         });

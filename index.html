@@ -235,7 +235,7 @@
           site_id: video.data.site_id || video.data.site?.id || 0,
           url: video.data.url || '#',
           trailer: video.data.trailer || '',
-          thumbnail: video.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+          thumbnail: video.data.background?.full || null, // Set to null if missing
           site: {
             id: video.data.site?.id || 0,
             name: video.data.site?.name || 'Unknown Studio',
@@ -263,9 +263,15 @@
             })
             .then(sceneData => {
               const data = sceneData.data || {};
-              // Only update fields if JSON data is missing or invalid
+              // Update thumbnail only if video.json's background.full is missing/invalid
+              if (!video.thumbnail || video.thumbnail === 'https://via.placeholder.com/300x200?text=No+Image') {
+                video.thumbnail = data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+                console.log(`Video ${video.id}: Using API background.full = ${video.thumbnail}`);
+              } else {
+                console.log(`Video ${video.id}: Using video.json background.full = ${video.thumbnail}`);
+              }
+              // Update other fields
               video.description = video.description || data.description || 'No description available';
-              video.thumbnail = video.thumbnail && video.thumbnail !== 'https://via.placeholder.com/300x200?text=No+Image' ? video.thumbnail : (data.image || 'https://via.placeholder.com/300x200?text=No+Image');
               video.title = video.title && video.title !== 'Untitled Video' ? video.title : (data.title || 'Untitled Video');
               video.type = video.type && video.type !== 'Unknown' ? video.type : (data.type || 'Unknown');
               video.rating = video.rating || data.rating || 0;
@@ -284,7 +290,11 @@
             .catch(error => {
               console.error(`Error fetching scene ${video.id}:`, error.message);
               video.description = video.description || 'Error fetching description';
-              video.thumbnail = video.thumbnail || 'https://via.placeholder.com/300x200?text=Error';
+              // Set thumbnail to placeholder if not already set
+              if (!video.thumbnail) {
+                video.thumbnail = 'https://via.placeholder.com/300x200?text=No+Image';
+                console.log(`Video ${video.id}: API failed, using placeholder = ${video.thumbnail}`);
+              }
             }),
             video.performers.length > 0 ? 
               fetch(`https://api.theporndb.net/performers/${video.performers[0]}`, {
@@ -328,7 +338,7 @@
           const actress = video.actressName || 'Unknown';
           videoItem.innerHTML = `
             <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.title}">
+              <img src="${video.thumbnail}" alt="${video.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
               <h3>${video.title}</h3>
               <div class="actress-box">${actress}</div>
             </a>`;
@@ -421,7 +431,7 @@
           ...(scenesData.data || []).filter(scene => allVideos.some(v => v.id === scene._id)).map(scene => ({
             id: scene._id,
             title: scene.title,
-            thumbnail: scene.image || 'https://via.placeholder.com/300x200?text=No+Image'
+            thumbnail: scene.background?.full || 'https://via.placeholder.com/300x200?text=No+Image'
           })),
           ...(performersData.data || []).flatMap(performer => allVideos.filter(v => v.performers.includes(performer._id)).map(v => ({
             id: v.id,
@@ -441,7 +451,7 @@
         const renderSuggestions = (container, results) => {
           container.innerHTML = results.length ? results.map(video => `
             <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="window.location.href='video.html?id=${video.id}'">
-              <img src="${video.thumbnail}" alt="${video.title}" class="w-10 h-10 rounded mr-2">
+              <img src="${video.thumbnail}" alt="${video.title}" class="w-10 h-10 rounded mr-2" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
               <span class="text-white text-sm">${video.title}</span>
             </div>
           `).join('') : '<div class="p-2 text-white text-sm">No results found</div>';

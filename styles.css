@@ -95,7 +95,7 @@ nav {
     gap: 12px;
   }
   .video-item h3 {
-    font-size: 9px;
+    font-size: calc(var(--base-font-size) * 0.8);
     padding: 3px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;

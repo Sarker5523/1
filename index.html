@@ -12,13 +12,19 @@
     media-src *;
   ">
   <title>Home</title>
-  <!-- Flowbite CSS CDN -->
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .skeleton { @apply bg-gray-700 animate-pulse rounded; }
+    .skeleton-img { @apply w-full h-48 object-cover; }
+    .skeleton-title { @apply h-6 w-3/4 mt-2; }
+    .skeleton-actress { @apply h-4 w-1/2 mt-1; }
+  </style>
 </head>
 <body class="bg-gray-900">
-  <!-- Exact "Navbar with search" from Flowbite docs, with green colors and custom links -->
+
+  <!-- Navbar (unchanged) -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -37,10 +43,8 @@
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
-            <span class="sr-only">Search icon</span>
           </div>
           <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
-          <!-- Suggestions container positioned relative to search input -->
           <div id="search-suggestions" class="search-suggestions hidden"></div>
         </div>
         <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
@@ -61,38 +65,31 @@
           <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
         </div>
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-          <li>
-            <a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Home</a>
-          </li>
-          <li>
-            <a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a>
-          </li>
-          <li>
-            <a href="performers.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a>
-          </li>
+          <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Home</a></li>
+          <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
+          <li><a href="performers.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
   <div class="pagination" id="pagination-top"></div>
-
   <div class="video-list-container">
     <div class="video-list" id="video-list"></div>
   </div>
-
   <div class="pagination" id="pagination-bottom"></div>
 
-  <!-- Flowbite JavaScript CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
     const itemsPerPage = 10;
-    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_BASE = 200; // ms
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
-    let videoById = new Map(); // Quick lookup for caching/search
+    let videoById = new Map();
     let db = null;
     let searchTimeout;
 
@@ -104,42 +101,33 @@
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
 
-    // IndexedDB Setup
+    /* --------------------------------------------------------------
+       IndexedDB Cache
+    -------------------------------------------------------------- */
     function initDB() {
       return new Promise((resolve, reject) => {
-        const request = indexedDB.open('VideoHubCache', 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          db = request.result;
-          resolve(db);
-        };
-        request.onupgradeneeded = (e) => {
+        const req = indexedDB.open('VideoHubCache', 1);
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => { db = req.result; resolve(db); };
+        req.onupgradeneeded = e => {
           const db = e.target.result;
           if (!db.objectStoreNames.contains('videos')) {
-            const store = db.createObjectStore('videos', { keyPath: 'id' });
-            store.createIndex('timestamp', 'timestamp', { unique: false });
+            db.createObjectStore('videos', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
           }
         };
       });
     }
 
-    // Cache functions
     async function getFromCache(id) {
       if (!db) return null;
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const tx = db.transaction('videos', 'readonly');
-        const store = tx.objectStore('videos');
-        const req = store.get(id);
+        const req = tx.objectStore('videos').get(id);
         req.onsuccess = () => {
-          const data = req.result;
-          if (data && Date.now() - data.timestamp < CACHE_TTL) {
-            resolve(data);
-          } else {
-            if (data) {
-              // Delete stale
-              const deleteTx = db.transaction('videos', 'readwrite');
-              deleteTx.objectStore('videos').delete(id);
-            }
+          const d = req.result;
+          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d);
+          else {
+            if (d) db.transaction('videos', 'readwrite').objectStore('videos').delete(id);
             resolve(null);
           }
         };
@@ -149,322 +137,268 @@
 
     async function putToCache(id, data) {
       if (!db) return;
-      const tx = db.transaction('videos', 'readwrite');
-      const store = tx.objectStore('videos');
-      store.put({ ...data, id, timestamp: Date.now() });
+      db.transaction('videos', 'readwrite').objectStore('videos')
+        .put({ ...data, id, timestamp: Date.now() });
     }
 
-    // Enhance video with API data
-    async function enhanceVideo(video) {
-      const cache = await getFromCache(video.id);
-      if (cache) {
-        applyData(video, cache);
+    /* --------------------------------------------------------------
+       Fast + Retry fetch for a single scene
+    -------------------------------------------------------------- */
+    async function fetchSceneWithRetry(id, attempt = 1) {
+      try {
+        const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
+          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
+          keepalive: true,
+          cache: 'no-store'
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id} failed:`, err);
+      }
+
+      if (attempt >= MAX_RETRIES) {
+        console.error(`Scene ${id} failed after ${MAX_RETRIES} retries`);
+        return null;
+      }
+
+      const delay = RETRY_DELAY_BASE * (2 ** (attempt - 1));
+      await new Promise(r => setTimeout(r, delay));
+      return fetchSceneWithRetry(id, attempt + 1);
+    }
+
+    /* --------------------------------------------------------------
+       Enrich page – parallel + retry
+    -------------------------------------------------------------- */
+    async function enrichPageParallel(pageVideos) {
+      const cacheResults = await Promise.all(pageVideos.map(v => getFromCache(v.id)));
+
+      const toFetch = [];
+      const enriched = [];
+
+      for (let i = 0; i < pageVideos.length; i++) {
+        if (cacheResults[i]) {
+          applySceneData(pageVideos[i], cacheResults[i]);
+          enriched[i] = cacheResults[i];
+        } else {
+          toFetch.push(pageVideos[i]);
+          enriched[i] = null;
+        }
+      }
+
+      if (toFetch.length === 0) return;
+
+      // Parallel + retry
+      const fetchPromises = toFetch.map(v => fetchSceneWithRetry(v.id));
+      const responses = await Promise.all(fetchPromises);
+
+      let fetchIdx = 0;
+      for (let i = 0; i < pageVideos.length; i++) {
+        if (enriched[i]) continue;
+
+        const json = responses[fetchIdx++];
+        const scene = json?.data;
+        if (!scene) continue; // skip after retries
+
+        const payload = { scene, performer: scene.performers?.[0] || null };
+        applySceneData(pageVideos[i], payload);
+        await putToCache(pageVideos[i].id, payload);
+      }
+    }
+
+    function applySceneData(video, payload) {
+      const s = payload.scene;
+      const p = payload.performer;
+
+      video.title = (s?.title || '').trim() || 'Untitled Video';
+      video.thumbnail = s?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+      video.actressName = (p?.name || '').trim() || 'Unknown';
+      video.description = s?.description || 'No description';
+      video.url = s?.url || '#';
+      video.trailer = s?.trailer || '';
+      video.site = {
+        id: s?.site?.id || 0,
+        name: s?.site?.name || 'Unknown Studio',
+        short_name: s?.site?.short_name || 'Unknown',
+        rating: s?.site?.rating || 0,
+        logo: s?.site?.logo || '',
+        parent: s?.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
+      };
+    }
+
+    /* --------------------------------------------------------------
+       Load video.json → minimal objects
+    -------------------------------------------------------------- */
+    async function loadVideos() {
+      try {
+        const res = await fetch('video.json');
+        if (!res.ok) throw new Error(`video.json ${res.status}`);
+        const json = await res.json();
+
+        allVideos = json.videos.map(v => {
+          const video = {
+            id: v.data._id,
+            title: null, thumbnail: null, actressName: null,
+            description: '', url: '#', trailer: '',
+            site: { id: 0, name: '', short_name: '', rating: 0, logo: '', parent: { id: 0, name: '', short_name: '' } },
+            performers: v.data.performers?.map(p => p._id) || []
+          };
+          videoById.set(video.id, video);
+          return video;
+        });
+
+        allVideos.reverse();
+        await initDB();
+        renderPagination();
+        await renderCurrentPage();
+      } catch (e) {
+        console.error(e);
+        videoListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load videos.</p>';
+      }
+    }
+
+    /* --------------------------------------------------------------
+       Render current page – skeleton → real data
+    -------------------------------------------------------------- */
+    async function renderCurrentPage() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageVideos = allVideos.slice(start, end);
+
+      if (!pageVideos.length) {
+        videoListContainer.innerHTML = '<p class="text-gray-400 p-4">No videos found.</p>';
         return;
       }
 
-      // Fetch scene
-      let sceneData = null;
-      try {
-        const sceneRes = await fetch(`https://api.theporndb.net/scenes/${video.id}?add_to_collection=true`, {
-          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-        });
-        if (sceneRes.ok) {
-          const sceneJson = await sceneRes.json();
-          sceneData = sceneJson.data || {};
-        }
-      } catch (err) {
-        console.error(`Error fetching scene ${video.id}:`, err);
-      }
+      renderSkeleton(pageVideos.length);
+      await enrichPageParallel(pageVideos);
+      renderRealVideos(pageVideos.filter(v => v.title && v.thumbnail));
+    }
 
-      // Fetch performer if needed
-      let performerData = null;
-      if (video.performers.length > 0) {
-        try {
-          const perfRes = await fetch(`https://api.theporndb.net/performers/${video.performers[0]}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          });
-          if (perfRes.ok) {
-            const perfJson = await perfRes.json();
-            performerData = perfJson.data;
+    function renderSkeleton(count) {
+      videoListContainer.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const div = document.createElement('div');
+        div.className = 'video-item';
+        div.innerHTML = `
+          <a href="#" class="block">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-actress"></div>
+          </a>`;
+        videoListContainer.appendChild(div);
+      }
+    }
+
+    function renderRealVideos(videos) {
+      videoListContainer.innerHTML = '';
+      videos.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'video-item';
+        div.innerHTML = `
+          <a href="video.html?id=${v.id}">
+            <img src="${v.thumbnail}" alt="${v.title}" class="w-full h-48 object-cover rounded-t-lg"
+                 onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
+            <h3 class="text-lg font-semibold text-white mt-2 truncate">${v.title}</h3>
+            <div class="actress-box text-sm text-green-400">${v.actressName}</div>
+          </a>`;
+        videoListContainer.appendChild(div);
+      });
+    }
+
+    /* --------------------------------------------------------------
+       Pagination
+    -------------------------------------------------------------- */
+    function renderPagination() {
+      const total = Math.ceil(allVideos.length / itemsPerPage);
+      [paginationTop, paginationBottom].forEach(el => {
+        el.innerHTML = '';
+        const max = 7;
+        let start = Math.max(1, currentPage - Math.floor(max / 2));
+        let end = Math.min(total, start + max - 1);
+        if (end - start < max - 1) start = Math.max(1, end - max + 1);
+
+        const btn = (page, txt = page, disabled = false, active = false) => {
+          const a = document.createElement('a');
+          a.innerText = txt;
+          if (!disabled) {
+            a.href = `?page=${page}`;
+            a.onclick = e => {
+              e.preventDefault();
+              currentPage = page;
+              history.pushState({}, '', `?page=${page}`);
+              renderCurrentPage();
+              renderPagination();
+            };
           }
-        } catch (err) {
-          console.error(`Error fetching performer for ${video.id}:`, err);
-        }
-      }
-
-      applyData(video, { scene: sceneData, performer: performerData });
-      await putToCache(video.id, { scene: sceneData, performer: performerData });
-    }
-
-    function applyData(video, data) {
-      const sceneData = data.scene;
-      if (sceneData) {
-        if (!video.thumbnail || video.thumbnail === 'https://via.placeholder.com/300x200?text=No+Image') {
-          video.thumbnail = sceneData.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-        }
-        video.description = video.description || sceneData.description || 'No description available';
-        video.title = video.title && video.title !== 'Untitled Video' ? video.title : (sceneData.title || 'Untitled Video');
-        video.type = video.type && video.type !== 'Unknown' ? video.type : (sceneData.type || 'Unknown');
-        video.rating = video.rating || sceneData.rating || 0;
-        video.url = video.url && video.url !== '#' ? video.url : (sceneData.url || '#');
-        video.trailer = video.trailer || sceneData.trailer || '';
-        video.site_id = video.site_id || sceneData.site?.id || 0;
-        video.site = {
-          id: video.site.id || sceneData.site?.id || 0,
-          name: video.site.name && video.site.name !== 'Unknown Studio' ? video.site.name : (sceneData.site?.name || 'Unknown Studio'),
-          short_name: video.site.short_name && video.site.short_name !== 'Unknown' ? video.site.short_name : (sceneData.site?.short_name || 'Unknown'),
-          rating: video.site.rating || sceneData.site?.rating || 0,
-          logo: video.site.logo || sceneData.site?.logo || '',
-          parent: video.site.parent && video.site.parent.name !== 'Unknown' ? video.site.parent : (sceneData.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' })
+          if (active) a.classList.add('active');
+          if (disabled) a.classList.add('disabled');
+          return a;
         };
-      }
 
-      if (data.performer) {
-        video.actressName = video.actressName || data.performer.name || 'Unknown';
-      } else {
-        video.actressName = video.actressName || 'Unknown';
-      }
-
-      if (!video.thumbnail) {
-        video.thumbnail = 'https://via.placeholder.com/300x200?text=No+Image';
-      }
-      if (!video.description) {
-        video.description = 'Error fetching description';
-      }
+        if (currentPage > 1) el.appendChild(btn(currentPage - 1, 'Prev'));
+        for (let i = start; i <= end; i++) el.appendChild(btn(i, i, false, i === currentPage));
+        if (currentPage < total) el.appendChild(btn(currentPage + 1, 'Next'));
+      });
     }
 
-    // Sync mobile and desktop search inputs
-    function syncSearchInputs(source) {
-      if (source === searchInput && searchInputMobile) {
-        searchInputMobile.value = source.value;
-      } else if (source === searchInputMobile && searchInput) {
-        searchInput.value = source.value;
-      }
+    /* --------------------------------------------------------------
+       Search
+    -------------------------------------------------------------- */
+    function syncSearchInputs(src) {
+      if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
+      if (src === searchInputMobile && searchInput) searchInput.value = src.value;
     }
 
-    // Debounced search
     function debouncedSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(handleSearch, 300);
     }
 
-    // Fetch video data from video.json
-    async function loadVideos() {
-      try {
-        const response = await fetch('video.json');
-        const jsonData = await response.json();
-        allVideos = jsonData.videos.map(video => {
-          const v = {
-            video_Id: video.video_Id,
-            id: video.data._id,
-            title: video.data.title || 'Untitled Video',
-            type: video.data.type || 'Unknown',
-            rating: video.data.rating || 0,
-            site_id: video.data.site_id || video.data.site?.id || 0,
-            url: video.data.url || '#',
-            trailer: video.data.trailer || '',
-            thumbnail: video.data.background?.full || null,
-            site: {
-              id: video.data.site?.id || 0,
-              name: video.data.site?.name || 'Unknown Studio',
-              short_name: video.data.site?.short_name || 'Unknown',
-              rating: video.data.site?.rating || 0,
-              logo: video.data.site?.logo || '',
-              parent: video.data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
-            },
-            performers: video.data.performers?.map(p => p._id) || [],
-            actressName: ''
-          };
-          videoById.set(v.id, v);
-          return v;
-        });
-
-        // Reverse the array to show last JSON entry first
-        allVideos.reverse();
-
-        await initDB();
-        renderPagination();
-        await renderVideos(); // This will trigger enhancement for current page only
-      } catch (error) {
-        console.error('Error fetching video.json:', error);
-        videoListContainer.innerHTML = '<p>Error loading videos.</p>';
-      }
-    }
-
-    async function renderVideos() {
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const videosToShow = allVideos.slice(startIndex, endIndex);
-
-      if (videosToShow.length === 0) {
-        videoListContainer.innerHTML = '<p>No videos found.</p>';
-        return;
-      }
-
-      // Render placeholders first for instant UI
-      renderVideoItems(videosToShow, true);
-
-      // Enhance in parallel (paginated: only current page)
-      await Promise.all(videosToShow.map(video => enhanceVideo(video)));
-
-      // Re-render with full data
-      renderVideoItems(videosToShow, false);
-    }
-
-    function renderVideoItems(videos, placeholder = false) {
-      videoListContainer.innerHTML = '';
-      videos.forEach(video => {
-        const videoItem = document.createElement('div');
-        videoItem.classList.add('video-item');
-        const actress = placeholder ? 'Loading...' : (video.actressName || 'Unknown');
-        const title = placeholder ? `${video.title.substring(0, 20)}...` : video.title;
-        const thumb = placeholder ? 'https://via.placeholder.com/300x200?text=Loading' : video.thumbnail;
-        videoItem.innerHTML = `
-          <a href="video.html?id=${video.id}">
-            <img src="${thumb}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
-            <h3>${title}</h3>
-            <div class="actress-box">${actress}</div>
-          </a>`;
-        videoListContainer.appendChild(videoItem);
-      });
-    }
-
-    function renderPagination() {
-      const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-      [paginationTop, paginationBottom].forEach(pag => {
-        pag.innerHTML = '';
-        const maxPagesToShow = 7;
-        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-        if (endPage - startPage < maxPagesToShow - 1) {
-          startPage = Math.max(1, endPage - maxPagesToShow + 1);
-        }
-
-        const createButton = (page, label = page, isDisabled = false, isActive = false) => {
-          const btn = document.createElement('a');
-          btn.innerText = label;
-          if (isDisabled) {
-            btn.classList.add('disabled');
-          } else {
-            btn.href = `?page=${page}`;
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              currentPage = page;
-              history.pushState({}, '', `?page=${page}`);
-              renderVideos();
-              renderPagination();
-            });
-          }
-          if (isActive) btn.classList.add('active');
-          return btn;
-        };
-
-        if (currentPage > 1) {
-          pag.appendChild(createButton(currentPage - 1, 'Prev'));
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-          pag.appendChild(createButton(i, i, false, i === currentPage));
-        }
-
-        if (currentPage < totalPages) {
-          pag.appendChild(createButton(currentPage + 1, 'Next'));
-        }
-      });
-    }
-
-    async function handleSearch() {
-      const query = (searchInput?.value || searchInputMobile?.value || '').trim();
-      if (!query) {
+    function handleSearch() {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+      if (!q) {
         [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
         return;
       }
 
-      // Local filter using allVideos (enhanced data)
-      const localResults = allVideos.filter(video =>
-        video.title.toLowerCase().includes(query.toLowerCase()) ||
-        video.site.name.toLowerCase().includes(query.toLowerCase()) ||
-        (video.site.parent?.name || '').toLowerCase().includes(query.toLowerCase()) ||
-        video.actressName.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 5);
+      const results = allVideos
+        .filter(v => v.title && (
+          v.title.toLowerCase().includes(q) ||
+          v.site?.name?.toLowerCase().includes(q) ||
+          v.actressName?.toLowerCase().includes(q)
+        ))
+        .slice(0, 5);
 
-      // API search for additional results (limited, as before)
-      try {
-        const [scenesResponse, performersResponse, sitesResponse] = await Promise.all([
-          fetch(`https://api.theporndb.net/scenes?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          }),
-          fetch(`https://api.theporndb.net/performers?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          }),
-          fetch(`https://api.theporndb.net/sites?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          })
-        ]);
+      const render = (container, list) => {
+        container.innerHTML = list.length
+          ? list.map(v => `
+              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
+                   onclick="window.location.href='video.html?id=${v.id}'">
+                <img src="${v.thumbnail}" alt="${v.title}" class="w-10 h-10 rounded mr-2 object-cover"
+                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <span class="text-white text-sm">${v.title}</span>
+              </div>`).join('')
+          : '<div class="p-2 text-white text-sm">No results</div>';
+        container.classList.toggle('hidden', list.length === 0);
+      };
 
-        const [scenesData, performersData, sitesData] = await Promise.all([
-          scenesResponse.json(),
-          performersResponse.json(),
-          sitesResponse.json()
-        ]);
-
-        // Cross-check and combine API results
-        const apiResults = [
-          ...(scenesData.data || []).filter(scene => videoById.has(scene._id)).map(scene => ({
-            id: scene._id,
-            title: scene.title,
-            thumbnail: scene.background?.full || 'https://via.placeholder.com/300x200?text=No+Image'
-          })),
-          ...(performersData.data || []).flatMap(performer => {
-            const matchingVideos = allVideos.filter(v => v.performers.includes(performer._id));
-            return matchingVideos.slice(0, 2).map(v => ({ id: v.id, title: v.title, thumbnail: v.thumbnail }));
-          }),
-          ...(sitesData.data || []).flatMap(site => {
-            const matchingVideos = allVideos.filter(v => v.site_id === site._id || v.site.id === site._id);
-            return matchingVideos.slice(0, 2).map(v => ({ id: v.id, title: v.title, thumbnail: v.thumbnail }));
-          })
-        ].slice(0, 5);
-
-        const combinedIds = [...new Set([...localResults.map(r => r.id), ...apiResults.map(r => r.id)])].slice(0, 5);
-        const combinedResults = combinedIds.map(id => videoById.get(id));
-
-        // Render suggestions
-        const renderSuggestions = (container, results) => {
-          container.innerHTML = results.length ? results.map(video => `
-            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="window.location.href='video.html?id=${video.id}'">
-              <img src="${video.thumbnail}" alt="${video.title}" class="w-10 h-10 rounded mr-2" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
-              <span class="text-white text-sm">${video.title}</span>
-            </div>
-          `).join('') : '<div class="p-2 text-white text-sm">No results found</div>';
-          container.classList.toggle('hidden', !results.length);
-        };
-
-        renderSuggestions(searchSuggestions, combinedResults);
-        renderSuggestions(searchSuggestionsMobile, combinedResults);
-      } catch (error) {
-        console.error('Error fetching search results:', error);
-        [searchSuggestions, searchSuggestionsMobile].forEach(container => {
-          container.innerHTML = '<div class="p-2 text-white text-sm">Error fetching results</div>';
-          container.classList.remove('hidden');
-        });
-      }
+      render(searchSuggestions, results);
+      render(searchSuggestionsMobile, results);
     }
 
-    function handleEnter(event) {
-      if (event.key === "Enter") {
-        const query = (searchInput?.value || searchInputMobile?.value || '').trim();
-        if (query) {
-          window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-        }
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+        if (q) window.location.href = `search.html?query=${encodeURIComponent(q)}`;
         [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
       }
     }
 
-    // Init on load
+    /* --------------------------------------------------------------
+       Init
+    -------------------------------------------------------------- */
     loadVideos();
 
-    // Event listeners
     searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInput); });
     searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInputMobile); });
   </script>

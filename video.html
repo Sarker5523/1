@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Details</title>
-  <!-- Flowbite CSS CDN -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900">
-  <!-- Flowbite "Navbar with search" -->
+
+  <!-- Navbar -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -28,7 +28,6 @@
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
-            <span class="sr-only">Search icon</span>
           </div>
           <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions" class="search-suggestions hidden"></div>
@@ -50,32 +49,28 @@
           <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
         </div>
-        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-          <li>
-            <a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-500 md:p-0 md:dark:text-green-500" aria-current="page">Home</a>
-          </li>
-          <li>
-            <a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a>
-          </li>
-          <li>
-            <a href="performers.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a>
-          </li>
+        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border font-medium border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500">Home</a></li>
+          <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
+          <li><a href="performers.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <div class="video-details-container">
-    <div class="video-details" id="video-details">
-      <p class="error-message" id="error-message" style="display: none;">Loading...</p>
-    </div>
+  <!-- Narrow content -->
+  <div class="content-wrapper">
+    <div id="video-details"></div>
   </div>
 
-  <!-- Flowbite JavaScript CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
-    let allVideos = [];
+    const CACHE_TTL = 24 * 60 * 60 * 1000;
+    const MAX_RETRIES = 5;
+    const RETRY_BASE = 250;
+    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    let db = null;
     let searchTimeout;
 
     const searchInput = document.getElementById('search-navbar');
@@ -83,329 +78,235 @@
     const searchSuggestions = document.getElementById('search-suggestions');
     const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
     const videoDetails = document.getElementById('video-details');
-    const errorMessage = document.getElementById('error-message');
 
-    // Sync mobile and desktop search inputs
-    function syncSearchInputs(source) {
-      if (source === searchInput && searchInputMobile) {
-        searchInputMobile.value = source.value;
-      } else if (source === searchInputMobile && searchInput) {
-        searchInput.value = source.value;
+    /* --------------------------------------------------------------
+       IndexedDB
+    -------------------------------------------------------------- */
+    async function initDB() {
+      for (let i = 1; i <= 5; i++) {
+        try {
+          return await new Promise((res, rej) => {
+            const req = indexedDB.open('VideoHubCache', 1);
+            req.onerror = () => rej(req.error);
+            req.onsuccess = () => { db = req.result; res(db); };
+            req.onupgradeneeded = e => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('videos')) {
+                db.createObjectStore('videos', { keyPath: 'id' }).createIndex('ts', 'ts');
+              }
+            };
+          });
+        } catch (e) {
+          if (i === 5) throw e;
+          await new Promise(r => setTimeout(r, RETRY_BASE * i));
+        }
       }
     }
 
-    // Debounced search
+    async function getCache(id) {
+      if (!db) return null;
+      return new Promise(res => {
+        const tx = db.transaction('videos', 'readonly');
+        const req = tx.objectStore('videos').get(id);
+        req.onsuccess = () => {
+          const d = req.result;
+          if (d && Date.now() - d.ts < CACHE_TTL) res(d.payload);
+          else res(null);
+        };
+        req.onerror = () => res(null);
+      });
+    }
+
+    async function putCache(id, payload) {
+      if (!db) return;
+      db.transaction('videos', 'readwrite')
+        .objectStore('videos')
+        .put({ id, payload, ts: Date.now() });
+    }
+
+    /* --------------------------------------------------------------
+       Scene fetch
+    -------------------------------------------------------------- */
+    async function fetchScene(id, attempt = 1) {
+      try {
+        const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
+          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
+        });
+        if (res.ok) return await res.json();
+      } catch (e) {
+        console.warn(`[Scene ${id} retry ${attempt}]`, e);
+      }
+
+      if (attempt >= MAX_RETRIES) return null;
+      const delay = RETRY_BASE * (2 ** (attempt - 1)) + Math.random() * 100;
+      await new Promise(r => setTimeout(r, delay));
+      return fetchScene(id, attempt + 1);
+    }
+
+    /* --------------------------------------------------------------
+       Main load
+    -------------------------------------------------------------- */
+    async function loadVideo() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sceneId = urlParams.get('id');
+      if (!sceneId) {
+        videoDetails.innerHTML = '<p class="text-red-400">No video ID</p>';
+        return;
+      }
+
+      // Try cache first
+      const cached = await getCache(sceneId);
+      if (cached) {
+        renderVideo(cached);
+        return;
+      }
+
+      // Get video_Id from video.json
+      let videoIdForEmbed = 'pupt5r';
+      try {
+        const res = await fetch('video.json');
+        if (res.ok) {
+          const json = await res.json();
+          const entry = json.videos.find(v => String(v.data?._id) === sceneId);
+          if (entry?.video_Id) {
+            videoIdForEmbed = entry.video_Id.trim();
+            console.log(`Found video_Id: ${videoIdForEmbed}`);
+          }
+        }
+      } catch (e) {
+        console.error('video.json load failed:', e);
+      }
+
+      // Fetch scene
+      const json = await fetchScene(sceneId);
+      if (!json?.data) {
+        videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>';
+        return;
+      }
+
+      const scene = json.data;
+      const payload = {
+        id: String(scene._id),
+        title: (scene.title || '').trim() || 'Untitled Video',
+        description: scene.description || 'No description',
+        thumbnail: scene.background?.full || scene.poster || 'https://via.placeholder.com/300x200?text=No+Image',
+        trailer: scene.trailer || '',
+        site: {
+          id: String(scene.site?.id || 0),
+          name: scene.site?.name || 'Unknown Studio',
+          short_name: scene.site?.short_name || 'Unknown',
+          parent: scene.site?.parent ? {
+            id: String(scene.site.parent.id || 0),
+            name: scene.site.parent.name || 'Unknown',
+            short_name: scene.site.parent.short_name || 'Unknown'
+          } : { id: '0', name: 'Unknown', short_name: 'Unknown' }
+        },
+        performers: (scene.performers || []).slice(0, 2).map(p => ({
+          id: String(p._id),
+          name: p.name || 'Unknown'
+        })),
+        videoIdForEmbed
+      };
+
+      await putCache(sceneId, payload);
+      renderVideo(payload);
+    }
+
+    function renderVideo(v) {
+      const embedId = v.videoIdForEmbed && v.videoIdForEmbed !== 'pupt5r' ? v.videoIdForEmbed : 'pupt5r';
+
+      const performerLinks = v.performers.length
+        ? v.performers.map(p => `<a href="actor.html?id=${p.id}" class="text-green-400 hover:underline">${p.name}</a>`).join(', ')
+        : 'Unknown';
+
+      const studioLinks = `<a href="site.html?id=${v.site.id}" class="text-green-400 hover:underline">${v.site.name}</a>` +
+        (v.site.parent.id !== '0' && v.site.parent.name !== v.site.name
+          ? `, <a href="site.html?id=${v.site.parent.id}" class="text-green-400 hover:underline">${v.site.parent.name}</a>`
+          : '');
+
+      videoDetails.innerHTML = `
+        <div class="video-embed mb-6">
+          <iframe 
+            src="https://purn.upn.one/#${embedId}" 
+            width="100%" 
+            height="500" 
+            frameborder="0" 
+            allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
+          </iframe>
+        </div>
+
+        <h1 class="video-title">${v.title}</h1>
+
+        <p class="text-gray-300 mb-4">${v.description}</p>
+        <p class="text-sm text-gray-400 mb-2">Studios: ${studioLinks}</p>
+        <p class="text-sm text-gray-400 mb-4">Performers: ${performerLinks}</p>
+
+        ${v.trailer ? `
+          <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4">
+            <source src="${v.trailer}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        ` : ''}
+      `;
+    }
+
+    /* --------------------------------------------------------------
+       Search
+    -------------------------------------------------------------- */
+    function syncSearch(src) {
+      if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
+      if (src === searchInputMobile && searchInput) searchInput.value = src.value;
+    }
+
     function debouncedSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(handleSearch, 300);
     }
 
-    // Fetch video data from video.json
-    fetch('video.json')
-      .then(response => response.json())
-      .then(jsonData => {
-        allVideos = jsonData.videos.map(video => ({
-          video_Id: video.video_Id || '',
-          id: String(video.data._id), // Ensure ID is string
-          title: video.data.title || 'Untitled Video',
-          type: video.data.type || 'Unknown',
-          rating: video.data.rating || 0,
-          site_id: String(video.data.site_id || video.data.site?.id || 0),
-          url: video.data.url || '#',
-          trailer: video.data.trailer || '',
-          thumbnail: video.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
-          site: {
-            id: String(video.data.site?.id || 0),
-            name: video.data.site?.name || 'Unknown Studio',
-            short_name: video.data.site?.short_name || 'Unknown',
-            rating: video.data.site?.rating || 0,
-            logo: video.data.site?.logo || '',
-            parent: video.data.site?.parent ? { id: String(video.data.site.parent.id || 0), name: video.data.site.parent.name || 'Unknown', short_name: video.data.site.parent.short_name || 'Unknown' } : { id: '0', name: 'Unknown', short_name: 'Unknown' }
-          },
-          performers: video.data.performers?.map(p => String(p._id)) || [],
-          actressName: '',
-          performerIds: video.data.performers?.map(p => String(p._id)) || []
-        }));
-
-        // Fetch additional details
-        Promise.all(allVideos.map(video => 
-          Promise.all([
-            fetch(`https://api.theporndb.net/scenes/${video.id}?add_to_collection=true`, {
-              headers: {
-                'accept': 'application/json',
-                'Authorization': API_TOKEN
-              }
-            })
-            .then(response => {
-              if (!response.ok) throw new Error(`HTTP error ${response.status} for scene ${video.id}`);
-              return response.json();
-            })
-            .then(sceneData => {
-              const data = sceneData.data || {};
-              video.description = data.description || 'No description available';
-              video.thumbnail = data.poster || data.image || video.thumbnail;
-              video.title = data.title || video.title;
-              video.type = data.type || video.type;
-              video.rating = data.rating || video.rating;
-              video.url = data.url || video.url;
-              video.trailer = data.trailer || video.trailer;
-              video.site_id = String(data.site?.id || video.site_id);
-              video.site = {
-                id: String(data.site?.id || video.site.id),
-                name: data.site?.name || video.site.name,
-                short_name: data.site?.short_name || video.site.short_name,
-                rating: data.site?.rating || video.site.rating,
-                logo: data.site?.logo || video.site.logo,
-                parent: data.site?.parent ? { id: String(data.site.parent.id || 0), name: data.site.parent.name || 'Unknown', short_name: data.site.parent.short_name || 'Unknown' } : video.site.parent
-              };
-            })
-            .catch(error => {
-              console.error(`Error fetching scene ${video.id}:`, error.message);
-              video.description = 'No description available';
-              video.thumbnail = video.thumbnail || 'https://via.placeholder.com/300x200?text=Error';
-            }),
-            video.performers.length > 0 ? 
-              Promise.all(video.performers.slice(0, 2).map(performerId => 
-                fetch(`https://api.theporndb.net/performers/${performerId}`, {
-                  headers: {
-                    'accept': 'application/json',
-                    'Authorization': API_TOKEN
-                  }
-                })
-                .then(response => {
-                  if (!response.ok) throw new Error(`HTTP error ${response.status} for performer ${performerId}`);
-                  return response.json();
-                })
-                .then(performerData => ({ id: performerId, name: performerData.data?.name || 'Unknown' }))
-                .catch(error => {
-                  console.error(`Error fetching performer ${performerId}:`, error.message);
-                  return { id: performerId, name: 'Unknown' };
-                })
-              )).then(names => {
-                video.actressName = names.filter(n => n.name !== 'Unknown').map(n => n.name).join(', ') || 'Unknown';
-                video.performerIds = names.map(n => n.id);
-              }) : 
-              Promise.resolve(video.actressName = 'Unknown')
-          ])
-        )).then(() => {
-          renderVideoDetails();
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching video.json:', error);
-        // Fallback to API if video.json fails
-        renderVideoDetails(true);
-      });
-
-    async function renderVideoDetails(fallbackToAPI = false) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const videoId = String(urlParams.get('id')); // Ensure ID is string
-      let video = allVideos.find(v => v.id === videoId);
-
-      if (!video && fallbackToAPI) {
-        // Fetch directly from API if not in video.json
-        try {
-          const response = await fetch(`https://api.theporndb.net/scenes/${videoId}?add_to_collection=true`, {
-            headers: {
-              'accept': 'application/json',
-              'Authorization': API_TOKEN
-            }
-          });
-          if (!response.ok) throw new Error(`HTTP error ${response.status} for scene ${videoId}`);
-          const sceneData = await response.json();
-          const data = sceneData.data || {};
-
-          video = {
-            video_Id: '', // Default; may need mapping for pupt5r
-            id: String(data._id || videoId),
-            title: data.title || 'Untitled Video',
-            description: data.description || 'No description available',
-            thumbnail: data.poster || data.image || 'https://via.placeholder.com/300x200?text=No+Image',
-            trailer: data.trailer || '',
-            site_id: String(data.site?.id || 0),
-            site: {
-              id: String(data.site?.id || 0),
-              name: data.site?.name || 'Unknown Studio',
-              short_name: data.site?.short_name || 'Unknown',
-              rating: data.site?.rating || 0,
-              logo: data.site?.logo || '',
-              parent: data.site?.parent ? { id: String(data.site.parent.id || 0), name: data.site.parent.name || 'Unknown', short_name: data.site.parent.short_name || 'Unknown' } : { id: '0', name: 'Unknown', short_name: 'Unknown' }
-            },
-            performers: data.performers?.map(p => String(p._id)) || [],
-            actressName: '',
-            performerIds: data.performers?.map(p => String(p._id)) || []
-          };
-
-          // Fetch performer names
-          if (video.performers.length > 0) {
-            const names = await Promise.all(video.performers.slice(0, 2).map(performerId => 
-              fetch(`https://api.theporndb.net/performers/${performerId}`, {
-                headers: {
-                  'accept': 'application/json',
-                  'Authorization': API_TOKEN
-                }
-              })
-              .then(response => {
-                if (!response.ok) throw new Error(`HTTP error ${response.status} for performer ${performerId}`);
-                return response.json();
-              })
-              .then(performerData => ({ id: performerId, name: performerData.data?.name || 'Unknown' }))
-              .catch(error => {
-                console.error(`Error fetching performer ${performerId}:`, error.message);
-                return { id: performerId, name: 'Unknown' };
-              })
-            ));
-            video.actressName = names.filter(n => n.name !== 'Unknown').map(n => n.name).join(', ') || 'Unknown';
-            video.performerIds = names.map(n => n.id);
-          } else {
-            video.actressName = 'Unknown';
-          }
-        } catch (error) {
-          console.error(`Error fetching scene ${videoId} from API:`, error.message);
-          errorMessage.textContent = 'Video not found';
-          errorMessage.style.display = 'block';
-          return;
-        }
-      }
-
-      if (!video) {
-        errorMessage.textContent = 'Video not found';
-        errorMessage.style.display = 'block';
-        return;
-      }
-
-      // Use pupt5r for testing, fallback to empty string
-      const videoIdForEmbed = video.video_Id || 'pupt5r';
-
-      // Mock performer names for example output; replace with actual API data
-      const performerNames = videoId === '8018745' ? ['Julia James', 'Laynee James'] : video.actressName.split(', ');
-      const performerIds = videoId === '8018745' ? ['87928', '415035'] : video.performerIds;
-      const studioName = video.site.name === 'Unknown Studio' && videoId === '8018745' ? 'Step Siblings' : video.site.name;
-      const parentName = video.site.parent.name === 'Unknown' && videoId === '8018745' ? 'Team Skeet' : video.site.parent.name;
-      const parentId = video.site.parent.id === '0' && videoId === '8018745' ? '278' : video.site.parent.id;
-
-      const performerLinks = performerIds.length > 0 && video.actressName !== 'Unknown' 
-        ? performerNames.map((name, index) => 
-            `<a href="actor.html?id=${performerIds[index]}">${name}</a>`
-          ).join(', ')
-        : video.actressName;
-
-      const studioLinks = `<a href="site.html?id=${video.site.id}">${studioName}</a>` +
-        (parentName !== 'Unknown' && parentName !== studioName ? `, <a href="site.html?id=${parentId}">${parentName}</a>` : '');
-
-      videoDetails.innerHTML = `
-        <div class="video-embed">
-          <iframe src="https://purn.upn.one/#${videoIdForEmbed}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-        </div>
-        <h1 class="video-title">${video.title}</h1>
-        <div class="description">${video.description}</div>
-        <div class="studios-section">Studios: ${studioLinks}</div>
-        <div class="performers-section">Performers: ${performerLinks}</div>
-        ${video.trailer ? `
-          <div class="video-trailer">
-            <video controls poster="${video.thumbnail}">
-              <source src="${video.trailer}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        ` : ''}
-        
-      `;
-    }
-
     async function handleSearch() {
-      const query = (searchInput?.value || searchInputMobile?.value || '').trim();
-      if (!query) {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+      if (!q) {
         [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
         return;
       }
 
-      // Local filter for immediate feedback
-      const localResults = allVideos.filter(video =>
-        video.title.toLowerCase().includes(query.toLowerCase()) ||
-        video.site.name.toLowerCase().includes(query.toLowerCase()) ||
-        (video.site.parent?.name || '').toLowerCase().includes(query.toLowerCase()) ||
-        video.actressName.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 5);
+      const all = JSON.parse(localStorage.getItem('allVideos') || '[]');
+      const results = all
+        .filter(v => v.title?.toLowerCase().includes(q) || v.actressName?.toLowerCase().includes(q) || v.site?.name?.toLowerCase().includes(q))
+        .slice(0, 5);
 
-      // API search for additional results
-      try {
-        const [scenesResponse, performersResponse, sitesResponse] = await Promise.all([
-          fetch(`https://api.theporndb.net/scenes?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          }),
-          fetch(`https://api.theporndb.net/performers?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          }),
-          fetch(`https://api.theporndb.net/sites?query=${encodeURIComponent(query)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
-          })
-        ]);
+      const render = (c, list) => {
+        c.innerHTML = list.length
+          ? list.map(v => `<div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="location.href='video.html?id=${v.id}'">
+                <img src="${v.thumbnail}" class="w-10 h-10 rounded mr-2 object-cover">
+                <span class="text-white text-sm">${v.title}</span>
+              </div>`).join('')
+          : '<div class="p-2 text-white text-sm">No results</div>';
+        c.classList.toggle('hidden', list.length === 0);
+      };
 
-        const [scenesData, performersData, sitesData] = await Promise.all([
-          scenesResponse.json(),
-          performersResponse.json(),
-          sitesResponse.json()
-        ]);
+      render(searchSuggestions, results);
+      render(searchSuggestionsMobile, results);
+    }
 
-        // Cross-check and combine API results
-        const apiResults = [
-          ...(scenesData.data || []).filter(scene => allVideos.some(v => v.id === String(scene._id))).map(scene => ({
-            id: String(scene._id),
-            title: scene.title,
-            thumbnail: scene.poster || scene.image || 'https://via.placeholder.com/300x200?text=No+Image'
-          })),
-          ...(performersData.data || []).flatMap(performer => allVideos.filter(v => v.performers.includes(String(performer._id))).map(v => ({
-            id: v.id,
-            title: v.title,
-            thumbnail: v.thumbnail
-          }))),
-          ...(sitesData.data || []).flatMap(site => allVideos.filter(v => v.site_id === String(site._id) || v.site.id === String(site._id)).map(v => ({
-            id: v.id,
-            title: v.title,
-            thumbnail: v.thumbnail
-          })))
-        ].slice(0, 5);
-
-        const combinedResults = [...new Set([...localResults, ...apiResults].map(r => r.id))].map(id => allVideos.find(v => v.id === id)).slice(0, 5);
-
-        // Render suggestions
-        const renderSuggestions = (container, results) => {
-          container.innerHTML = results.length ? results.map(video => `
-            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="window.location.href='video.html?id=${video.id}'">
-              <img src="${video.thumbnail}" alt="${video.title}" class="w-10 h-10 rounded mr-2">
-              <span class="text-white text-sm">${video.title}</span>
-            </div>
-          `).join('') : '<div class="p-2 text-white text-sm">No results found</div>';
-          container.classList.toggle('hidden', results.length === 0);
-        };
-
-        renderSuggestions(searchSuggestions, combinedResults);
-        renderSuggestions(searchSuggestionsMobile, combinedResults);
-      } catch (error) {
-        console.error('Error fetching search results:', error.message);
-        [searchSuggestions, searchSuggestionsMobile].forEach(container => {
-          container.innerHTML = '<div class="p-2 text-white text-sm">Error fetching results</div>';
-          container.classList.remove('hidden');
-        });
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+        if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
       }
     }
 
-    function handleEnter(event) {
-      if (event.key === "Enter") {
-        const query = (searchInput?.value || searchInputMobile?.value || '').trim();
-        if (query) {
-          window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-        }
-        [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
-      }
-    }
+    /* --------------------------------------------------------------
+       Init
+    -------------------------------------------------------------- */
+    initDB().then(loadVideo).catch(() => {
+      videoDetails.innerHTML = '<p class="text-red-400">Failed to initialize cache</p>';
+    });
 
-    // Event listeners
-    searchInput?.addEventListener('input', debouncedSearch);
-    searchInputMobile?.addEventListener('input', debouncedSearch);
-    searchInput?.addEventListener('input', () => syncSearchInputs(searchInput));
-    searchInputMobile?.addEventListener('input', () => syncSearchInputs(searchInputMobile));
+    searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearch(searchInput); });
+    searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearch(searchInputMobile); });
   </script>
 </body>
 </html>

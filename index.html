@@ -84,14 +84,23 @@
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
     const itemsPerPage = 10;
     const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
-    const MAX_RETRIES = 3;
-    const RETRY_DELAY_BASE = 200; // ms
+    const MAX_RETRIES = 5; // Increased for Safari reliability
+    const RETRY_DELAY_BASE = 250; // ms, slightly higher for iOS
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
     let videoById = new Map();
     let db = null;
     let searchTimeout;
+
+    // iOS/Safari detection for extra retries/timeouts
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOSSafari = isIOS && isSafari;
+    if (isIOSSafari) {
+      // Safari/iOS needs more aggressive handling
+      // MAX_RETRIES already increased
+    }
 
     const searchInput = document.getElementById('search-navbar');
     const searchInputMobile = document.getElementById('search-navbar-mobile');
@@ -102,20 +111,28 @@
     const paginationBottom = document.getElementById('pagination-bottom');
 
     /* --------------------------------------------------------------
-       IndexedDB Cache
+       Robust IndexedDB Init (Retry on Safari/iOS fail)
     -------------------------------------------------------------- */
-    function initDB() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open('VideoHubCache', 1);
-        req.onerror = () => reject(req.error);
-        req.onsuccess = () => { db = req.result; resolve(db); };
-        req.onupgradeneeded = e => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains('videos')) {
-            db.createObjectStore('videos', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
-          }
-        };
-      });
+    async function initDBWithRetry(maxAttempts = 5) {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          return await new Promise((resolve, reject) => {
+            const req = indexedDB.open('VideoHubCache', 1);
+            req.onerror = () => reject(req.error);
+            req.onsuccess = () => { db = req.result; resolve(db); };
+            req.onupgradeneeded = e => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('videos')) {
+                db.createObjectStore('videos', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
+              }
+            };
+          });
+        } catch (err) {
+          console.warn(`DB init attempt ${attempt} failed:`, err);
+          if (attempt === maxAttempts) throw err;
+          await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt)); // Backoff
+        }
+      }
     }
 
     async function getFromCache(id) {
@@ -142,14 +159,15 @@
     }
 
     /* --------------------------------------------------------------
-       Fast + Retry fetch for a single scene
+       Ultra-reliable Fetch (No keepalive, extra retries for Safari)
     -------------------------------------------------------------- */
     async function fetchSceneWithRetry(id, attempt = 1) {
       try {
         const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
           headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-          keepalive: true,
-          cache: 'no-store'
+          cache: 'no-store',
+          // NO keepalive - it's buggy in Safari/iOS
+          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000) // Longer timeout for iOS
         });
         if (res.ok) return await res.json();
       } catch (err) {
@@ -157,17 +175,19 @@
       }
 
       if (attempt >= MAX_RETRIES) {
-        console.error(`Scene ${id} failed after ${MAX_RETRIES} retries`);
+        console.error(`Scene ${id} failed permanently after ${MAX_RETRIES} retries`);
         return null;
       }
 
-      const delay = RETRY_DELAY_BASE * (2 ** (attempt - 1));
+      // Exponential backoff + jitter for iOS flakiness
+      const jitter = Math.random() * 100;
+      const delay = (RETRY_DELAY_BASE * (2 ** (attempt - 1))) + jitter;
       await new Promise(r => setTimeout(r, delay));
       return fetchSceneWithRetry(id, attempt + 1);
     }
 
     /* --------------------------------------------------------------
-       Enrich page – parallel + retry
+       Enrich page – cache-first, then parallel retry fetches
     -------------------------------------------------------------- */
     async function enrichPageParallel(pageVideos) {
       const cacheResults = await Promise.all(pageVideos.map(v => getFromCache(v.id)));
@@ -187,7 +207,7 @@
 
       if (toFetch.length === 0) return;
 
-      // Parallel + retry
+      // Parallel retries (non-blocking)
       const fetchPromises = toFetch.map(v => fetchSceneWithRetry(v.id));
       const responses = await Promise.all(fetchPromises);
 
@@ -197,7 +217,7 @@
 
         const json = responses[fetchIdx++];
         const scene = json?.data;
-        if (!scene) continue; // skip after retries
+        if (!scene) continue; // Rare permanent fail
 
         const payload = { scene, performer: scene.performers?.[0] || null };
         applySceneData(pageVideos[i], payload);
@@ -247,7 +267,7 @@
         });
 
         allVideos.reverse();
-        await initDB();
+        await initDBWithRetry(); // Retry wrapper
         renderPagination();
         await renderCurrentPage();
       } catch (e) {
@@ -257,7 +277,7 @@
     }
 
     /* --------------------------------------------------------------
-       Render current page – skeleton → real data
+       Render current page – skeleton → cache → background enrich
     -------------------------------------------------------------- */
     async function renderCurrentPage() {
       const start = (currentPage - 1) * itemsPerPage;
@@ -270,6 +290,8 @@
       }
 
       renderSkeleton(pageVideos.length);
+
+      // Render *cached* data immediately (instant on reload)
       await enrichPageParallel(pageVideos);
       renderRealVideos(pageVideos.filter(v => v.title && v.thumbnail));
     }

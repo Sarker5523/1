@@ -70,8 +70,8 @@ nav {
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  flex: 1 1 calc(16.66% - 16px);
-  max-width: calc(16.66% - 16px);
+  flex: 1 1 calc(25% - 16px);
+  max-width: calc(25% - 16px);
   position: relative;
 }
 
@@ -87,6 +87,206 @@ nav {
   border: none;
 }
 
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.pagination a, .pagination span {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 5px;
+  background-color: #00ab41;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination a:hover {
+  background-color: #007a2a;
+}
+
+.pagination .active {
+  background-color: #007a2a;
+  font-weight: bold;
+}
+
+.pagination .disabled {
+  background-color: #888;
+  cursor: not-allowed;
+}
+
+.video-item {
+  text-align: center;
+  position: relative;
+}
+
+.video-item img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  display: block;
+}
+
+.video-item h3 {
+  --base-font-size: 0.7em;
+  color: white;
+  font-size: var(--base-font-size);
+  margin: 0;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  line-height: 1.2;
+}
+
+.actress-box {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  background-color: hsl(209, 100%, 60%);
+  color: rgb(0, 0, 0);
+  min-width: 50px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 10px;
+  font-size: 0.65em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.3); /* Added inner glow */
+  font-family: 'Inter', sans-serif; /* Replaced with Inter for a cleaner, more modern look */
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.5rem;
+  margin-top: 0.25rem;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.search-suggestions div {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-suggestions div:hover {
+  background-color: #00ab41;
+}
+
+.search-suggestions img {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.25rem;
+  margin-right: 0.75rem;
+}
+
+/* Video Details Styles */
+.video-details-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.video-details {
+  background-color: #1f2937;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.video-embed {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio for iframe */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.video-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-trailer {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.video-trailer video {
+  width: 100%;
+  height: auto;
+  max-height: 500px; /* Limit height for vertical posters */
+  display: block;
+  border-radius: 8px;
+}
+
+.video-title {
+  color: #00ab41;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.studios-section, .performers-section {
+  margin-bottom: 12px;
+  color: #d1d5db;
+  font-size: 0.9em;
+}
+
+.studios-section a, .performers-section a {
+  color: #00ab41;
+  text-decoration: none;
+  margin-right: 4px;
+}
+
+.studios-section a:hover, .performers-section a:hover {
+  color: #007a2a;
+}
+
+.description {
+  margin-top: 16px;
+  color: #d1d5db;
+  line-height: 1.6;
+  font-size: 0.9em;
+}
+
+.error-message {
+  color: #f87171;
+  text-align: center;
+  padding: 20px;
+  font-size: 1em;
+}
+
 /* Media queries for responsive design */
 @media (max-width: 600px) {
   .video-list {
@@ -95,7 +295,7 @@ nav {
     gap: 12px;
   }
   .video-item h3 {
-    font-size: calc(var(--base-font-size) * 0.8);
+    font-size: clamp(0.4em, 2.5vw, 0.55em) !important; /* Fluid + !important for testing */
     padding: 3px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
@@ -111,8 +311,10 @@ nav {
     font-size: 0.6em;
     padding: 0 5px;
     border-radius: 5px;
-    top: 6px;
-    left: 6px;
+    top: 1.5px;
+    left: 2px;
+      
+    font-family: 'Inter', sans-serif; /* Inter on mobile too */
   }
   .max-w-screen-xl {
     padding: 6px;
@@ -121,18 +323,37 @@ nav {
     width: 28px;
     height: 28px;
   }
+  .video-details-container {
+    padding: 12px;
+  }
+
+  .video-details {
+    padding: 12px;
+  }
+
+  .video-title {
+    font-size: 1.25em;
+  }
+
+  .video-trailer video {
+    max-height: 300px;
+  }
+
+  .studios-section, .performers-section, .description {
+    font-size: 0.85em;
+  }
 }
 
 @media (min-width: 601px) and (max-width: 1200px) {
   .video-item {
-    flex: 1 1 calc(33.33% - 16px);
-    max-width: calc(33.33% - 16px);
+    flex: 1 1 calc(30% - 16px);
+    max-width: calc(30% - 16px);
   }
 }
 
 @media (min-width: 1201px) {
   .video-item {
-    flex: 1 1 calc(16% - 16px);
-    max-width: calc(16% - 16px);
+    flex: 1 1 calc(60% - 16px);
+    max-width: calc(25% - 16px);
   }
 }

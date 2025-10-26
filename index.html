@@ -3,125 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    connect-src 'self' https://api.theporndb.net https://cdnjs.cloudflare.com ws://127.0.0.1:3001;
+    img-src * data: https:;
+    media-src *;
+  ">
   <title>Home</title>
   <!-- Flowbite CSS CDN -->
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .pagination {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 20px 0;
-    }
-
-    .pagination a, .pagination span {
-      display: inline-block;
-      padding: 8px 12px;
-      margin: 5px;
-      background-color: #00ab41;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .pagination a:hover {
-      background-color: #007a2a;
-    }
-
-    .pagination .active {
-      background-color: #007a2a;
-      font-weight: bold;
-    }
-
-    .pagination .disabled {
-      background-color: #888;
-      cursor: not-allowed;
-    }
-
-    .video-item {
-      text-align: center;
-      position: relative;
-    }
-
-    .video-item img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 5px;
-      display: block;
-    }
-
-    .video-item h3 {
-      --base-font-size: 0.7em;
-      color: white;
-      font-size: var(--base-font-size);
-      margin: 0;
-      padding: 8px;
-      background-color: rgba(0, 0, 0, 0.6);
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      border-bottom-left-radius: 5px;
-      border-bottom-right-radius: 5px;
-      line-height: 1.2;
-    }
-
-    .actress-box {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: #00ab41;
-      color: white;
-      min-width: 50px;
-      height: 24px;
-      line-height: 24px;
-      border-radius: 8px;
-      font-size: 0.7em;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      padding: 0 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    .search-suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background-color: #374151;
-      border: 1px solid #4b5563;
-      border-radius: 0.5rem;
-      margin-top: 0.25rem;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 50;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .search-suggestions div {
-      display: flex;
-      align-items: center;
-      padding: 0.75rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    .search-suggestions div:hover {
-      background-color: #00ab41;
-    }
-
-    .search-suggestions img {
-      width: 40px;
-      height: 40px;
-      border-radius: 0.25rem;
-      margin-right: 0.75rem;
-    }
-  </style>
 </head>
 <body class="bg-gray-900">
   <!-- Exact "Navbar with search" from Flowbite docs, with green colors and custom links -->
@@ -193,10 +87,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
-    const itemsPerPage = 30;
+    const itemsPerPage = 10;
+    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
+    let videoById = new Map(); // Quick lookup for caching/search
+    let db = null;
     let searchTimeout;
 
     const searchInput = document.getElementById('search-navbar');
@@ -206,6 +103,135 @@
     const videoListContainer = document.getElementById('video-list');
     const paginationTop = document.getElementById('pagination-top');
     const paginationBottom = document.getElementById('pagination-bottom');
+
+    // IndexedDB Setup
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('VideoHubCache', 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          db = request.result;
+          resolve(db);
+        };
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('videos')) {
+            const store = db.createObjectStore('videos', { keyPath: 'id' });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+      });
+    }
+
+    // Cache functions
+    async function getFromCache(id) {
+      if (!db) return null;
+      return new Promise((resolve) => {
+        const tx = db.transaction('videos', 'readonly');
+        const store = tx.objectStore('videos');
+        const req = store.get(id);
+        req.onsuccess = () => {
+          const data = req.result;
+          if (data && Date.now() - data.timestamp < CACHE_TTL) {
+            resolve(data);
+          } else {
+            if (data) {
+              // Delete stale
+              const deleteTx = db.transaction('videos', 'readwrite');
+              deleteTx.objectStore('videos').delete(id);
+            }
+            resolve(null);
+          }
+        };
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function putToCache(id, data) {
+      if (!db) return;
+      const tx = db.transaction('videos', 'readwrite');
+      const store = tx.objectStore('videos');
+      store.put({ ...data, id, timestamp: Date.now() });
+    }
+
+    // Enhance video with API data
+    async function enhanceVideo(video) {
+      const cache = await getFromCache(video.id);
+      if (cache) {
+        applyData(video, cache);
+        return;
+      }
+
+      // Fetch scene
+      let sceneData = null;
+      try {
+        const sceneRes = await fetch(`https://api.theporndb.net/scenes/${video.id}?add_to_collection=true`, {
+          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
+        });
+        if (sceneRes.ok) {
+          const sceneJson = await sceneRes.json();
+          sceneData = sceneJson.data || {};
+        }
+      } catch (err) {
+        console.error(`Error fetching scene ${video.id}:`, err);
+      }
+
+      // Fetch performer if needed
+      let performerData = null;
+      if (video.performers.length > 0) {
+        try {
+          const perfRes = await fetch(`https://api.theporndb.net/performers/${video.performers[0]}`, {
+            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN }
+          });
+          if (perfRes.ok) {
+            const perfJson = await perfRes.json();
+            performerData = perfJson.data;
+          }
+        } catch (err) {
+          console.error(`Error fetching performer for ${video.id}:`, err);
+        }
+      }
+
+      applyData(video, { scene: sceneData, performer: performerData });
+      await putToCache(video.id, { scene: sceneData, performer: performerData });
+    }
+
+    function applyData(video, data) {
+      const sceneData = data.scene;
+      if (sceneData) {
+        if (!video.thumbnail || video.thumbnail === 'https://via.placeholder.com/300x200?text=No+Image') {
+          video.thumbnail = sceneData.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+        }
+        video.description = video.description || sceneData.description || 'No description available';
+        video.title = video.title && video.title !== 'Untitled Video' ? video.title : (sceneData.title || 'Untitled Video');
+        video.type = video.type && video.type !== 'Unknown' ? video.type : (sceneData.type || 'Unknown');
+        video.rating = video.rating || sceneData.rating || 0;
+        video.url = video.url && video.url !== '#' ? video.url : (sceneData.url || '#');
+        video.trailer = video.trailer || sceneData.trailer || '';
+        video.site_id = video.site_id || sceneData.site?.id || 0;
+        video.site = {
+          id: video.site.id || sceneData.site?.id || 0,
+          name: video.site.name && video.site.name !== 'Unknown Studio' ? video.site.name : (sceneData.site?.name || 'Unknown Studio'),
+          short_name: video.site.short_name && video.site.short_name !== 'Unknown' ? video.site.short_name : (sceneData.site?.short_name || 'Unknown'),
+          rating: video.site.rating || sceneData.site?.rating || 0,
+          logo: video.site.logo || sceneData.site?.logo || '',
+          parent: video.site.parent && video.site.parent.name !== 'Unknown' ? video.site.parent : (sceneData.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' })
+        };
+      }
+
+      if (data.performer) {
+        video.actressName = video.actressName || data.performer.name || 'Unknown';
+      } else {
+        video.actressName = video.actressName || 'Unknown';
+      }
+
+      if (!video.thumbnail) {
+        video.thumbnail = 'https://via.placeholder.com/300x200?text=No+Image';
+      }
+      if (!video.description) {
+        video.description = 'Error fetching description';
+      }
+    }
 
     // Sync mobile and desktop search inputs
     function syncSearchInputs(source) {
@@ -223,172 +249,129 @@
     }
 
     // Fetch video data from video.json
-    fetch('video.json')
-      .then(response => response.json())
-      .then(jsonData => {
-        allVideos = jsonData.videos.map(video => ({
-          video_Id: video.video_Id,
-          id: video.data._id,
-          title: video.data.title || 'Untitled Video',
-          type: video.data.type || 'Unknown',
-          rating: video.data.rating || 0,
-          site_id: video.data.site_id || video.data.site?.id || 0,
-          url: video.data.url || '#',
-          trailer: video.data.trailer || '',
-          thumbnail: video.data.background?.full || null, // Set to null if missing
-          site: {
-            id: video.data.site?.id || 0,
-            name: video.data.site?.name || 'Unknown Studio',
-            short_name: video.data.site?.short_name || 'Unknown',
-            rating: video.data.site?.rating || 0,
-            logo: video.data.site?.logo || '',
-            parent: video.data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
-          },
-          performers: video.data.performers?.map(p => p._id) || [],
-          actressName: ''
-        }));
-
-        // Fetch additional scene details and actress/actor name
-        Promise.all(allVideos.map(video => 
-          Promise.all([
-            fetch(`https://api.theporndb.net/scenes/${video.id}?add_to_collection=true`, {
-              headers: {
-                'accept': 'application/json',
-                'Authorization': API_TOKEN
-              }
-            })
-            .then(response => {
-              if (!response.ok) throw new Error(`HTTP error ${response.status} for scene ${video.id}`);
-              return response.json();
-            })
-            .then(sceneData => {
-              const data = sceneData.data || {};
-              // Update thumbnail only if video.json's background.full is missing/invalid
-              if (!video.thumbnail || video.thumbnail === 'https://via.placeholder.com/300x200?text=No+Image') {
-                video.thumbnail = data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-                console.log(`Video ${video.id}: Using API background.full = ${video.thumbnail}`);
-              } else {
-                console.log(`Video ${video.id}: Using video.json background.full = ${video.thumbnail}`);
-              }
-              // Update other fields
-              video.description = video.description || data.description || 'No description available';
-              video.title = video.title && video.title !== 'Untitled Video' ? video.title : (data.title || 'Untitled Video');
-              video.type = video.type && video.type !== 'Unknown' ? video.type : (data.type || 'Unknown');
-              video.rating = video.rating || data.rating || 0;
-              video.url = video.url && video.url !== '#' ? video.url : (data.url || '#');
-              video.trailer = video.trailer || data.trailer || '';
-              video.site_id = video.site_id || data.site?.id || 0;
-              video.site = {
-                id: video.site.id || data.site?.id || 0,
-                name: video.site.name && video.site.name !== 'Unknown Studio' ? video.site.name : (data.site?.name || 'Unknown Studio'),
-                short_name: video.site.short_name && video.site.short_name !== 'Unknown' ? video.site.short_name : (data.site?.short_name || 'Unknown'),
-                rating: video.site.rating || data.site?.rating || 0,
-                logo: video.site.logo || data.site?.logo || '',
-                parent: video.site.parent && video.site.parent.name !== 'Unknown' ? video.site.parent : (data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' })
-              };
-            })
-            .catch(error => {
-              console.error(`Error fetching scene ${video.id}:`, error.message);
-              video.description = video.description || 'Error fetching description';
-              // Set thumbnail to placeholder if not already set
-              if (!video.thumbnail) {
-                video.thumbnail = 'https://via.placeholder.com/300x200?text=No+Image';
-                console.log(`Video ${video.id}: API failed, using placeholder = ${video.thumbnail}`);
-              }
-            }),
-            video.performers.length > 0 ? 
-              fetch(`https://api.theporndb.net/performers/${video.performers[0]}`, {
-                headers: {
-                  'accept': 'application/json',
-                  'Authorization': API_TOKEN
-                }
-              })
-              .then(response => {
-                if (!response.ok) throw new Error(`HTTP error ${response.status} for performer ${video.performers[0]}`);
-                return response.json();
-              })
-              .then(performerData => {
-                video.actressName = video.actressName || performerData.data?.name || 'Unknown';
-              })
-              .catch(error => {
-                console.error(`Error fetching performer ${video.performers[0]} for video ${video.id}:`, error.message);
-                video.actressName = video.actressName || 'Unknown';
-              }) : 
-              Promise.resolve(video.actressName = video.actressName || 'Unknown')
-          ])
-        )).then(() => {
-          // Reverse the array to show last JSON entry first
-          allVideos.reverse();
-          renderVideos();
-          renderPagination();
+    async function loadVideos() {
+      try {
+        const response = await fetch('video.json');
+        const jsonData = await response.json();
+        allVideos = jsonData.videos.map(video => {
+          const v = {
+            video_Id: video.video_Id,
+            id: video.data._id,
+            title: video.data.title || 'Untitled Video',
+            type: video.data.type || 'Unknown',
+            rating: video.data.rating || 0,
+            site_id: video.data.site_id || video.data.site?.id || 0,
+            url: video.data.url || '#',
+            trailer: video.data.trailer || '',
+            thumbnail: video.data.background?.full || null,
+            site: {
+              id: video.data.site?.id || 0,
+              name: video.data.site?.name || 'Unknown Studio',
+              short_name: video.data.site?.short_name || 'Unknown',
+              rating: video.data.site?.rating || 0,
+              logo: video.data.site?.logo || '',
+              parent: video.data.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
+            },
+            performers: video.data.performers?.map(p => p._id) || [],
+            actressName: ''
+          };
+          videoById.set(v.id, v);
+          return v;
         });
-      })
-      .catch(error => console.error('Error fetching video.json:', error));
 
-    function renderVideos() {
-      videoListContainer.innerHTML = '';
+        // Reverse the array to show last JSON entry first
+        allVideos.reverse();
+
+        await initDB();
+        renderPagination();
+        await renderVideos(); // This will trigger enhancement for current page only
+      } catch (error) {
+        console.error('Error fetching video.json:', error);
+        videoListContainer.innerHTML = '<p>Error loading videos.</p>';
+      }
+    }
+
+    async function renderVideos() {
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const videosToShow = allVideos.slice(startIndex, endIndex);
 
-      if (videosToShow.length > 0) {
-        videosToShow.forEach(video => {
-          const videoItem = document.createElement('div');
-          videoItem.classList.add('video-item');
-          const actress = video.actressName || 'Unknown';
-          videoItem.innerHTML = `
-            <a href="video.html?id=${video.id}">
-              <img src="${video.thumbnail}" alt="${video.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
-              <h3>${video.title}</h3>
-              <div class="actress-box">${actress}</div>
-            </a>`;
-          videoListContainer.appendChild(videoItem);
-        });
-      } else {
+      if (videosToShow.length === 0) {
         videoListContainer.innerHTML = '<p>No videos found.</p>';
+        return;
       }
+
+      // Render placeholders first for instant UI
+      renderVideoItems(videosToShow, true);
+
+      // Enhance in parallel (paginated: only current page)
+      await Promise.all(videosToShow.map(video => enhanceVideo(video)));
+
+      // Re-render with full data
+      renderVideoItems(videosToShow, false);
+    }
+
+    function renderVideoItems(videos, placeholder = false) {
+      videoListContainer.innerHTML = '';
+      videos.forEach(video => {
+        const videoItem = document.createElement('div');
+        videoItem.classList.add('video-item');
+        const actress = placeholder ? 'Loading...' : (video.actressName || 'Unknown');
+        const title = placeholder ? `${video.title.substring(0, 20)}...` : video.title;
+        const thumb = placeholder ? 'https://via.placeholder.com/300x200?text=Loading' : video.thumbnail;
+        videoItem.innerHTML = `
+          <a href="video.html?id=${video.id}">
+            <img src="${thumb}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
+            <h3>${title}</h3>
+            <div class="actress-box">${actress}</div>
+          </a>`;
+        videoListContainer.appendChild(videoItem);
+      });
     }
 
     function renderPagination() {
       const totalPages = Math.ceil(allVideos.length / itemsPerPage);
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
+      [paginationTop, paginationBottom].forEach(pag => {
+        pag.innerHTML = '';
+        const maxPagesToShow = 7;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-      const maxPagesToShow = 7;
-      let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-      let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-      if (endPage - startPage < maxPagesToShow - 1) {
-        startPage = Math.max(1, endPage - maxPagesToShow + 1);
-      }
-
-      const createButton = (page, label = page, isDisabled = false, isActive = false) => {
-        const btn = document.createElement('a');
-        btn.innerText = label;
-        if (isDisabled) {
-          btn.classList.add('disabled');
-        } else {
-          btn.href = `?page=${page}`;
+        if (endPage - startPage < maxPagesToShow - 1) {
+          startPage = Math.max(1, endPage - maxPagesToShow + 1);
         }
-        if (isActive) btn.classList.add('active');
-        return btn;
-      };
 
-      if (currentPage > 1) {
-        paginationTop.appendChild(createButton(currentPage - 1, 'Prev'));
-        paginationBottom.appendChild(createButton(currentPage - 1, 'Prev'));
-      }
+        const createButton = (page, label = page, isDisabled = false, isActive = false) => {
+          const btn = document.createElement('a');
+          btn.innerText = label;
+          if (isDisabled) {
+            btn.classList.add('disabled');
+          } else {
+            btn.href = `?page=${page}`;
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              currentPage = page;
+              history.pushState({}, '', `?page=${page}`);
+              renderVideos();
+              renderPagination();
+            });
+          }
+          if (isActive) btn.classList.add('active');
+          return btn;
+        };
 
-      for (let i = startPage; i <= endPage; i++) {
-        const btn = createButton(i, i, false, i === currentPage);
-        paginationTop.appendChild(btn.cloneNode(true));
-        paginationBottom.appendChild(btn);
-      }
+        if (currentPage > 1) {
+          pag.appendChild(createButton(currentPage - 1, 'Prev'));
+        }
 
-      if (currentPage < totalPages) {
-        paginationTop.appendChild(createButton(currentPage + 1, 'Next'));
-        paginationBottom.appendChild(createButton(currentPage + 1, 'Next'));
-      }
+        for (let i = startPage; i <= endPage; i++) {
+          pag.appendChild(createButton(i, i, false, i === currentPage));
+        }
+
+        if (currentPage < totalPages) {
+          pag.appendChild(createButton(currentPage + 1, 'Next'));
+        }
+      });
     }
 
     async function handleSearch() {
@@ -398,7 +381,7 @@
         return;
       }
 
-      // Local filter for immediate feedback
+      // Local filter using allVideos (enhanced data)
       const localResults = allVideos.filter(video =>
         video.title.toLowerCase().includes(query.toLowerCase()) ||
         video.site.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -406,7 +389,7 @@
         video.actressName.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 5);
 
-      // API search for additional results
+      // API search for additional results (limited, as before)
       try {
         const [scenesResponse, performersResponse, sitesResponse] = await Promise.all([
           fetch(`https://api.theporndb.net/scenes?query=${encodeURIComponent(query)}`, {
@@ -428,26 +411,25 @@
 
         // Cross-check and combine API results
         const apiResults = [
-          ...(scenesData.data || []).filter(scene => allVideos.some(v => v.id === scene._id)).map(scene => ({
+          ...(scenesData.data || []).filter(scene => videoById.has(scene._id)).map(scene => ({
             id: scene._id,
             title: scene.title,
             thumbnail: scene.background?.full || 'https://via.placeholder.com/300x200?text=No+Image'
           })),
-          ...(performersData.data || []).flatMap(performer => allVideos.filter(v => v.performers.includes(performer._id)).map(v => ({
-            id: v.id,
-            title: v.title,
-            thumbnail: v.thumbnail
-          }))),
-          ...(sitesData.data || []).flatMap(site => allVideos.filter(v => v.site_id === site._id || v.site.id === site._id).map(v => ({
-            id: v.id,
-            title: v.title,
-            thumbnail: v.thumbnail
-          })))
+          ...(performersData.data || []).flatMap(performer => {
+            const matchingVideos = allVideos.filter(v => v.performers.includes(performer._id));
+            return matchingVideos.slice(0, 2).map(v => ({ id: v.id, title: v.title, thumbnail: v.thumbnail }));
+          }),
+          ...(sitesData.data || []).flatMap(site => {
+            const matchingVideos = allVideos.filter(v => v.site_id === site._id || v.site.id === site._id);
+            return matchingVideos.slice(0, 2).map(v => ({ id: v.id, title: v.title, thumbnail: v.thumbnail }));
+          })
         ].slice(0, 5);
 
-        const combinedResults = [...new Set([...localResults, ...apiResults].map(r => r.id))].map(id => allVideos.find(v => v.id === id)).slice(0, 5);
+        const combinedIds = [...new Set([...localResults.map(r => r.id), ...apiResults.map(r => r.id)])].slice(0, 5);
+        const combinedResults = combinedIds.map(id => videoById.get(id));
 
-        // Render suggestions for both desktop and mobile
+        // Render suggestions
         const renderSuggestions = (container, results) => {
           container.innerHTML = results.length ? results.map(video => `
             <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="window.location.href='video.html?id=${video.id}'">
@@ -455,13 +437,13 @@
               <span class="text-white text-sm">${video.title}</span>
             </div>
           `).join('') : '<div class="p-2 text-white text-sm">No results found</div>';
-          container.classList.toggle('hidden', results.length === 0);
+          container.classList.toggle('hidden', !results.length);
         };
 
         renderSuggestions(searchSuggestions, combinedResults);
         renderSuggestions(searchSuggestionsMobile, combinedResults);
       } catch (error) {
-        console.error('Error fetching search results:', error.message);
+        console.error('Error fetching search results:', error);
         [searchSuggestions, searchSuggestionsMobile].forEach(container => {
           container.innerHTML = '<div class="p-2 text-white text-sm">Error fetching results</div>';
           container.classList.remove('hidden');
@@ -479,11 +461,12 @@
       }
     }
 
+    // Init on load
+    loadVideos();
+
     // Event listeners
-    searchInput?.addEventListener('input', debouncedSearch);
-    searchInputMobile?.addEventListener('input', debouncedSearch);
-    searchInput?.addEventListener('input', () => syncSearchInputs(searchInput));
-    searchInputMobile?.addEventListener('input', () => syncSearchInputs(searchInputMobile));
+    searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInput); });
+    searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInputMobile); });
   </script>
 </body>
 </html>

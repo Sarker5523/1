@@ -83,7 +83,7 @@
        IndexedDB
     -------------------------------------------------------------- */
     async function initDB() {
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
           return await new Promise((res, rej) => {
             const req = indexedDB.open('VideoHubCache', 1);
@@ -94,34 +94,51 @@
               if (!db.objectStoreNames.contains('videos')) {
                 db.createObjectStore('videos', { keyPath: 'id' }).createIndex('ts', 'ts');
               }
+              if (!db.objectStoreNames.contains('performers')) {
+                db.createObjectStore('performers', { keyPath: 'id' }).createIndex('ts', 'ts');
+              }
             };
           });
         } catch (e) {
-          if (i === 5) throw e;
+          console.warn(`[initDB attempt ${i}]`, e);
+          if (i === MAX_RETRIES) throw e;
           await new Promise(r => setTimeout(r, RETRY_BASE * i));
         }
       }
     }
 
-    async function getCache(id) {
-      if (!db) return null;
-      return new Promise(res => {
-        const tx = db.transaction('videos', 'readonly');
-        const req = tx.objectStore('videos').get(id);
-        req.onsuccess = () => {
-          const d = req.result;
-          if (d && Date.now() - d.ts < CACHE_TTL) res(d.payload);
-          else res(null);
-        };
-        req.onerror = () => res(null);
-      });
+    async function getCache(id, storeName = 'videos') {
+      if (!db || !id) return null;
+      try {
+        return await new Promise((res, rej) => {
+          const tx = db.transaction(storeName, 'readonly');
+          const store = tx.objectStore(storeName);
+          const req = store.get(id);
+          req.onsuccess = () => {
+            const d = req.result;
+            if (d && Date.now() - d.ts < CACHE_TTL) res(d.payload);
+            else res(null);
+          };
+          req.onerror = () => {
+            console.warn(`Error fetching key ${id} from ${storeName}:`, req.error);
+            res(null);
+          };
+        });
+      } catch (e) {
+        console.warn(`getCache failed for ${storeName} with key ${id}:`, e);
+        return null;
+      }
     }
 
-    async function putCache(id, payload) {
-      if (!db) return;
-      db.transaction('videos', 'readwrite')
-        .objectStore('videos')
-        .put({ id, payload, ts: Date.now() });
+    async function putCache(id, payload, storeName = 'videos') {
+      if (!db || !id) return;
+      try {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        await store.put({ id, payload, ts: Date.now() });
+      } catch (e) {
+        console.error(`Failed to cache ${storeName} with id ${id}:`, e);
+      }
     }
 
     /* --------------------------------------------------------------
@@ -134,15 +151,15 @@
           cache: 'no-store',
           signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
         });
-        if (res.ok) return await res.json();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
       } catch (e) {
         console.warn(`[Scene ${id} retry ${attempt}]`, e);
+        if (attempt >= MAX_RETRIES) return null;
+        const delay = RETRY_BASE * (2 ** (attempt - 1)) + Math.random() * 100;
+        await new Promise(r => setTimeout(r, delay));
+        return fetchScene(id, attempt + 1);
       }
-
-      if (attempt >= MAX_RETRIES) return null;
-      const delay = RETRY_BASE * (2 ** (attempt - 1)) + Math.random() * 100;
-      await new Promise(r => setTimeout(r, delay));
-      return fetchScene(id, attempt + 1);
     }
 
     /* --------------------------------------------------------------
@@ -157,7 +174,7 @@
       }
 
       // Try cache first
-      const cached = await getCache(sceneId);
+      const cached = await getCache(sceneId, 'videos');
       if (cached) {
         renderVideo(cached);
         return;
@@ -204,13 +221,12 @@
           } : { id: '0', name: 'Unknown', short_name: 'Unknown' }
         },
         performers: (scene.performers || []).slice(0, 2).map(p => ({
-          id: String(p._id),
           name: p.name || 'Unknown'
         })),
         videoIdForEmbed
       };
 
-      await putCache(sceneId, payload);
+      await putCache(sceneId, payload, 'videos');
       renderVideo(payload);
     }
 
@@ -218,7 +234,7 @@
       const embedId = v.videoIdForEmbed && v.videoIdForEmbed !== 'pupt5r' ? v.videoIdForEmbed : 'pupt5r';
 
       const performerLinks = v.performers.length
-        ? v.performers.map(p => `<a href="actor.html?id=${p.id}" class="text-green-400 hover:underline">${p.name}</a>`).join(', ')
+        ? v.performers.map(p => `<a href="performer.html?name=${encodeURIComponent(p.name)}" class="text-green-400 hover:underline">${p.name}</a>`).join(', ')
         : 'Unknown';
 
       const studioLinks = `<a href="site.html?id=${v.site.id}" class="text-green-400 hover:underline">${v.site.name}</a>` +
@@ -272,19 +288,21 @@
         return;
       }
 
-      const all = JSON.parse(localStorage.getItem('allVideos') || '[]');
-      const results = all
-        .filter(v => v.title?.toLowerCase().includes(q) || v.actressName?.toLowerCase().includes(q) || v.site?.name?.toLowerCase().includes(q))
+      const allVideos = JSON.parse(localStorage.getItem('allVideos') || '[]');
+      const results = allVideos
+        .filter(v => v.title?.toLowerCase().includes(q) || v.performers?.some(p => p.name?.toLowerCase().includes(q)))
         .slice(0, 5);
 
       const render = (c, list) => {
         c.innerHTML = list.length
-          ? list.map(v => `<div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="location.href='video.html?id=${v.id}'">
-                <img src="${v.thumbnail}" class="w-10 h-10 rounded mr-2 object-cover">
-                <span class="text-white text-sm">${v.title}</span>
-              </div>`).join('')
+          ? list.map(v => `
+              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="location.href='video.html?id=${v.id}'">
+                <img src="${v.thumbnail || 'https://via.placeholder.com/40x40?text=No+Image'}" class="w-10 h-10 rounded mr-2 object-cover">
+                <span class="text-white text-sm">${v.title || 'Untitled'}</span>
+              </div>
+            `).join('')
           : '<div class="p-2 text-white text-sm">No results</div>';
-        c.classList.toggle('hidden', list.length === 0);
+        c.classList.toggle('hidden', !list.length);
       };
 
       render(searchSuggestions, results);
@@ -301,8 +319,13 @@
     /* --------------------------------------------------------------
        Init
     -------------------------------------------------------------- */
-    initDB().then(loadVideo).catch(() => {
-      videoDetails.innerHTML = '<p class="text-red-400">Failed to initialize cache</p>';
+    initDB().then(() => {
+      console.log('IndexedDB initialized successfully');
+      loadVideo();
+    }).catch(err => {
+      console.error('Failed to initialize cache:', err);
+      videoDetails.innerHTML = '<p class="text-yellow-400">Cache unavailable, loading without cache</p>';
+      setTimeout(loadVideo, 1000);
     });
 
     searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearch(searchInput); });

@@ -1,515 +1,559 @@
-  <!DOCTYPE html>
-  <html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="List of female performers on VideoHub, showcasing all available performers.">
-    <meta name="robots" content="index, follow">
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
-      style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
-      connect-src 'self' https://api.theporndb.net https://cdnjs.cloudflare.com ws://127.0.0.1:3001;
-      img-src * data: https:;
-      media-src *;
-      font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
-    ">
-    <title>Performers - VideoHub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body class="bg-gray-900">
-    <!-- Navbar (Exact copy from index.html) -->
-    <nav class="bg-white border-gray-200 dark:bg-gray-900">
-      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
-          <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
-        </a>
-        <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
-          <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search" aria-expanded="false" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
-            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-            </svg>
-            <span class="sr-only">Search</span>
-          </button>
-          <div class="relative hidden md:block">
-            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-              </svg>
-            </div>
-            <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
-            <div id="search-suggestions" class="search-suggestions hidden"></div>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Female performers on VideoHub.">
+  <meta name="robots" content="index, follow">
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+    connect-src 'self' https://api.theporndb.net https://cdnjs.cloudflare.com;
+    img-src * data: https:;
+    media-src *;
+    font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+  ">
+  <title>Female Performers - VideoHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .poster-img { max-width:100%; height:auto; border-radius:1rem; box-shadow:0 10px 25px rgba(0,0,0,.5); }
+    .metadata-grid { display:grid; grid-template-columns:max-content auto; gap:.5rem 1rem; font-size:.95rem; }
+    .metadata-label { font-weight:600; color:#9ca3af; }
+    .metadata-value { color:#e5e7eb; }
+    .video-count { @apply text-xs text-gray-400 mt-1; }
+  </style>
+</head>
+<body class="bg-gray-900">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-gray-200 dark:bg-gray-900">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
+        <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
+        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
+      </a>
+      <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
+        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search" aria-expanded="false" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
+          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
+          <span class="sr-only">Search</span>
+        </button>
+        <div class="relative hidden md:block">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
           </div>
-          <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
-            <span class="sr-only">Open main menu</span>
-            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-            </svg>
-          </button>
+          <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search female performers..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+          <div id="search-suggestions" class="search-suggestions hidden z-50 bg-gray-800 border border-gray-700 rounded-lg mt-1 w-full max-h-60 overflow-y-auto"></div>
         </div>
-        <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
-          <div class="relative mt-3 md:hidden">
-            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-              </svg>
-            </div>
-            <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
-            <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
-          </div>
-          <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-            <li><a href="index.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Home</a></li>
-            <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
-            <li><a href="performers.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Performers</a></li>
-          </ul>
-        </div>
+        <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/></svg>
+        </button>
       </div>
-    </nav>
-
-    <div class="pagination" id="pagination-top"></div>
-    <div class="video-list-container">
-      <div class="video-list" id="performer-list"></div>
+      <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
+        <div class="relative mt-3 md:hidden">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/></svg>
+          </div>
+          <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search female performers..." oninput="handleSearch()" onkeydown="handleEnter(event)">
+          <div id="search-suggestions-mobile" class="search-suggestions hidden z-50 bg-gray-800 border border-gray-700 rounded-lg mt-1 w-full max-h-60 overflow-y-auto"></div>
+        </div>
+        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li><a href="index.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Home</a></li>
+          <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
+          <li><a href="performer.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Female Performers</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="pagination" id="pagination-bottom"></div>
+  </nav>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
-    <script>
-      const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
-      const itemsPerPage = 10;
-      const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
-      const MAX_RETRIES = 5;
-      const RETRY_DELAY_BASE = 250;
-      const urlParams = new URLSearchParams(window.location.search);
-      let currentPage = parseInt(urlParams.get('page')) || 1;
-      let allPerformers = [];
-      let performerByName = new Map();
-      let db = null;
-      let searchTimeout;
-      const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  <!-- Pagination Top -->
+  <div class="pagination" id="pagination-top"></div>
 
-      const searchInput = document.getElementById('search-navbar');
-      const searchInputMobile = document.getElementById('search-navbar-mobile');
-      const searchSuggestions = document.getElementById('search-suggestions');
-      const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
-      const performerListContainer = document.getElementById('performer-list');
-      const paginationTop = document.getElementById('pagination-top');
-      const paginationBottom = document.getElementById('pagination-bottom');
+  <!-- Content -->
+  <div class="video-list-container">
+    <div class="video-list" id="performer-list"></div>
+  </div>
 
-      /* --------------------------------------------------------------
-        Robust IndexedDB Init
-      -------------------------------------------------------------- */
-      async function initDBWithRetry(maxAttempts = 5) {
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-          try {
-            return await new Promise((resolve, reject) => {
-              const req = indexedDB.open('VideoHubCache', 1);
-              req.onerror = () => reject(req.error);
-              req.onsuccess = () => { db = req.result; resolve(db); };
-              req.onupgradeneeded = e => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains('videos')) {
-                  db.createObjectStore('videos', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
-                }
-                if (!db.objectStoreNames.contains('performers')) {
-                  db.createObjectStore('performers', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
-                }
-              };
-            });
-          } catch (err) {
-            console.warn(`DB init attempt ${attempt} failed:`, err);
-            if (attempt === maxAttempts) throw err;
-            await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt));
-          }
-        }
-      }
+  <!-- Pagination Bottom -->
+  <div class="pagination" id="pagination-bottom"></div>
 
-      async function getFromCache(id, storeName = 'performers') {
-        if (!db) return null;
-        return new Promise(resolve => {
-          const tx = db.transaction(storeName, 'readonly');
-          const req = tx.objectStore(storeName).get(id);
-          req.onsuccess = () => {
-            const d = req.result;
-            if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d);
-            else {
-              if (d) db.transaction(storeName, 'readwrite').objectStore(storeName).delete(id);
-              resolve(null);
-            }
-          };
-          req.onerror = () => resolve(null);
-        });
-      }
+  <!-- Clear Cache Button -->
+  <div class="fixed bottom-6 right-6 z-50">
+    <button id="clear-cache-btn"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5m10 11v-5h-5m-7 2a9 9 0 1118 0 9 9 0 01-18 0z"/>
+      </svg>
+      Clear Cache
+    </button>
+  </div>
 
-      async function putToCache(id, data, storeName = 'performers') {
-        if (!db) return;
-        db.transaction(storeName, 'readwrite').objectStore(storeName)
-          .put({ ...data, id, timestamp: Date.now() });
-      }
+  <!-- Toast -->
+  <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2"></div>
 
-      /* --------------------------------------------------------------
-        Fetch Performer by Name
-      -------------------------------------------------------------- */
-      async function fetchPerformerByName(name, attempt = 1) {
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
+  <script>
+    const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
+    const itemsPerPage = 10;
+    const CACHE_TTL = 24 * 60 * 60 * 1000;
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_BASE = 250;
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = parseInt(urlParams.get('page')) || 1;
+    const singleName = urlParams.get('name');
+    let allPerformers = [];
+    let performerByName = new Map();
+    let db = null;
+    let searchTimeout;
+    let currentPerformer = null;
+    let parentPerformer = null;
+    let relatedScenes = [];
+    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const searchInput = document.getElementById('search-navbar');
+    const searchInputMobile = document.getElementById('search-navbar-mobile');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+    const performerListContainer = document.getElementById('performer-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
+
+    /* --------------------------------------------------------------
+      IndexedDB
+    -------------------------------------------------------------- */
+    async function initDBWithRetry(maxAttempts = 5) {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          const res = await fetch(`https://api.theporndb.net/performers/${encodeURIComponent(name)}`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-            cache: 'no-store',
-            signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
+          return await new Promise((resolve, reject) => {
+            const req = indexedDB.open('VideoHubCache', 1);
+            req.onerror = () => reject(req.error);
+            req.onsuccess = () => { db = req.result; resolve(db); };
+            req.onupgradeneeded = e => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains('videos')) {
+                db.createObjectStore('videos', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
+              }
+              if (!db.objectStoreNames.contains('performers')) {
+                db.createObjectStore('performers', { keyPath: 'id' }).createIndex('timestamp', 'timestamp');
+              }
+            };
           });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return await res.json();
-        } catch (e) {
-          console.warn(`[Performer ${name} retry ${attempt}]`, e);
-          if (attempt >= MAX_RETRIES) return null;
-          await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt));
-          return fetchPerformerByName(name, attempt + 1);
-        }
-      }
-
-      /* --------------------------------------------------------------
-        Fetch Scene by ID
-      -------------------------------------------------------------- */
-      async function fetchSceneWithRetry(id, attempt = 1) {
-        try {
-          const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
-            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-            cache: 'no-store',
-            signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
-          });
-          if (res.ok) return await res.json();
         } catch (err) {
-          console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id} failed:`, err);
+          console.warn(`DB init attempt ${attempt} failed:`, err);
+          if (attempt === maxAttempts) throw err;
+          await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt));
         }
-        if (attempt >= MAX_RETRIES) {
-          console.error(`Scene ${id} failed permanently after ${MAX_RETRIES} retries`);
-          return null;
-        }
-        const jitter = Math.random() * 100;
-        const delay = (RETRY_DELAY_BASE * (2 ** (attempt - 1))) + jitter;
-        await new Promise(r => setTimeout(r, delay));
-        return fetchSceneWithRetry(id, attempt + 1);
       }
+    }
 
-      /* --------------------------------------------------------------
-        Enrich Performers
-      -------------------------------------------------------------- */
-      async function enrichPerformersParallel(performerList) {
-        console.log(`Enriching ${performerList.length} performers`);
-        const cacheResults = await Promise.all(performerList.map(p => getFromCache(`name_${p.name.toLowerCase()}`, 'performers')));
-
-        const toFetch = [];
-        const enriched = [];
-
-        for (let i = 0; i < performerList.length; i++) {
-          if (cacheResults[i]) {
-            applyPerformerData(performerList[i], cacheResults[i]);
-            enriched[i] = cacheResults[i];
-          } else {
-            toFetch.push(performerList[i]);
-            enriched[i] = null;
+    async function getFromCache(id, storeName = 'videos') {
+      if (!db) return null;
+      return new Promise(resolve => {
+        const tx = db.transaction(storeName, 'readonly');
+        const req = tx.objectStore(storeName).get(id);
+        req.onsuccess = () => {
+          const d = req.result;
+          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d);
+          else {
+            if (d) db.transaction(storeName, 'readwrite').objectStore(storeName).delete(id);
+            resolve(null);
           }
-        }
+        };
+        req.onerror = () => resolve(null);
+      });
+    }
 
-        if (toFetch.length === 0) return;
+    async function putToCache(id, data, storeName = 'videos') {
+      if (!db) return;
+      db.transaction(storeName, 'readwrite').objectStore(storeName)
+        .put({ ...data, id, timestamp: Date.now() });
+    }
 
-        const fetchPromises = toFetch.map(p => fetchPerformerByName(p.name));
-        const responses = await Promise.all(fetchPromises);
-
-        let fetchIdx = 0;
-        for (let i = 0; i < performerList.length; i++) {
-          if (enriched[i]) continue;
-
-          const json = responses[fetchIdx++];
-          const performer = json?.data;
-          if (!performer) continue;
-
-          const payload = { performer };
-          applyPerformerData(performerList[i], payload);
-          await putToCache(`name_${performerList[i].name.toLowerCase()}`, payload, 'performers');
-        }
-      }
-
-      function applyPerformerData(performer, payload) {
-        const p = payload.performer;
-        performer.name = (p?.name || performer.name || 'Unknown').trim();
-        performer.thumbnail = p?.image || p?.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image';
-        performer.bio = p?.bio || 'No bio available';
-        performer.gender = p?.extras?.gender || 'Unknown';
-      }
-
-      /* --------------------------------------------------------------
-        Load Performers from video.json
-      -------------------------------------------------------------- */
-      async function loadPerformers() {
-        try {
-          // Check if running on file:// protocol
-          if (window.location.protocol === 'file:') {
-            console.warn('Running on file:// protocol. Pagination requires a web server (e.g., http://localhost). Please use a local server like Python `http.server` or VS Code Live Server.');
-            performerListContainer.innerHTML = '<p class="text-yellow-400 p-4">Please run the site on a web server to enable pagination. Use a tool like Python `http.server` or VS Code Live Server.</p>';
-          }
-
-          // Check LocalStorage for cached female performers
-          const cached = localStorage.getItem('female_performers');
-          if (cached) {
-            allPerformers = JSON.parse(cached);
-            if (allPerformers.length) {
-              performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-              console.log(`Loaded ${allPerformers.length} female performers from LocalStorage`);
-              renderPagination();
-              await renderCurrentPage();
-              return;
-            }
-          }
-
-          const res = await fetch('video.json');
-          if (!res.ok) throw new Error(`video.json ${res.status}`);
-          const json = await res.json();
-
-          // Extract unique performers from video.json
-          const performerSet = new Set();
-          const performers = [];
-
-          for (const video of json.videos || []) {
-            const sceneId = video.data?._id;
-            if (!sceneId) {
-              console.warn('Skipping video with missing _id:', video);
-              continue;
-            }
-
-            let sceneData = await getFromCache(sceneId, 'videos');
-            if (!sceneData) {
-              const sceneJson = await fetchSceneWithRetry(sceneId);
-              if (sceneJson?.data) {
-                sceneData = {
-                  id: sceneId,
-                  performers: sceneJson.data.performers || [],
-                  thumbnail: sceneJson.data.background?.full || sceneJson.data.poster || 'https://via.placeholder.com/300x200?text=No+Image'
-                };
-                await putToCache(sceneId, sceneData, 'videos');
-              } else {
-                console.warn(`Failed to fetch scene ${sceneId}`);
-                continue;
-              }
-            }
-
-            if (sceneData?.performers) {
-              for (const p of sceneData.performers) {
-                const name = (p.name || p._id || '').trim();
-                if (!name) {
-                  console.warn('Skipping performer with no name or _id:', p);
-                  continue;
-                }
-                if (!performerSet.has(name.toLowerCase())) {
-                  performerSet.add(name.toLowerCase());
-                  performers.push({
-                    name,
-                    thumbnail: sceneData.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image',
-                    bio: '',
-                    gender: 'Unknown',
-                    sceneIds: [sceneId]
-                  });
-                } else {
-                  const existing = performers.find(per => per.name.toLowerCase() === name.toLowerCase());
-                  if (existing) existing.sceneIds.push(sceneId);
-                }
-              }
-            }
-          }
-
-          // Enrich all performers to get gender
-          await enrichPerformersParallel(performers);
-
-          // Filter for female performers only
-          allPerformers = performers
-            .filter(p => p.gender.toLowerCase() === 'female')
-            .sort((a, b) => a.name.localeCompare(b.name));
-          performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-
-          // Cache female performers in LocalStorage
-          localStorage.setItem('female_performers', JSON.stringify(allPerformers));
-
-          console.log(`Extracted ${allPerformers.length} female performers`);
-
-          renderPagination();
-          await renderCurrentPage();
-        } catch (e) {
-          console.error('Failed to load performers:', e);
-          performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load performers. Please try again later.</p>';
-        }
-      }
-
-      /* --------------------------------------------------------------
-        Render Current Page
-      -------------------------------------------------------------- */
-      async function renderCurrentPage() {
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pagePerformers = allPerformers.slice(start, end);
-
-        console.log(`Rendering page ${currentPage}: ${pagePerformers.length} female performers`);
-
-        if (!pagePerformers.length) {
-          performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found for this page.</p>';
-          return;
-        }
-
-        renderRealPerformers(pagePerformers);
-      }
-
-      function renderRealPerformers(performers) {
-        performerListContainer.innerHTML = '';
-        if (!performers.length) {
-          performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found for this page.</p>';
-          return;
-        }
-        performers.forEach(p => {
-          const div = document.createElement('div');
-          div.className = 'video-item';
-          div.innerHTML = `
-            <a href="performer.html?name=${encodeURIComponent(p.name)}">
-              <img src="${p.thumbnail}" alt="${p.name}" class="w-full h-48 object-cover rounded-t-lg"
-                  onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-              <h3 class="text-lg font-semibold text-white mt-2 truncate">${p.name}</h3>
-            </a>`;
-          performerListContainer.appendChild(div);
+    /* --------------------------------------------------------------
+      Fetch Scene
+    -------------------------------------------------------------- */
+    async function fetchSceneWithRetry(id, attempt = 1) {
+      try {
+        const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
+          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
         });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id} failed:`, err);
+      }
+      if (attempt >= MAX_RETRIES) return null;
+      const jitter = Math.random() * 100;
+      const delay = (RETRY_DELAY_BASE * (2 ** (attempt - 1))) + jitter;
+      await new Promise(r => setTimeout(r, delay));
+      return fetchSceneWithRetry(id, attempt + 1);
+    }
+
+    /* --------------------------------------------------------------
+      Load Single Performer – uses scene API only
+    -------------------------------------------------------------- */
+    async function loadSinglePerformer() {
+      if (!singleName) return false;
+      const name = decodeURIComponent(singleName).trim();
+      if (!name) return false;
+
+      const res = await fetch('video.json');
+      if (!res.ok) return false;
+      const json = await res.json();
+      const videos = json.videos || [];
+
+      let foundScene = null;
+      for (const video of videos) {
+        const sceneId = video.data?._id;
+        if (!sceneId) continue;
+
+        let sceneData = await getFromCache(sceneId, 'videos');
+        if (!sceneData) {
+          const sceneJson = await fetchSceneWithRetry(sceneId);
+          if (!sceneJson?.data) continue;
+          sceneData = sceneJson.data;
+          await putToCache(sceneId, sceneData, 'videos');
+        }
+
+        const perf = sceneData.performers?.find(p => p.name?.trim().toLowerCase() === name.toLowerCase());
+        if (perf) {
+          currentPerformer = perf;
+          parentPerformer = perf.parent || null;
+          foundScene = sceneData;
+          break;
+        }
       }
 
-      /* --------------------------------------------------------------
-        Pagination
-      -------------------------------------------------------------- */
-      function renderPagination() {
-        const total = Math.ceil(allPerformers.length / itemsPerPage);
-        console.log(`Total pages: ${total}, Current page: ${currentPage}`);
+      if (!currentPerformer) {
+        performerListContainer.innerHTML = `<p class="text-red-400 p-4">Performer "${name}" not found.</p>`;
+        return true;
+      }
 
-        [paginationTop, paginationBottom].forEach(el => {
-          el.innerHTML = '';
-          const max = 4;
-          let start = Math.max(1, currentPage - Math.floor(max / 2));
-          let end = Math.min(total, start + max - 1);
-          if (end - start < max - 1) start = Math.max(1, end - max + 1);
+      // Collect related scenes
+      relatedScenes = [];
+      for (const video of videos) {
+        const sceneId = video.data?._id;
+        if (!sceneId) continue;
+        let sceneData = await getFromCache(sceneId, 'videos');
+        if (!sceneData) {
+          const sceneJson = await fetchSceneWithRetry(sceneId);
+          if (sceneJson?.data) {
+            sceneData = sceneJson.data;
+            await putToCache(sceneId, sceneData, 'videos');
+          } else continue;
+        }
+        if (sceneData.performers?.some(p => p.name?.trim().toLowerCase() === name.toLowerCase())) {
+          relatedScenes.push(sceneData);
+        }
+      }
 
-          const btn = (page, txt = page, disabled = false, active = false) => {
-            const a = document.createElement('a');
-            a.innerText = txt;
-            a.className = `pagination-link ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
-            if (!disabled) {
-              a.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (page !== currentPage) {
-                  currentPage = page;
-                  window.history.pushState({}, '', `performers.html?page=${page}`);
-                  renderPagination();
-                  renderCurrentPage();
-                }
+      renderSinglePerformer(foundScene);
+      return true;
+    }
+
+    function renderSinglePerformer(scene) {
+      const p = currentPerformer;
+      const pp = parentPerformer || {};
+      const extras = pp.extras || {};
+
+      performerListContainer.innerHTML = `
+        <div class="max-w-7xl mx-auto p-6">
+          <a href="performer.html" class="inline-block mb-6 text-green-500 hover:underline text-sm">
+            ← All Female Performers
+          </a>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <!-- Poster – STRICTLY from performer.parent.image -->
+            <div class="md:col-span-1">
+              <img src="${pp.image || 'https://via.placeholder.com/400x600?text=No+Image'}"
+                   alt="${p.name}"
+                   class="poster-img w-full"
+                   onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
+            </div>
+
+            <!-- Metadata -->
+            <div class="md:col-span-2 space-y-6">
+              <div>
+                <h1 class="text-4xl font-bold text-white mb-2">${p.name}</h1>
+                ${pp.disambiguation ? `<span class="text-sm text-gray-400">(${pp.disambiguation})</span>` : ''}
+              </div>
+
+              <div class="metadata-grid">
+                ${extras.gender ? `<span class="metadata-label">Gender</span><span class="metadata-value">${extras.gender}</span>` : ''}
+                ${extras.birthday ? `<span class="metadata-label">Birthday</span><span class="metadata-value">${extras.birthday}</span>` : ''}
+                ${extras.birthplace ? `<span class="metadata-label">Birthplace</span><span class="metadata-value">${extras.birthplace}</span>` : ''}
+                ${extras.height ? `<span class="metadata-label">Height</span><span class="metadata-value">${extras.height}</span>` : ''}
+                ${extras.weight ? `<span class="metadata-label">Weight</span><span class="metadata-value">${extras.weight}</span>` : ''}
+                ${extras.measurements ? `<span class="metadata-label">Measurements</span><span class="metadata-value">${extras.measurements}</span>` : ''}
+                ${extras.cupsize ? `<span class="metadata-label">Cup Size</span><span class="metadata-value">${extras.cupsize}</span>` : ''}
+                ${extras.hair_colour ? `<span class="metadata-label">Hair</span><span class="metadata-value">${extras.hair_colour}</span>` : ''}
+                ${extras.eye_colour ? `<span class="metadata-label">Eyes</span><span class="metadata-value">${extras.eye_colour}</span>` : ''}
+                ${extras.ethnicity ? `<span class="metadata-label">Ethnicity</span><span class="metadata-value">${extras.ethnicity}</span>` : ''}
+                ${extras.nationality ? `<span class="metadata-label">Nationality</span><span class="metadata-value">${extras.nationality}</span>` : ''}
+                ${extras.tattoos ? `<span class="metadata-label">Tattoos</span><span class="metadata-value">${extras.tattoos}</span>` : ''}
+                ${extras.piercings ? `<span class="metadata-label">Piercings</span><span class="metadata-value">${extras.piercings}</span>` : ''}
+                ${extras.career_start_year ? `<span class="metadata-label">Career Start</span><span class="metadata-value">${extras.career_start_year}</span>` : ''}
+                ${pp.rating ? `<span class="metadata-label">Rating</span><span class="metadata-value">${'★'.repeat(Math.round(pp.rating))} (${pp.rating}/5)</span>` : ''}
+              </div>
+
+              ${pp.bio ? `<div><h2 class="text-xl font-semibold text-white mb-2">Biography</h2><p class="text-gray-300 leading-relaxed">${pp.bio}</p></div>` : ''}
+
+              <!-- Related Videos – EXACT DESIGN FROM index.html, NO PERFORMER NAME ON TOP -->
+              ${relatedScenes.length > 0 ? `
+                <div>
+                  <h2 class="text-xl font-semibold text-white mb-4">Related Videos (${relatedScenes.length})</h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${relatedScenes.map(s => `
+                      <div class="video-item">
+                        <a href="video.html?id=${s._id}">
+                          <img src="${s.background?.full || 'https://placehold.co/300x200?text=No+Image'}"
+                               alt="${s.title}"
+                               class="w-full h-48 object-cover rounded-t-lg"
+                               onerror="this.src='https://placehold.co/300x200?text=Failed'">
+                          <h3 class="text-lg font-semibold text-white mt-2 truncate">${s.title}</h3>
+                          <div class="text-sm text-green-400">${s.performers?.[0]?.name || 'Unknown'}</div>
+                        </a>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* --------------------------------------------------------------
+      Build Performer List – ONLY FEMALE, image from parent.image
+    -------------------------------------------------------------- */
+    async function loadPerformers() {
+      if (await loadSinglePerformer()) {
+        paginationTop.classList.add('hidden');
+        paginationBottom.classList.add('hidden');
+        return;
+      }
+
+      try {
+        if (window.location.protocol === 'file:') {
+          performerListContainer.innerHTML = '<p class="text-yellow-400 p-4">Run on web server.</p>';
+          return;
+        }
+
+        const cached = localStorage.getItem('female_performers');
+        if (cached) {
+          allPerformers = JSON.parse(cached);
+          if (allPerformers.length) {
+            performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
+            renderPagination();
+            await renderCurrentPage();
+            return;
+          }
+        }
+
+        const res = await fetch('video.json');
+        if (!res.ok) throw new Error(`video.json ${res.status}`);
+        const json = await res.json();
+        const videos = json.videos || [];
+
+        const performerMap = new Map(); // name → { name, image (from parent), videoCount }
+
+        for (const video of videos) {
+          const sceneId = video.data?._id;
+          if (!sceneId) continue;
+
+          let sceneData = await getFromCache(sceneId, 'videos');
+          if (!sceneData) {
+            const sceneJson = await fetchSceneWithRetry(sceneId);
+            if (!sceneJson?.data) continue;
+            sceneData = sceneJson.data;
+            await putToCache(sceneId, sceneData, 'videos');
+          }
+
+          for (const p of sceneData.performers || []) {
+            const name = (p.name || '').trim();
+            if (!name) continue;
+
+            const gender = (p.extra?.gender || p.extras?.gender || 'Unknown').toLowerCase();
+            if (gender !== 'female') continue; // STRICT FEMALE ONLY
+
+            const parentImage = p.parent?.image || 'https://via.placeholder.com/300x200?text=No+Image';
+            const key = name.toLowerCase();
+
+            if (!performerMap.has(key)) {
+              performerMap.set(key, {
+                name,
+                image: parentImage,
+                videoCount: 0
               });
             }
-            return a;
-          };
-
-          if (currentPage > 1) el.appendChild(btn(currentPage - 1, 'Prev'));
-          for (let i = start; i <= end; i++) el.appendChild(btn(i, i, false, i === currentPage));
-          if (currentPage < total) el.appendChild(btn(currentPage + 1, 'Next'));
-        });
-      }
-
-      /* --------------------------------------------------------------
-        Search
-      -------------------------------------------------------------- */
-      function syncSearchInputs(src) {
-        if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
-        if (src === searchInputMobile && searchInput) searchInput.value = src.value;
-      }
-
-      function debouncedSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(handleSearch, 300);
-      }
-
-      function handleSearch() {
-        const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-        if (!q) {
-          [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
-          return;
+            performerMap.get(key).videoCount++;
+          }
         }
 
-        const results = allPerformers
-          .filter(p => p.name && p.name.toLowerCase().includes(q))
-          .slice(0, 5);
+        allPerformers = Array.from(performerMap.values())
+          .sort((a, b) => a.name.localeCompare(b.name));
 
-        const render = (container, list) => {
-          container.innerHTML = list.length
-            ? list.map(p => `
-                <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
-                    onclick="window.location.href='performer.html?name=${encodeURIComponent(p.name)}'">
-                  <img src="${p.thumbnail}" alt="${p.name}" class="w-10 h-10 rounded mr-2 object-cover"
-                      onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                  <span class="text-white text-sm">${p.name}</span>
-                </div>`).join('')
-            : '<div class="p-2 text-white text-sm">No results</div>';
-          container.classList.toggle('hidden', list.length === 0);
+        performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
+        localStorage.setItem('female_performers', JSON.stringify(allPerformers));
+
+        renderPagination();
+        await renderCurrentPage();
+      } catch (e) {
+        console.error(e);
+        performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load.</p>';
+      }
+    }
+
+    function renderCurrentPage() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pagePerformers = allPerformers.slice(start, end);
+      if (!pagePerformers.length) {
+        performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found.</p>';
+        return;
+      }
+      performerListContainer.innerHTML = '';
+      pagePerformers.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'video-item';
+        div.innerHTML = `
+          <a href="performer.html?name=${encodeURIComponent(p.name)}">
+            <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover rounded-t-lg"
+                onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+            <h3 class="text-lg font-semibold text-white mt-2 truncate">${p.name}</h3>
+            <p class="video-count">${p.videoCount} video${p.videoCount !== 1 ? 's' : ''}</p>
+          </a>`;
+        performerListContainer.appendChild(div);
+      });
+    }
+
+    function renderPagination() {
+      const total = Math.ceil(allPerformers.length / itemsPerPage);
+      [paginationTop, paginationBottom].forEach(el => {
+        el.innerHTML = '';
+        const max = 4;
+        let start = Math.max(1, currentPage - Math.floor(max / 2));
+        let end = Math.min(total, start + max - 1);
+        if (end - start < max - 1) start = Math.max(1, end - max + 1);
+
+        const btn = (page, txt = page, disabled = false, active = false) => {
+          const a = document.createElement('a');
+          a.innerText = txt;
+          a.className = `pagination-link ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
+          if (!disabled) {
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (page !== currentPage) {
+                currentPage = page;
+                window.history.pushState({}, '', `performer.html?page=${page}`);
+                renderPagination();
+                renderCurrentPage();
+              }
+            });
+          }
+          return a;
         };
 
-        render(searchSuggestions, results);
-        render(searchSuggestionsMobile, results);
+        if (currentPage > 1) el.appendChild(btn(currentPage - 1, 'Prev'));
+        for (let i = start; i <= end; i++) el.appendChild(btn(i, i, false, i === currentPage));
+        if (currentPage < total) el.appendChild(btn(currentPage + 1, 'Next'));
+      });
+    }
+
+    /* --------------------------------------------------------------
+      Search + Cache Clear
+    -------------------------------------------------------------- */
+    function handleSearch() {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+      if (!q) {
+        [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
+        return;
+      }
+      const results = allPerformers.filter(p => p.name.toLowerCase().includes(q)).slice(0, 5);
+      const render = (container, list) => {
+        container.innerHTML = list.length
+          ? list.map(p => `
+              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
+                  onclick="window.location.href='performer.html?name=${encodeURIComponent(p.name)}'">
+                <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded mr-2 object-cover"
+                    onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <span class="text-white text-sm">${p.name} <span class="text-xs text-gray-400">(${p.videoCount} video${p.videoCount !== 1 ? 's' : ''})</span></span>
+              </div>`).join('')
+          : '<div class="p-2 text-white text-sm">No results</div>';
+        container.classList.toggle('hidden', list.length === 0);
+      };
+      render(searchSuggestions, results);
+      render(searchSuggestionsMobile, results);
+    }
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+        if (q) window.location.href = `search.html?query=${encodeURIComponent(q)}`;
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-red-600' : 'bg-green-600';
+      toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-white rounded-lg shadow ${bg} animate-fade-in`;
+      toast.innerHTML = `<span class="text-sm">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function clearAllCache() {
+      try {
+        if (db) {
+          const tx = db.transaction(['videos', 'performers'], 'readwrite');
+          tx.objectStore('videos').clear();
+          tx.objectStore('performers').clear();
+          await tx.done;
+        }
+        localStorage.removeItem('female_performers');
+        showToast('Cache cleared! Reloading...', 'success');
+        setTimeout(() => location.reload(), 1000);
+      } catch (err) {
+        showToast('Failed to clear cache.', 'error');
+      }
+    }
+
+    document.getElementById('clear-cache-btn').addEventListener('click', clearAllCache);
+
+    /* --------------------------------------------------------------
+      Init
+    -------------------------------------------------------------- */
+    async function init() {
+      try {
+        await initDBWithRetry();
+        await loadPerformers();
+
+        window.addEventListener('popstate', () => {
+          const params = new URLSearchParams(window.location.search);
+          const newPage = parseInt(params.get('page')) || 1;
+          if (newPage !== currentPage) {
+            currentPage = newPage;
+            renderPagination();
+            renderCurrentPage();
+          }
+        });
+      } catch (err) {
+        performerListContainer.innerHTML = '<p class="text-red-400 p-4">Init failed.</p>';
       }
 
-      function handleEnter(e) {
-        if (e.key === 'Enter') {
-          const q = (searchInput?.value || searchInputMobile?.value || '').trim();
-          if (q) window.location.href = `search.html?query=${encodeURIComponent(q)}`;
-          [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
-        }
-      }
-
-      /* --------------------------------------------------------------
-        Init
-      -------------------------------------------------------------- */
-      async function init() {
-        try {
-          await initDBWithRetry();
-          console.log('IndexedDB initialized successfully');
-          await loadPerformers();
-          console.log('Performers loaded successfully');
-
-          // Handle browser back/forward navigation
-          window.addEventListener('popstate', () => {
-            const params = new URLSearchParams(window.location.search);
-            const newPage = parseInt(params.get('page')) || 1;
-            if (newPage !== currentPage) {
-              currentPage = newPage;
-              renderPagination();
-              renderCurrentPage();
-            }
-          });
-        } catch (err) {
-          console.error('Initialization failed:', err);
-          performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load performers. Please try again later.</p>';
-        }
-
-        // Debug Flowbite and font loading
-        if (typeof Flowbite !== 'undefined') {
-          console.log('Flowbite initialized successfully');
-        } else {
-          console.warn('Flowbite not initialized');
-        }
-        const fontLink = document.querySelector('link[href*="fonts.googleapis.com"]');
-        if (fontLink && fontLink.sheet) {
-          console.log('Google Fonts loaded successfully');
-        } else {
-          console.warn('Google Fonts not loaded');
-        }
-      }
-
-      init();
-
-      searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInput); });
-      searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInputMobile); });
+      searchInput?.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(handleSearch, 300); });
+      searchInputMobile?.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(handleSearch, 300); });
       searchInput?.addEventListener('keydown', handleEnter);
       searchInputMobile?.addEventListener('keydown', handleEnter);
-    </script>
-  </body>
-  </html>
+    }
+
+    init();
+  </script>
+</body>
+</html>

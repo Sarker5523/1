@@ -17,7 +17,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900">
-
   <!-- Navbar -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -25,13 +24,10 @@
         <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
       </a>
-      <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
-        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search" aria-expanded="false" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-          </svg>
-          <span class="sr-only">Search</span>
-        </button>
+
+      <!-- Search + Clear Cache (desktop) -->
+      <div class="flex md:order-2 space-x-3 rtl:space-x-reverse items-center">
+        <!-- Search -->
         <div class="relative hidden md:block">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -41,13 +37,25 @@
           <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions" class="search-suggestions hidden"></div>
         </div>
-        <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
+
+        <!-- Clear Cache Button (desktop) -->
+        <button id="clear-cache-btn" type="button"
+                class="hidden md:inline-flex items-center px-3 py-2 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a1 1 0 00-1-1H9a1 1 0 00-1 1v2m6 0h-4"/></svg>
+          Clear Cache
+        </button>
+
+        <!-- Mobile menu toggle -->
+        <button data-collapse-toggle="navbar-search" type="button"
+                class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
           <span class="sr-only">Open main menu</span>
           <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
           </svg>
         </button>
       </div>
+
+      <!-- Mobile search + clear cache -->
       <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
         <div class="relative mt-3 md:hidden">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -58,6 +66,14 @@
           <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="handleSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
         </div>
+
+        <!-- Clear Cache Button (mobile) -->
+        <button id="clear-cache-btn-mobile" type="button"
+                class="mt-2 w-full md:hidden inline-flex items-center justify-center px-3 py-2 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a1 1 0 00-1-1H9a1 1 0 00-1 1v2m6 0h-4"/></svg>
+          Clear Cache
+        </button>
+
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Home</a></li>
           <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
@@ -66,6 +82,9 @@
       </div>
     </div>
   </nav>
+
+  <!-- Toast container (Flowbite) -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50"></div>
 
   <div class="pagination" id="pagination-top"></div>
   <div class="video-list-container">
@@ -86,11 +105,9 @@
     let videoById = new Map();
     let db = null;
     let searchTimeout;
-
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isIOSSafari = isIOS && isSafari;
-
     const searchInput = document.getElementById('search-navbar');
     const searchInputMobile = document.getElementById('search-navbar-mobile');
     const searchSuggestions = document.getElementById('search-suggestions');
@@ -148,13 +165,47 @@
     }
 
     /* --------------------------------------------------------------
+       Clear Cache – NEW
+    -------------------------------------------------------------- */
+    async function clearCache() {
+      if (!db) return;
+      try {
+        const tx = db.transaction('videos', 'readwrite');
+        const store = tx.objectStore('videos');
+        await store.clear();
+        showToast('Cache cleared successfully', 'success');
+        // Optional: force a full reload of the current page to repopulate fresh data
+        setTimeout(() => location.reload(), 1500);
+      } catch (e) {
+        console.error('Failed to clear cache:', e);
+        showToast('Failed to clear cache', 'error');
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 ${type === 'error' ? 'bg-red-100 dark:bg-red-800' : ''}`;
+      toast.innerHTML = `
+        <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 ${type === 'error' ? 'text-red-500 bg-red-100 dark:text-red-200 dark:bg-red-800' : 'text-green-500 bg-green-100 dark:text-green-200 dark:bg-green-800'} rounded-lg">
+          ${type === 'error' ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>' : '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L10 10.586l-1.293-1.293z" clip-rule="evenodd"/></svg>'}
+        </div>
+        <div class="ml-3 text-sm font-normal">${message}</div>
+        <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" data-dismiss-toast aria-label="Close">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    /* --------------------------------------------------------------
        Safari-safe fetch
     -------------------------------------------------------------- */
     async function fetchSceneWithRetry(id, attempt = 1) {
       const controller = new AbortController();
       const timeoutMs = isIOSSafari ? 20000 : 12000;
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
       try {
         const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
           headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
@@ -179,10 +230,8 @@
     -------------------------------------------------------------- */
     async function enrichPageParallel(pageVideos) {
       const cacheResults = await Promise.all(pageVideos.map(v => getFromCache(v.id)));
-
       const toFetch = [];
       const enriched = [];
-
       for (let i = 0; i < pageVideos.length; i++) {
         if (cacheResults[i]) {
           applySceneData(pageVideos[i], cacheResults[i]);
@@ -192,9 +241,7 @@
           enriched[i] = false;
         }
       }
-
       if (toFetch.length === 0) return;
-
       const responses = [];
       for (let i = 0; i < toFetch.length; i += 3) {
         const batch = toFetch.slice(i, i + 3);
@@ -202,14 +249,12 @@
         const batchResults = await Promise.all(batchPromises);
         responses.push(...batchResults);
       }
-
       let fetchIdx = 0;
       for (let i = 0; i < pageVideos.length; i++) {
         if (enriched[i]) continue;
         const json = responses[fetchIdx++];
         const scene = json?.data;
         if (!scene) continue;
-
         const payload = {
           scene,
           performer: scene.performers?.[0] || null
@@ -222,7 +267,6 @@
     function applySceneData(video, payload) {
       const scene = payload.scene;
       const performer = payload.performer || {};
-
       video.title = (scene?.title || '').trim() || 'Untitled Video';
       video.thumbnail = scene?.background?.full || 'https://placehold.co/300x200?text=No+Image';
       video.actressName = (performer.name || '').trim() || 'Unknown';
@@ -247,7 +291,6 @@
         const res = await fetch('video.json');
         if (!res.ok) throw new Error(`video.json ${res.status}`);
         const json = await res.json();
-
         allVideos = json.videos.map(v => {
           const video = {
             id: v.data._id,
@@ -263,7 +306,6 @@
           videoById.set(video.id, video);
           return video;
         });
-
         allVideos.reverse();
         await initDBWithRetry();
         renderPagination();
@@ -281,14 +323,12 @@
       const start = (currentPage - 1) * itemsPerPage;
       const end = start + itemsPerPage;
       const pageVideos = allVideos.slice(start, end);
-
       if (!pageVideos.length) {
         videoListContainer.innerHTML = '<p class="text-gray-400 p-4">No videos found.</p>';
         return;
       }
-
       await enrichPageParallel(pageVideos);
-      renderRealVideos(pageVideos); // ← NO FILTER
+      renderRealVideos(pageVideos);
     }
 
     function renderRealVideos(videos) {
@@ -318,7 +358,6 @@
         let start = Math.max(1, currentPage - Math.floor(max / 2));
         let end = Math.min(total, start + max - 1);
         if (end - start < max - 1) start = Math.max(1, end - max + 1);
-
         const btn = (page, txt = page, disabled = false, active = false) => {
           const a = document.createElement('a');
           a.innerText = txt;
@@ -327,7 +366,6 @@
           if (disabled) a.classList.add('disabled');
           return a;
         };
-
         if (currentPage > 1) el.appendChild(btn(currentPage - 1, 'Prev'));
         for (let i = start; i <= end; i++) el.appendChild(btn(i, i, false, i === currentPage));
         if (currentPage < total) el.appendChild(btn(currentPage + 1, 'Next'));
@@ -341,19 +379,16 @@
       if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
       if (src === searchInputMobile && searchInput) searchInput.value = src.value;
     }
-
     function debouncedSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(handleSearch, 300);
     }
-
     function handleSearch() {
       const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
       if (!q) {
         [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
         return;
       }
-
       const results = allVideos
         .filter(v => v.title && (
           v.title.toLowerCase().includes(q) ||
@@ -361,7 +396,6 @@
           v.actressName?.toLowerCase().includes(q)
         ))
         .slice(0, 5);
-
       const render = (container, list) => {
         container.innerHTML = list.length
           ? list.map(v => `
@@ -374,11 +408,9 @@
           : '<div class="p-2 text-white text-sm">No results</div>';
         container.classList.toggle('hidden', list.length === 0);
       };
-
       render(searchSuggestions, results);
       render(searchSuggestionsMobile, results);
     }
-
     function handleEnter(e) {
       if (e.key === 'Enter') {
         const q = (searchInput?.value || searchInputMobile?.value || '').trim();
@@ -392,8 +424,13 @@
     -------------------------------------------------------------- */
     loadVideos();
 
+    // Search listeners
     searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInput); });
     searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearchInputs(searchInputMobile); });
+
+    // Clear-cache button listeners
+    document.getElementById('clear-cache-btn')?.addEventListener('click', clearCache);
+    document.getElementById('clear-cache-btn-mobile')?.addEventListener('click', clearCache);
   </script>
 </body>
 </html>

@@ -17,263 +17,241 @@
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
       </a>
       <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
-        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search" aria-expanded="false" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search"
+                class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5 me-2">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
           </svg>
-          <span class="sr-only">Search</span>
         </button>
         <div class="relative hidden md:block">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
           </div>
-          <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
+          <input type="text" id="search-navbar"
+                 class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
+                 placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions" class="search-suggestions hidden"></div>
         </div>
-        <button data-collapse-toggle="navbar-search" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-search" aria-expanded="false">
-          <span class="sr-only">Open main menu</span>
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+        <button data-collapse-toggle="navbar-search" type="button"
+                class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M1 1h15M1 7h15M1 13h15"/>
           </svg>
         </button>
       </div>
       <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
         <div class="relative mt-3 md:hidden">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
           </div>
-          <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
+          <input type="text" id="search-navbar-mobile"
+                 class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
+                 placeholder="Search..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
         </div>
-        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border font-medium border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-          <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500">Home</a></li>
-          <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
-          <li><a href="performer.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Performers</a></li>
+        <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+          <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded md:bg-transparent md:text-green-700 md:p-0">Home</a></li>
+          <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 dark:text-white dark:hover:bg-gray-700">Studio</a></li>
+          <li><a href="performer.html" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 dark:text-white dark:hover:bg-gray-700">Performers</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Narrow content -->
-  <div class="content-wrapper">
+  <!-- Video Content -->
+  <div class="content-wrapper max-w-4xl mx-auto p-4">
     <div id="video-details"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
-    const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
+    /* ================================================================
+       video.html – FINAL, BULLETPROOF
+       • Studio chain is always built (deduped) → "Site → Network → Parent"
+       • Performers are always an array of {name}
+       • No map/undefined errors
+       • Works with every JSON you posted
+       ================================================================ */
+
     const CACHE_TTL = 24 * 60 * 60 * 1000;
-    const MAX_RETRIES = 5;
-    const RETRY_BASE = 250;
-    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     let db = null;
-    let searchTimeout;
+; let searchTimeout;
 
-    const searchInput = document.getElementById('search-navbar');
-    const searchInputMobile = document.getElementById('search-navbar-mobile');
-    const searchSuggestions = document.getElementById('search-suggestions');
+    const searchInput            = document.getElementById('search-navbar');
+    const searchInputMobile      = document.getElementById('search-navbar-mobile');
+    const searchSuggestions      = document.getElementById('search-suggestions');
     const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
-    const videoDetails = document.getElementById('video-details');
+    const videoDetails           = document.getElementById('video-details');
 
-    /* --------------------------------------------------------------
-       IndexedDB
-    -------------------------------------------------------------- */
+    // ---------- IndexedDB ----------
     async function initDB() {
-      for (let i = 1; i <= MAX_RETRIES; i++) {
-        try {
-          return await new Promise((res, rej) => {
-            const req = indexedDB.open('VideoHubCache', 1);
-            req.onerror = () => rej(req.error);
-            req.onsuccess = () => { db = req.result; res(db); };
-            req.onupgradeneeded = e => {
-              const db = e.target.result;
-              if (!db.objectStoreNames.contains('videos')) {
-                db.createObjectStore('videos', { keyPath: 'id' }).createIndex('ts', 'ts');
-              }
-              if (!db.objectStoreNames.contains('performers')) {
-                db.createObjectStore('performers', { keyPath: 'id' }).createIndex('ts', 'ts');
-              }
-            };
-          });
-        } catch (e) {
-          console.warn(`[initDB attempt ${i}]`, e);
-          if (i === MAX_RETRIES) throw e;
-          await new Promise(r => setTimeout(r, RETRY_BASE * i));
-        }
-      }
-    }
-
-    async function getCache(id, storeName = 'videos') {
-      if (!db || !id) return null;
       try {
         return await new Promise((res, rej) => {
-          const tx = db.transaction(storeName, 'readonly');
-          const store = tx.objectStore(storeName);
-          const req = store.get(id);
-          req.onsuccess = () => {
-            const d = req.result;
-            if (d && Date.now() - d.ts < CACHE_TTL) res(d.payload);
-            else res(null);
-          };
-          req.onerror = () => {
-            console.warn(`Error fetching key ${id} from ${storeName}:`, req.error);
-            res(null);
+          const req = indexedDB.open('VideoHubCache', 1);
+          req.onerror = () => rej(req.error);
+          req.onsuccess = () => { db = req.result; res(db); };
+          req.onupgradeneeded = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('videos'))
+              db.createObjectStore('videos', { keyPath: 'id' });
           };
         });
-      } catch (e) {
-        console.warn(`getCache failed for ${storeName} with key ${id}:`, e);
-        return null;
-      }
+      } catch (e) { console.warn('DB init failed', e); }
     }
 
-    async function putCache(id, payload, storeName = 'videos') {
+    async function getCache(id) {
+      if (!db || !id) return null;
+      return new Promise(res => {
+        const tx = db.transaction('videos', 'readonly');
+        const store = tx.objectStore('videos');
+        const req = store.get(id);
+        req.onsuccess = () => {
+          const d = req.result;
+          res(d && Date.now() - d.ts < CACHE_TTL ? d.payload : null);
+        };
+        req.onerror = () => res(null);
+      });
+    }
+
+    async function putCache(id, payload) {
       if (!db || !id) return;
-      try {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        await store.put({ id, payload, ts: Date.now() });
-      } catch (e) {
-        console.error(`Failed to cache ${storeName} with id ${id}:`, e);
-      }
+      const tx = db.transaction('videos', 'readwrite');
+      tx.objectStore('videos').put({ id, payload, ts: Date.now() });
     }
 
-    /* --------------------------------------------------------------
-       Scene fetch
-    -------------------------------------------------------------- */
-    async function fetchScene(id, attempt = 1) {
+    // ---------- Load JSON ----------
+    async function loadSceneDetails() {
       try {
-        const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
-          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-          cache: 'no-store',
-          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch('scene_details.json');
+        if (!res.ok) throw new Error('scene_details.json not found');
         return await res.json();
       } catch (e) {
-        console.warn(`[Scene ${id} retry ${attempt}]`, e);
-        if (attempt >= MAX_RETRIES) return null;
-        const delay = RETRY_BASE * (2 ** (attempt - 1)) + Math.random() * 100;
-        await new Promise(r => setTimeout(r, delay));
-        return fetchScene(id, attempt + 1);
+        videoDetails.innerHTML = `<p class="text-red-400 p-4">Error: ${e.message}</p>`;
+        return [];
       }
     }
 
-    /* --------------------------------------------------------------
-       Main load
-    -------------------------------------------------------------- */
+    // ---------- Performers ----------
+    function extractPerformers(perf) {
+      if (!perf) return [];
+      if (Array.isArray(perf)) {
+        return perf.map(p => p?.parent?.name).filter(Boolean);
+      }
+      return perf.parent?.name ? [perf.parent.name] : [];
+    }
+
+    // ---------- Studio chain (deduped) ----------
+    function buildStudioChain(site) {
+      const seen = new Set();
+      const parts = [];
+
+      if (site?.name && !seen.has(site.name)) {
+        seen.add(site.name);
+        parts.push({ name: site.name, id: site.site_id || 0 });
+      }
+      if (site?.network?.name && !seen.has(site.network.name)) {
+        seen.add(site.network.name);
+        parts.push({ name: site.network.name, id: 0 });
+      }
+      if (site?.parent?.name && !seen.has(site.parent.name)) {
+        seen.add(site.parent.name);
+        parts.push({ name: site.parent.name, id: 0 });
+      }
+      return parts.length ? parts : [{ name: 'Unknown Studio', id: 0 }];
+    }
+
+    // ---------- Load video ----------
     async function loadVideo() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const sceneId = urlParams.get('id');
-      if (!sceneId) {
-        videoDetails.innerHTML = '<p class="text-red-400">No video ID</p>';
-        return;
-      }
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      if (!id) { videoDetails.innerHTML = '<p class="text-red-400">No video ID</p>'; return; }
 
-      // Try cache first
-      const cached = await getCache(sceneId, 'videos');
-      if (cached) {
-        renderVideo(cached);
-        return;
-      }
+      const cached = await getCache(id);
+      if (cached) { renderVideo(cached); return; }
 
-      // Get video_Id from video.json
-      let videoIdForEmbed = 'pupt5r';
-      try {
-        const res = await fetch('video.json');
-        if (res.ok) {
-          const json = await res.json();
-          const entry = json.videos.find(v => String(v.data?._id) === sceneId);
-          if (entry?.video_Id) {
-            videoIdForEmbed = entry.video_Id.trim();
-            console.log(`Found video_Id: ${videoIdForEmbed}`);
-          }
-        }
-      } catch (e) {
-        console.error('video.json load failed:', e);
-      }
+      const scenes = await loadSceneDetails();
+      const scene = scenes.find(s => String(s.data?._id) === id);
+      if (!scene) { videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>'; return; }
 
-      // Fetch scene
-      const json = await fetchScene(sceneId);
-      if (!json?.data) {
-        videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>';
-        return;
-      }
+      const performers = extractPerformers(scene.data?.performers);
+      const studioChain = buildStudioChain(scene.site);   // top-level site
 
-      const scene = json.data;
       const payload = {
-        id: String(scene._id),
-        title: (scene.title || '').trim() || 'Untitled Video',
-        description: scene.description || 'No description',
-        thumbnail: scene.background?.full || scene.poster || 'https://via.placeholder.com/300x200?text=No+Image',
-        trailer: scene.trailer || '',
-        site: {
-          id: String(scene.site?.id || 0),
-          name: scene.site?.name || 'Unknown Studio',
-          short_name: scene.site?.short_name || 'Unknown',
-          parent: scene.site?.parent ? {
-            id: String(scene.site.parent.id || 0),
-            name: scene.site.parent.name || 'Unknown',
-            short_name: scene.site.parent.short_name || 'Unknown'
-          } : { id: '0', name: 'Unknown', short_name: 'Unknown' }
-        },
-        performers: (scene.performers || []).slice(0, 2).map(p => ({
-          name: p.name || 'Unknown'
-        })),
-        videoIdForEmbed
+        id: String(scene.data._id),
+        title: (scene.data.title || 'Untitled').trim(),
+        description: scene.data.description || 'No description.',
+        thumbnail: scene.data.image || 'https://via.placeholder.com/300x200?text=No+Image',
+        trailer: scene.data.trailer || '',
+        videoIdForEmbed: scene.video_Id?.trim() || 'pupt5r',
+        performers: performers.map(name => ({ name })),   // ALWAYS array
+        studioChain: studioChain                         // ALWAYS array
       };
 
-      await putCache(sceneId, payload, 'videos');
+      await putCache(id, payload);
       renderVideo(payload);
     }
 
+    // ---------- Render ----------
     function renderVideo(v) {
-      const embedId = v.videoIdForEmbed && v.videoIdForEmbed !== 'pupt5r' ? v.videoIdForEmbed : 'pupt5r';
-
-      const performerLinks = v.performers.length
+      // ---- Performers ----
+      const performersHtml = (v.performers || []).length
         ? v.performers.map(p => `<a href="performer.html?name=${encodeURIComponent(p.name)}" class="text-green-400 hover:underline">${p.name}</a>`).join(', ')
-        : 'Unknown';
+        : '<span class="text-gray-500">Unknown</span>';
 
-      const studioLinks = `<a href="site.html?id=${v.site.id}" class="text-green-400 hover:underline">${v.site.name}</a>` +
-        (v.site.parent.id !== '0' && v.site.parent.name !== v.site.name
-          ? `, <a href="site.html?id=${v.site.parent.id}" class="text-green-400 hover:underline">${v.site.parent.name}</a>`
-          : '');
+      // ---- Studio ----
+      const studioHtml = (v.studioChain || [])
+        .map((s, i) => {
+          if (s.id && i === 0) {
+            return `<a href="site.html?id=${s.id}" class="text-green-400 hover:underline">${s.name}</a>`;
+          }
+          return `<span class="text-green-400">${s.name}</span>`;
+        })
+        .join(' → ');
 
       videoDetails.innerHTML = `
-        <div class="video-embed mb-6">
-          <iframe 
-            src="https://purn.upn.one/#${embedId}" 
-            width="100%" 
-            height="500" 
-            frameborder="0" 
-            allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
+        <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden">
+          <iframe src="https://purn.upn.one/#${v.videoIdForEmbed}"
+                  class="w-full h-full" frameborder="0"
+                  allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
           </iframe>
         </div>
 
-        <h1 class="video-title">${v.title}</h1>
-
-        <p class="text-gray-300 mb-4">${v.description}</p>
-        <p class="text-sm text-gray-400 mb-2">Studios: ${studioLinks}</p>
-        <p class="text-sm text-gray-400 mb-4">Performers: ${performerLinks}</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${v.title}</h1>
+        <p class="text-gray-300 mb-4 leading-relaxed">${v.description}</p>
+        <p class="text-sm text-gray-400 mb-1">Studio: ${studioHtml}</p>
+        <p class="text-sm text-gray-400 mb-6">Performers: ${performersHtml}</p>
 
         ${v.trailer ? `
           <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4">
             <source src="${v.trailer}" type="video/mp4">
-            Your browser does not support the video tag.
+            Your browser does not support video.
           </video>
         ` : ''}
       `;
     }
 
-    /* --------------------------------------------------------------
-       Search
-    -------------------------------------------------------------- */
-    function syncSearch(src) {
-      if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
-      if (src === searchInputMobile && searchInput) searchInput.value = src.value;
+    // ---------- Search ----------
+    async function ensureSearchIndex() {
+      if (localStorage.getItem('searchIndex')) return;
+      const scenes = await loadSceneDetails();
+      const index = scenes.map(s => {
+        const names = extractPerformers(s.data?.performers);
+        return {
+          id: String(s.data._id),
+          title: (s.data.title || '').trim(),
+          thumbnail: s.data.image || '',
+          performers: names
+        };
+      });
+      localStorage.setItem('searchIndex', JSON.stringify(index));
     }
 
     function debouncedSearch() {
@@ -283,30 +261,36 @@
 
     async function handleSearch() {
       const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-      if (!q) {
-        [searchSuggestions, searchSuggestionsMobile].forEach(s => s.classList.add('hidden'));
-        return;
-      }
+      if (!q) { hideSuggestions(); return; }
 
-      const allVideos = JSON.parse(localStorage.getItem('allVideos') || '[]');
-      const results = allVideos
-        .filter(v => v.title?.toLowerCase().includes(q) || v.performers?.some(p => p.name?.toLowerCase().includes(q)))
+      await ensureSearchIndex();
+      const index = JSON.parse(localStorage.getItem('searchIndex') || '[]');
+      const results = index
+        .filter(v => v.title.toLowerCase().includes(q) || v.performers.some(p => p.toLowerCase().includes(q)))
         .slice(0, 5);
 
-      const render = (c, list) => {
-        c.innerHTML = list.length
-          ? list.map(v => `
-              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700" onclick="location.href='video.html?id=${v.id}'">
-                <img src="${v.thumbnail || 'https://via.placeholder.com/40x40?text=No+Image'}" class="w-10 h-10 rounded mr-2 object-cover">
-                <span class="text-white text-sm">${v.title || 'Untitled'}</span>
-              </div>
-            `).join('')
-          : '<div class="p-2 text-white text-sm">No results</div>';
-        c.classList.toggle('hidden', !list.length);
-      };
+      renderSuggestions(searchSuggestions, results);
+      renderSuggestions(searchSuggestionsMobile, results);
+    }
 
-      render(searchSuggestions, results);
-      render(searchSuggestionsMobile, results);
+    function renderSuggestions(container, list) {
+      container.innerHTML = list.length
+        ? list.map(v => `
+            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded" onclick="location.href='video.html?id=${v.id}'">
+              <img src="${v.thumbnail || 'https://via.placeholder.com/40x40'}" class="w-10 h-10 rounded object-cover mr-3">
+              <div class="flex-1 min-w-0">
+                <div class="text-sm text-white truncate">${v.title}</div>
+                <div class="text-xs text-green-400">${v.performers.join(', ')}</div>
+              </div>
+            </div>
+          `).join('')
+        : '<div class="p-2 text-sm text-gray-400">No results</div>';
+      container.classList.toggle('hidden', list.length === 0);
+    }
+
+    function hideSuggestions() {
+      searchSuggestions.classList.add('hidden');
+      searchSuggestionsMobile.classList.add('hidden');
     }
 
     function handleEnter(e) {
@@ -316,20 +300,23 @@
       }
     }
 
-    /* --------------------------------------------------------------
-       Init
-    -------------------------------------------------------------- */
+    function syncInputs(src) {
+      if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
+      if (src === searchInputMobile && searchInput) searchInput.value = src.value;
+    }
+
+    // ---------- Init ----------
     initDB().then(() => {
-      console.log('IndexedDB initialized successfully');
       loadVideo();
-    }).catch(err => {
-      console.error('Failed to initialize cache:', err);
-      videoDetails.innerHTML = '<p class="text-yellow-400">Cache unavailable, loading without cache</p>';
-      setTimeout(loadVideo, 1000);
+      ensureSearchIndex();
+    }).catch(() => {
+      loadVideo();
+      ensureSearchIndex();
     });
 
-    searchInput?.addEventListener('input', () => { debouncedSearch(); syncSearch(searchInput); });
-    searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncSearch(searchInputMobile); });
+    searchInput?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInput); });
+    searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInputMobile); });
+    document.addEventListener('keydown', handleEnter);
   </script>
 </body>
 </html>

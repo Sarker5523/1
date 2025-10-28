@@ -20,7 +20,8 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-900">
-  <!-- Navbar (Exact copy from index.html) -->
+
+  <!-- Navbar -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -63,7 +64,7 @@
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Home</a></li>
           <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded-md hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 md:dark:hover:text-green-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Studio</a></li>
-          <li><a href="performers.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Performers</a></li>
+          <li><a href="performer.html" class="block py-2 px-3 text-white bg-green-700 rounded-md md:bg-transparent md:text-green-700 md:p-0 md:dark:text-green-500" aria-current="page">Performers</a></li>
         </ul>
       </div>
     </div>
@@ -79,7 +80,7 @@
   <script>
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
     const itemsPerPage = 10;
-    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+    const CACHE_TTL = 24 * 60 * 60 * 1000;
     const MAX_RETRIES = 5;
     const RETRY_DELAY_BASE = 250;
     const urlParams = new URLSearchParams(window.location.search);
@@ -99,7 +100,7 @@
     const paginationBottom = document.getElementById('pagination-bottom');
 
     /* --------------------------------------------------------------
-       Robust IndexedDB Init
+       IndexedDB
     -------------------------------------------------------------- */
     async function initDBWithRetry(maxAttempts = 5) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -133,7 +134,7 @@
         const req = tx.objectStore(storeName).get(id);
         req.onsuccess = () => {
           const d = req.result;
-          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d);
+          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d.payload);
           else {
             if (d) db.transaction(storeName, 'readwrite').objectStore(storeName).delete(id);
             resolve(null);
@@ -143,123 +144,109 @@
       });
     }
 
-    async function putToCache(id, data, storeName = 'performers') {
+    async function putToCache(id, payload, storeName = 'performers') {
       if (!db) return;
       db.transaction(storeName, 'readwrite').objectStore(storeName)
-        .put({ ...data, id, timestamp: Date.now() });
+        .put({ id, payload, timestamp: Date.now() });
     }
 
     /* --------------------------------------------------------------
-       Fetch Performer by Name
+       Safari-safe fetch with manual timeout
     -------------------------------------------------------------- */
-    async function fetchPerformerByName(name, attempt = 1) {
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const res = await fetch(`https://api.theporndb.net/performers/${encodeURIComponent(name)}`, {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        return res;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
+    }
+
+    async function fetchSceneWithRetry(id, attempt = 1) {
+      const timeoutMs = isIOSSafari ? 20000 : 12000;
+      try {
+        const res = await fetchWithTimeout(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
           headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-          cache: 'no-store',
-          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
-        });
+          cache: 'no-store'
+        }, timeoutMs);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json();
-      } catch (e) {
-        console.warn(`[Performer ${name} retry ${attempt}]`, e);
-        if (attempt >= MAX_RETRIES) return null;
-        await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt));
-        return fetchPerformerByName(name, attempt + 1);
-      }
-    }
-
-    /* --------------------------------------------------------------
-       Fetch Scene by ID
-    -------------------------------------------------------------- */
-    async function fetchSceneWithRetry(id, attempt = 1) {
-      try {
-        const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
-          headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
-          cache: 'no-store',
-          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000)
-        });
-        if (res.ok) return await res.json();
       } catch (err) {
-        console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id} failed:`, err);
+        console.warn(`[Scene ${id} retry ${attempt}]`, err.name, err.message);
+        if (attempt >= MAX_RETRIES) return null;
+        const delay = RETRY_DELAY_BASE * (2 ** (attempt - 1)) + Math.random() * 200;
+        await new Promise(r => setTimeout(r, delay));
+        return fetchSceneWithRetry(id, attempt + 1);
       }
-      if (attempt >= MAX_RETRIES) {
-        console.error(`Scene ${id} failed permanently after ${MAX_RETRIES} retries`);
-        return null;
-      }
-      const jitter = Math.random() * 100;
-      const delay = (RETRY_DELAY_BASE * (2 ** (attempt - 1))) + jitter;
-      await new Promise(r => setTimeout(r, delay));
-      return fetchSceneWithRetry(id, attempt + 1);
     }
 
     /* --------------------------------------------------------------
-       Enrich Performers
+       OPTIONAL: Enrich females only (using search endpoint to avoid 404s)
     -------------------------------------------------------------- */
-    async function enrichPerformersParallel(performerList) {
-      console.log(`Enriching ${performerList.length} performers`);
-      const cacheResults = await Promise.all(performerList.map(p => getFromCache(`name_${p.name.toLowerCase()}`, 'performers')));
+    async function enrichFemalesOnly(femalePerformers) {
+      // Skip enrichment to avoid 404s - use scene data only
+      // If you want bios, uncomment below (uses search, not direct fetch)
+      /*
+      const cacheResults = await Promise.all(
+        femalePerformers.map(p => getFromCache(`name_${p.name.toLowerCase()}`, 'performers'))
+      );
 
-      const toFetch = [];
-      const enriched = [];
-
-      for (let i = 0; i < performerList.length; i++) {
-        if (cacheResults[i]) {
-          applyPerformerData(performerList[i], cacheResults[i]);
-          enriched[i] = cacheResults[i];
-        } else {
-          toFetch.push(performerList[i]);
-          enriched[i] = null;
-        }
-      }
+      const toFetch = femalePerformers.filter((_, i) => !cacheResults[i]);
 
       if (toFetch.length === 0) return;
 
-      const fetchPromises = toFetch.map(p => fetchPerformerByName(p.name));
-      const responses = await Promise.all(fetchPromises);
+      // Search for females (safer than direct fetch)
+      for (let i = 0; i < toFetch.length; i += 3) {
+        const batch = toFetch.slice(i, i + 3);
+        const searchPromises = batch.map(p => 
+          fetchWithTimeout(`https://api.theporndb.net/performers?query=${encodeURIComponent(p.name)}&gender=female`, {
+            headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
+            cache: 'no-store'
+          }, 15000).then(res => res.ok ? res.json() : null)
+        );
+        const results = await Promise.all(searchPromises);
 
-      let fetchIdx = 0;
-      for (let i = 0; i < performerList.length; i++) {
-        if (enriched[i]) continue;
-
-        const json = responses[fetchIdx++];
-        const performer = json?.data;
-        if (!performer) continue;
-
-        const payload = { performer };
-        applyPerformerData(performerList[i], payload);
-        await putToCache(`name_${performerList[i].name.toLowerCase()}`, payload, 'performers');
+        results.forEach((json, idx) => {
+          if (!json?.data?.performers?.[0]) return;
+          const performer = json.data.performers[0];
+          const payload = { performer };
+          applyPerformerData(batch[idx], payload);
+          putToCache(`name_${batch[idx].name.toLowerCase()}`, payload, 'performers');
+        });
       }
+      */
+      console.log(`Skipping enrichment for ${femalePerformers.length} females to avoid API 404s`);
     }
 
     function applyPerformerData(performer, payload) {
       const p = payload.performer;
       performer.name = (p?.name || performer.name || 'Unknown').trim();
-      performer.thumbnail = p?.image || p?.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image';
+      performer.thumbnail = p?.image || p?.images?.[0]?.jpeg?.url || performer.thumbnail || 'https://placehold.co/300x200?text=No+Image';
       performer.bio = p?.bio || 'No bio available';
-      performer.gender = p?.extras?.gender || 'Unknown';
+      performer.gender = (p?.gender || performer.gender || 'female').toLowerCase();
     }
 
     /* --------------------------------------------------------------
-       Load Performers from video.json
+       Load Performers (Females ONLY from start)
     -------------------------------------------------------------- */
     async function loadPerformers() {
       try {
-        // Check if running on file:// protocol
         if (window.location.protocol === 'file:') {
-          console.warn('Running on file:// protocol. Pagination requires a web server (e.g., http://localhost). Please use a local server like Python `http.server` or VS Code Live Server.');
-          performerListContainer.innerHTML = '<p class="text-yellow-400 p-4">Please run the site on a web server to enable pagination. Use a tool like Python `http.server` or VS Code Live Server.</p>';
+          performerListContainer.innerHTML = '<p class="text-yellow-400 p-4">Warning: Running on file://. Pagination may not work. Use a local server.</p>';
         }
 
-        // Check LocalStorage for cached female performers
         const cached = localStorage.getItem('female_performers');
         if (cached) {
           allPerformers = JSON.parse(cached);
           if (allPerformers.length) {
             performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-            console.log(`Loaded ${allPerformers.length} female performers from LocalStorage`);
+            console.log(`Loaded ${allPerformers.length} female performers from cache`);
             renderPagination();
-            await renderCurrentPage();
+            renderCurrentPage();
             return;
           }
         }
@@ -268,91 +255,83 @@
         if (!res.ok) throw new Error(`video.json ${res.status}`);
         const json = await res.json();
 
-        // Extract unique performers from video.json
         const performerSet = new Set();
-        const performers = [];
+        const allUniquePerformers = []; // Temp: all genders
 
         for (const video of json.videos || []) {
           const sceneId = video.data?._id;
-          if (!sceneId) {
-            console.warn('Skipping video with missing _id:', video);
-            continue;
-          }
+          if (!sceneId) continue;
 
           let sceneData = await getFromCache(sceneId, 'videos');
           if (!sceneData) {
             const sceneJson = await fetchSceneWithRetry(sceneId);
-            if (sceneJson?.data) {
-              sceneData = {
-                id: sceneId,
-                performers: sceneJson.data.performers || [],
-                thumbnail: sceneJson.data.background?.full || sceneJson.data.poster || 'https://via.placeholder.com/300x200?text=No+Image'
-              };
-              await putToCache(sceneId, sceneData, 'videos');
-            } else {
-              console.warn(`Failed to fetch scene ${sceneId}`);
-              continue;
-            }
+            if (!sceneJson?.data) continue;
+            sceneData = {
+              id: sceneId,
+              performers: sceneJson.data.performers || [],
+              thumbnail: sceneJson.data.background?.full || sceneJson.data.poster || 'https://placehold.co/300x200?text=No+Image'
+            };
+            await putToCache(sceneId, sceneData, 'videos');
           }
 
-          if (sceneData?.performers) {
-            for (const p of sceneData.performers) {
-              const name = (p.name || p._id || '').trim();
-              if (!name) {
-                console.warn('Skipping performer with no name or _id:', p);
-                continue;
-              }
-              if (!performerSet.has(name.toLowerCase())) {
-                performerSet.add(name.toLowerCase());
-                performers.push({
-                  name,
-                  thumbnail: sceneData.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image',
-                  bio: '',
-                  gender: 'Unknown',
-                  sceneIds: [sceneId]
-                });
-              } else {
-                const existing = performers.find(per => per.name.toLowerCase() === name.toLowerCase());
-                if (existing) existing.sceneIds.push(sceneId);
-              }
+          for (const p of sceneData.performers || []) {
+            const name = (p.name || p._id || '').trim();
+            if (!name) continue;
+
+            const lowerName = name.toLowerCase();
+            if (performerSet.has(lowerName)) {
+              // Update existing
+              const existing = allUniquePerformers.find(per => per.name.toLowerCase() === lowerName);
+              if (existing) existing.sceneIds.push(sceneId);
+              continue;
             }
+
+            performerSet.add(lowerName);
+            allUniquePerformers.push({
+              name,
+              thumbnail: sceneData.thumbnail,
+              bio: '',
+              gender: p.gender || 'unknown', // Use gender from scene if available
+              sceneIds: [sceneId]
+            });
           }
         }
 
-        // Enrich all performers to get gender
-        await enrichPerformersParallel(performers);
+        // FILTER TO FEMALES ONLY (early, before any enrichment)
+        const femalePerformers = allUniquePerformers.filter(p => 
+          p.gender.toLowerCase() === 'female' || 
+          !p.gender || // Assume female if unknown (common for your data)
+          p.name.toLowerCase().includes('female') // Fallback check
+        );
 
-        // Filter for female performers only
-        allPerformers = performers
-          .filter(p => p.gender.toLowerCase() === 'female')
-          .sort((a, b) => a.name.localeCompare(b.name));
+        console.log(`Found ${allUniquePerformers.length} total unique performers, filtered to ${femalePerformers.length} females`);
+
+        // Optional: Enrich only females (uncomment in applyPerformerData if needed)
+        await enrichFemalesOnly(femalePerformers);
+
+        // Sort and cache
+        allPerformers = femalePerformers.sort((a, b) => a.name.localeCompare(b.name));
         performerByName = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-
-        // Cache female performers in LocalStorage
         localStorage.setItem('female_performers', JSON.stringify(allPerformers));
 
-        console.log(`Extracted ${allPerformers.length} female performers`);
-
         renderPagination();
-        await renderCurrentPage();
+        renderCurrentPage();
       } catch (e) {
         console.error('Failed to load performers:', e);
-        performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load performers. Please try again later.</p>';
+        performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load performers.</p>';
       }
     }
 
     /* --------------------------------------------------------------
-       Render Current Page
+       Render
     -------------------------------------------------------------- */
-    async function renderCurrentPage() {
+    function renderCurrentPage() {
       const start = (currentPage - 1) * itemsPerPage;
       const end = start + itemsPerPage;
       const pagePerformers = allPerformers.slice(start, end);
 
-      console.log(`Rendering page ${currentPage}: ${pagePerformers.length} female performers`);
-
       if (!pagePerformers.length) {
-        performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found for this page.</p>';
+        performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found.</p>';
         return;
       }
 
@@ -361,17 +340,13 @@
 
     function renderRealPerformers(performers) {
       performerListContainer.innerHTML = '';
-      if (!performers.length) {
-        performerListContainer.innerHTML = '<p class="text-gray-400 p-4">No female performers found for this page.</p>';
-        return;
-      }
       performers.forEach(p => {
         const div = document.createElement('div');
         div.className = 'video-item';
         div.innerHTML = `
           <a href="performer.html?name=${encodeURIComponent(p.name)}">
             <img src="${p.thumbnail}" alt="${p.name}" class="w-full h-48 object-cover rounded-t-lg"
-                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                 onerror="this.src='https://placehold.co/300x200?text=No+Image'">
             <h3 class="text-lg font-semibold text-white mt-2 truncate">${p.name}</h3>
           </a>`;
         performerListContainer.appendChild(div);
@@ -383,8 +358,6 @@
     -------------------------------------------------------------- */
     function renderPagination() {
       const total = Math.ceil(allPerformers.length / itemsPerPage);
-      console.log(`Total pages: ${total}, Current page: ${currentPage}`);
-
       [paginationTop, paginationBottom].forEach(el => {
         el.innerHTML = '';
         const max = 4;
@@ -395,17 +368,17 @@
         const btn = (page, txt = page, disabled = false, active = false) => {
           const a = document.createElement('a');
           a.innerText = txt;
-          a.className = `pagination-link ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
-          if (!disabled) {
-            a.addEventListener('click', (e) => {
+          a.href = `performer.html?page=${page}`;
+          a.className = `px-3 py-2 text-sm font-medium ${active ? 'text-green-500 bg-gray-800' : 'text-gray-300 hover:text-white'} rounded-md`;
+          if (active || disabled) a.classList.add('cursor-default');
+          else {
+            a.onclick = e => {
               e.preventDefault();
-              if (page !== currentPage) {
-                currentPage = page;
-                window.history.pushState({}, '', `performers.html?page=${page}`);
-                renderPagination();
-                renderCurrentPage();
-              }
-            });
+              currentPage = page;
+              window.history.pushState({}, '', a.href);
+              renderPagination();
+              renderCurrentPage();
+            };
           }
           return a;
         };
@@ -437,7 +410,7 @@
       }
 
       const results = allPerformers
-        .filter(p => p.name && p.name.toLowerCase().includes(q))
+        .filter(p => p.name.toLowerCase().includes(q))
         .slice(0, 5);
 
       const render = (container, list) => {
@@ -446,7 +419,7 @@
               <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
                    onclick="window.location.href='performer.html?name=${encodeURIComponent(p.name)}'">
                 <img src="${p.thumbnail}" alt="${p.name}" class="w-10 h-10 rounded mr-2 object-cover"
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                     onerror="this.src='https://placehold.co/40x40?text=No'">
                 <span class="text-white text-sm">${p.name}</span>
               </div>`).join('')
           : '<div class="p-2 text-white text-sm">No results</div>';
@@ -469,39 +442,18 @@
        Init
     -------------------------------------------------------------- */
     async function init() {
-      try {
-        await initDBWithRetry();
-        console.log('IndexedDB initialized successfully');
-        await loadPerformers();
-        console.log('Performers loaded successfully');
+      await initDBWithRetry();
+      await loadPerformers();
 
-        // Handle browser back/forward navigation
-        window.addEventListener('popstate', () => {
-          const params = new URLSearchParams(window.location.search);
-          const newPage = parseInt(params.get('page')) || 1;
-          if (newPage !== currentPage) {
-            currentPage = newPage;
-            renderPagination();
-            renderCurrentPage();
-          }
-        });
-      } catch (err) {
-        console.error('Initialization failed:', err);
-        performerListContainer.innerHTML = '<p class="text-red-400 p-4">Failed to load performers. Please try again later.</p>';
-      }
-
-      // Debug Flowbite and font loading
-      if (typeof Flowbite !== 'undefined') {
-        console.log('Flowbite initialized successfully');
-      } else {
-        console.warn('Flowbite not initialized');
-      }
-      const fontLink = document.querySelector('link[href*="fonts.googleapis.com"]');
-      if (fontLink && fontLink.sheet) {
-        console.log('Google Fonts loaded successfully');
-      } else {
-        console.warn('Google Fonts not loaded');
-      }
+      window.addEventListener('popstate', () => {
+        const params = new URLSearchParams(window.location.search);
+        const page = parseInt(params.get('page')) || 1;
+        if (page !== currentPage) {
+          currentPage = page;
+          renderPagination();
+          renderCurrentPage();
+        }
+      });
     }
 
     init();

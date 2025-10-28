@@ -18,7 +18,7 @@
 </head>
 <body class="bg-gray-900">
 
-  <!-- Navbar (unchanged) -->
+  <!-- Navbar -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -77,9 +77,9 @@
   <script>
     const API_TOKEN = 'Bearer Aor5JIDSkxOhmXmNAOYP5Gnr73u7u3UPJZYaevBT2558d467';
     const itemsPerPage = 10;
-    const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
-    const MAX_RETRIES = 5; // Increased for Safari reliability
-    const RETRY_DELAY_BASE = 250; // ms, slightly higher for iOS
+    const CACHE_TTL = 24 * 60 * 60 * 1000;
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_BASE = 250;
     const urlParams = new URLSearchParams(window.location.search);
     let currentPage = parseInt(urlParams.get('page')) || 1;
     let allVideos = [];
@@ -87,14 +87,9 @@
     let db = null;
     let searchTimeout;
 
-    // iOS/Safari detection for extra retries/timeouts
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isIOSSafari = isIOS && isSafari;
-    if (isIOSSafari) {
-      // Safari/iOS needs more aggressive handling
-      // MAX_RETRIES already increased
-    }
 
     const searchInput = document.getElementById('search-navbar');
     const searchInputMobile = document.getElementById('search-navbar-mobile');
@@ -105,7 +100,7 @@
     const paginationBottom = document.getElementById('pagination-bottom');
 
     /* --------------------------------------------------------------
-       Robust IndexedDB Init (Retry on Safari/iOS fail)
+       IndexedDB
     -------------------------------------------------------------- */
     async function initDBWithRetry(maxAttempts = 5) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -124,7 +119,7 @@
         } catch (err) {
           console.warn(`DB init attempt ${attempt} failed:`, err);
           if (attempt === maxAttempts) throw err;
-          await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt)); // Backoff
+          await new Promise(r => setTimeout(r, RETRY_DELAY_BASE * attempt));
         }
       }
     }
@@ -136,7 +131,7 @@
         const req = tx.objectStore('videos').get(id);
         req.onsuccess = () => {
           const d = req.result;
-          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d);
+          if (d && Date.now() - d.timestamp < CACHE_TTL) resolve(d.payload);
           else {
             if (d) db.transaction('videos', 'readwrite').objectStore('videos').delete(id);
             resolve(null);
@@ -146,40 +141,41 @@
       });
     }
 
-    async function putToCache(id, data) {
+    async function putToCache(id, payload) {
       if (!db) return;
       db.transaction('videos', 'readwrite').objectStore('videos')
-        .put({ ...data, id, timestamp: Date.now() });
+        .put({ id, payload, timestamp: Date.now() });
     }
 
     /* --------------------------------------------------------------
-       Ultra-reliable Fetch (No keepalive, extra retries for Safari)
+       Safari-safe fetch
     -------------------------------------------------------------- */
     async function fetchSceneWithRetry(id, attempt = 1) {
+      const controller = new AbortController();
+      const timeoutMs = isIOSSafari ? 20000 : 12000;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
       try {
         const res = await fetch(`https://api.theporndb.net/scenes/${id}?add_to_collection=true`, {
           headers: { 'accept': 'application/json', 'Authorization': API_TOKEN },
           cache: 'no-store',
-          signal: AbortSignal.timeout(isIOSSafari ? 15000 : 10000) // Longer timeout for iOS
+          signal: controller.signal
         });
-        if (res.ok) return await res.json();
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
       } catch (err) {
-        console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id} failed:`, err);
+        clearTimeout(timeoutId);
+        console.warn(`[Retry ${attempt}/${MAX_RETRIES}] Scene ${id}:`, err.name, err.message);
+        if (attempt >= MAX_RETRIES) return null;
+        const delay = RETRY_DELAY_BASE * (2 ** (attempt - 1)) + Math.random() * 200;
+        await new Promise(r => setTimeout(r, delay));
+        return fetchSceneWithRetry(id, attempt + 1);
       }
-
-      if (attempt >= MAX_RETRIES) {
-        console.error(`Scene ${id} failed permanently after ${MAX_RETRIES} retries`);
-        return null;
-      }
-
-      const jitter = Math.random() * 100;
-      const delay = (RETRY_DELAY_BASE * (2 ** (attempt - 1))) + jitter;
-      await new Promise(r => setTimeout(r, delay));
-      return fetchSceneWithRetry(id, attempt + 1);
     }
 
     /* --------------------------------------------------------------
-       Enrich page – cache-first, then parallel retry fetches
+       Enrich with batched fetching
     -------------------------------------------------------------- */
     async function enrichPageParallel(pageVideos) {
       const cacheResults = await Promise.all(pageVideos.map(v => getFromCache(v.id)));
@@ -190,54 +186,61 @@
       for (let i = 0; i < pageVideos.length; i++) {
         if (cacheResults[i]) {
           applySceneData(pageVideos[i], cacheResults[i]);
-          enriched[i] = cacheResults[i];
+          enriched[i] = true;
         } else {
           toFetch.push(pageVideos[i]);
-          enriched[i] = null;
+          enriched[i] = false;
         }
       }
 
       if (toFetch.length === 0) return;
 
-      const fetchPromises = toFetch.map(v => fetchSceneWithRetry(v.id));
-      const responses = await Promise.all(fetchPromises);
+      const responses = [];
+      for (let i = 0; i < toFetch.length; i += 3) {
+        const batch = toFetch.slice(i, i + 3);
+        const batchPromises = batch.map(v => fetchSceneWithRetry(v.id));
+        const batchResults = await Promise.all(batchPromises);
+        responses.push(...batchResults);
+      }
 
       let fetchIdx = 0;
       for (let i = 0; i < pageVideos.length; i++) {
         if (enriched[i]) continue;
-
         const json = responses[fetchIdx++];
         const scene = json?.data;
         if (!scene) continue;
 
-        const payload = { scene, performer: scene.performers?.[0] || null };
+        const payload = {
+          scene,
+          performer: scene.performers?.[0] || null
+        };
         applySceneData(pageVideos[i], payload);
         await putToCache(pageVideos[i].id, payload);
       }
     }
 
     function applySceneData(video, payload) {
-      const s = payload.scene;
-      const p = payload.performer;
+      const scene = payload.scene;
+      const performer = payload.performer || {};
 
-      video.title = (s?.title || '').trim() || 'Untitled Video';
-      video.thumbnail = s?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-      video.actressName = (p?.name || '').trim() || 'Unknown';
-      video.description = s?.description || 'No description';
-      video.url = s?.url || '#';
-      video.trailer = s?.trailer || '';
+      video.title = (scene?.title || '').trim() || 'Untitled Video';
+      video.thumbnail = scene?.background?.full || 'https://placehold.co/300x200?text=No+Image';
+      video.actressName = (performer.name || '').trim() || 'Unknown';
+      video.description = scene?.description || 'No description';
+      video.url = scene?.url || '#';
+      video.trailer = scene?.trailer || '';
       video.site = {
-        id: s?.site?.id || 0,
-        name: s?.site?.name || 'Unknown Studio',
-        short_name: s?.site?.short_name || 'Unknown',
-        rating: s?.site?.rating || 0,
-        logo: s?.site?.logo || '',
-        parent: s?.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
+        id: scene?.site?.id || 0,
+        name: scene?.site?.name || 'Unknown Studio',
+        short_name: scene?.site?.short_name || 'Unknown',
+        rating: scene?.site?.rating || 0,
+        logo: scene?.site?.logo || '',
+        parent: scene?.site?.parent || { id: 0, name: 'Unknown', short_name: 'Unknown' }
       };
     }
 
     /* --------------------------------------------------------------
-       Load video.json → minimal objects
+       Load video.json
     -------------------------------------------------------------- */
     async function loadVideos() {
       try {
@@ -248,8 +251,12 @@
         allVideos = json.videos.map(v => {
           const video = {
             id: v.data._id,
-            title: null, thumbnail: null, actressName: null,
-            description: '', url: '#', trailer: '',
+            title: null,
+            thumbnail: null,
+            actressName: null,
+            description: '',
+            url: '#',
+            trailer: '',
             site: { id: 0, name: '', short_name: '', rating: 0, logo: '', parent: { id: 0, name: '', short_name: '' } },
             performers: v.data.performers?.map(p => p._id) || []
           };
@@ -268,7 +275,7 @@
     }
 
     /* --------------------------------------------------------------
-       Render current page – direct rendering after enrichment
+       Render current page – show ALL videos
     -------------------------------------------------------------- */
     async function renderCurrentPage() {
       const start = (currentPage - 1) * itemsPerPage;
@@ -281,7 +288,7 @@
       }
 
       await enrichPageParallel(pageVideos);
-      renderRealVideos(pageVideos.filter(v => v.title && v.thumbnail));
+      renderRealVideos(pageVideos); // ← NO FILTER
     }
 
     function renderRealVideos(videos) {
@@ -292,7 +299,7 @@
         div.innerHTML = `
           <a href="video.html?id=${v.id}">
             <img src="${v.thumbnail}" alt="${v.title}" class="w-full h-48 object-cover rounded-t-lg"
-                 onerror="this.src='https://via.placeholder.com/300x200?text=Image+Failed'">
+                 onerror="this.src='https://placehold.co/300x200?text=Failed'">
             <h3 class="text-lg font-semibold text-white mt-2 truncate">${v.title}</h3>
             <div class="actress-box text-sm text-green-400">${v.actressName}</div>
           </a>`;
@@ -301,7 +308,7 @@
     }
 
     /* --------------------------------------------------------------
-       Pagination – Modified to create new webpages
+       Pagination
     -------------------------------------------------------------- */
     function renderPagination() {
       const total = Math.ceil(allVideos.length / itemsPerPage);
@@ -360,8 +367,8 @@
           ? list.map(v => `
               <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
                    onclick="window.location.href='video.html?id=${v.id}'">
-                <img src="${v.thumbnail}" alt="${v.title}" class="w-10 h-10 rounded mr-2 object-cover"
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <img src="${v.thumbnail || 'https://placehold.co/40x40?text=No'}" alt="${v.title}" class="w-10 h-10 rounded mr-2 object-cover"
+                     onerror="this.src='https://placehold.co/40x40?text=No'">
                 <span class="text-white text-sm">${v.title}</span>
               </div>`).join('')
           : '<div class="p-2 text-white text-sm">No results</div>';

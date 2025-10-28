@@ -1,6 +1,6 @@
 /* -------------------------------------------------
-   Global
-   ------------------------------------------------- */
+    Global
+    ------------------------------------------------- */
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background-color: #111827;
@@ -21,8 +21,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Narrow Content Wrapper (720px max)
-   ------------------------------------------------- */
+    Narrow Content Wrapper (720px max)
+    ------------------------------------------------- */
 .content-wrapper {
   max-width: 720px;
   margin: 0 auto;
@@ -37,8 +37,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Video Embed (16:9 responsive)
-   ------------------------------------------------- */
+    Video Embed (16:9 responsive)
+    ------------------------------------------------- */
 .video-embed {
   position: relative;
   padding-bottom: 56.25%;
@@ -58,8 +58,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Video Title – smaller
-   ------------------------------------------------- */
+    Video Title – smaller
+    ------------------------------------------------- */
 .video-title {
   font-size: 1.125rem; /* text-lg */
   font-weight: bold;
@@ -76,8 +76,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Search Suggestions
-   ------------------------------------------------- */
+    Search Suggestions
+    ------------------------------------------------- */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -122,15 +122,16 @@ nav {
 }
 
 /* -------------------------------------------------
-   Video List Grid
-   ------------------------------------------------- */
+    Video List Grid
+    ------------------------------------------------- */
 .video-list-container {
   max-width: 1920px;
   margin: 0 auto;
   padding: 16px;
 }
 
-.video-list, .related-videos {
+.video-list,
+.related-videos {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -179,8 +180,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Actress Box
-   ------------------------------------------------- */
+    Actress Box
+    ------------------------------------------------- */
 .actress-box {
   position: absolute;
   top: 1px;
@@ -202,8 +203,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Pagination
-   ------------------------------------------------- */
+    Pagination
+    ------------------------------------------------- */
 .pagination {
   display: flex;
   flex-wrap: wrap;
@@ -241,8 +242,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Video Details Page (Legacy – kept for compatibility)
-   ------------------------------------------------- */
+    Video Details Page (Legacy – kept for compatibility)
+    ------------------------------------------------- */
 .video-details-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -305,8 +306,8 @@ nav {
 }
 
 /* -------------------------------------------------
-   Performer Page Specific
-   ------------------------------------------------- */
+    Performer Page Specific
+    ------------------------------------------------- */
 .performer-container {
   display: flex;
   flex-direction: column;
@@ -335,6 +336,38 @@ nav {
   justify-content: flex-start;
 }
 
+.performer-info h1 {
+  font-size: 2.25rem; /* Matches text-4xl */
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.performer-info h2 {
+  font-size: 1.25rem; /* Matches text-xl */
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.performer-info p {
+  color: #d1d5db; /* Matches text-gray-300 */
+  line-height: 1.6;
+}
+
+.performer-back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: #10b981; /* Matches text-green-500 */
+  text-decoration: none;
+  font-size: 0.875rem; /* Matches text-sm */
+}
+
+.performer-back-link:hover {
+  text-decoration: underline;
+}
+
 .loading-spinner {
   border: 4px solid #f3f4f6;
   border-top: 4px solid #10b981;
@@ -348,6 +381,26 @@ nav {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Performer metadata – two-column layout */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr; /* label | value */
+  gap: 0.5rem 1.5rem; /* vertical | horizontal */
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.metadata-label {
+  font-weight: 600;
+  color: #a5f3fc; /* light-cyan for the label */
+  white-space: nowrap;
+}
+
+.metadata-value {
+  color: #e5e7eb; /* light-gray for the value */
 }
 
 /* Responsive adjustments for performer page */
@@ -379,11 +432,10 @@ nav {
   }
 }
 
-/* -------------------------------------------------
-   Responsive Grid
-   ------------------------------------------------- */
+/* Responsive Grid */
 @media (max-width: 600px) {
-  .video-list, .related-videos {
+  .video-list,
+  .related-videos {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -429,6 +481,16 @@ nav {
   .studios-section,
   .performers-section,
   .description {
-    font-size: 0.85em;
+    font-size: 0.8em; /* Adjusted from 05em (likely a typo) */
+  }
+}
+
+@media (max-width: 480px) {
+  .metadata-grid {
+    grid-template-columns: 1fr;
+    gap: 0.25rem 0;
+  }
+  .metadata-label::after {
+    content: ":";
   }
 }

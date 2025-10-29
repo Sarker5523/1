@@ -34,7 +34,7 @@
           <input type="text" id="search-navbar"
                  class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
                  placeholder="Search videos, performers, studios..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
-          <div id="search-suggestions" class="search-suggestions hidden"></div>
+          <div id="search-suggestions" class="search-suggestions hidden z-50 bg-gray-800 border border-gray-700 rounded-lg mt-1 w-full shadow-lg"></div>
         </div>
         <button data-collapse-toggle="navbar-search" type="button"
                 class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
@@ -55,7 +55,7 @@
           <input type="text" id="search-navbar-mobile"
                  class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
                  placeholder="Search..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
-          <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
+          <div id="search-suggestions-mobile" class="search-suggestions hidden z-50 bg-gray-800 border border-gray-700 rounded-lg mt-1 w-full shadow-lg"></div>
         </div>
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded md:bg-transparent md:text-green-700 md:p-0">Home</a></li>
@@ -68,256 +68,323 @@
 
   <!-- Video Content -->
   <div class="content-wrapper max-w-4xl mx-auto p-4">
-    <div id="video-details"></div>
+    <div id="video-details" class="text-white"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
-    const CACHE_TTL = 24 * 60 * 60 * 1000;
-    let db = null;
-    let searchTimeout;
+  const CACHE_TTL = 24 * 60 * 60 * 1000;
+  let db = null;
+  let searchTimeout;
 
-    const searchInput            = document.getElementById('search-navbar');
-    const searchInputMobile      = document.getElementById('search-navbar-mobile');
-    const searchSuggestions      = document.getElementById('search-suggestions');
-    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
-    const videoDetails           = document.getElementById('video-details');
+  const searchInput            = document.getElementById('search-navbar');
+  const searchInputMobile      = document.getElementById('search-navbar-mobile');
+  const searchSuggestions      = document.getElementById('search-suggestions');
+  const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+  const videoDetails           = document.getElementById('video-details');
 
-    // ---------- IndexedDB ----------
-    async function initDB() {
-      try {
-        return await new Promise((res, rej) => {
-          const req = indexedDB.open('VideoHubCache', 1);
-          req.onerror = () => rej(req.error);
-          req.onsuccess = () => { db = req.result; res(db); };
-          req.onupgradeneeded = e => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('videos'))
-              db.createObjectStore('videos', { keyPath: 'id' });
-          };
-        });
-      } catch (e) { console.warn('DB init failed', e); }
-    }
-
-    async function getCache(id) {
-      if (!db || !id) return null;
-      return new Promise(res => {
-        const tx = db.transaction('videos', 'readonly');
-        const store = tx.objectStore('videos');
-        const req = store.get(id);
-        req.onsuccess = () => {
-          const d = req.result;
-          res(d && Date.now() - d.ts < CACHE_TTL ? d.payload : null);
-        };
-        req.onerror = () => res(null);
-      });
-    }
-
-    async function putCache(id, payload) {
-      if (!db || !id) return;
-      const tx = db.transaction('videos', 'readwrite');
-      tx.objectStore('videos').put({ id, payload, ts: Date.now() });
-    }
-
-    // ---------- Load JSON ----------
-    async function loadSceneDetails() {
-      try {
-        const res = await fetch('scene_details.json');
-        if (!res.ok) throw new Error('scene_details.json not found');
-        return await res.json();
-      } catch (e) {
-        videoDetails.innerHTML = `<p class="text-red-400 p-4">Error: ${e.message}</p>`;
-        return [];
-      }
-    }
-
-    // ---------- Performers – FIXED ----------
-    function extractPerformers(performers) {
-      if (!performers) return [];
-
-      // Accept both: array of objects **or** a single object
-      const names = new Set();
-
-      if (Array.isArray(performers)) {
-        performers.forEach(p => p?.name?.trim() && names.add(p.name.trim()));
-      } else if (performers.name) {
-        names.add(performers.name.trim());
-      }
-
-      return Array.from(names);
-    }
-
-    // ---------- Studio chain ----------
-    function buildStudioChain(site) {
-      const seen = new Set();
-      const parts = [];
-
-      if (site?.name && !seen.has(site.name)) {
-        seen.add(site.name);
-        parts.push({ name: site.name, id: site._id || 0 });
-      }
-      if (site?.network?.name && !seen.has(site.network.name)) {
-        seen.add(site.network.name);
-        parts.push({ name: site.network.name, id: 0 });
-      }
-      if (site?.parent?.name && !seen.has(site.parent.name)) {
-        seen.add(site.parent.name);
-        parts.push({ name: site.parent.name, id: 0 });
-      }
-      return parts.length ? parts : [{ name: 'Unknown Studio', id: 0 }];
-    }
-
-    // ---------- Load video ----------
-    async function loadVideo() {
-      const params = new URLSearchParams(location.search);
-      const id = params.get('id');
-      if (!id) { videoDetails.innerHTML = '<p class="text-red-400">No video ID</p>'; return; }
-
-      const cached = await getCache(id);
-      if (cached) { renderVideo(cached); return; }
-
-      const scenes = await loadSceneDetails();
-      const scene = scenes.find(s => String(s.data?._id) === id);
-      if (!scene) { videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>'; return; }
-
-      const performers = extractPerformers(scene.data?.performers);
-      const studioChain = buildStudioChain(scene.data?.site);
-
-      const payload = {
-        id: String(scene.data._id),
-        title: (scene.data.title || 'Untitled').trim(),
-        description: scene.data.description || 'No description.',
-        thumbnail: scene.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
-        trailer: scene.data.trailer || '',
-        videoIdForEmbed: scene.video_Id?.trim() || 'pupt5r',
-        performers: performers,
-        studioChain: studioChain
+  // ---------- IndexedDB ----------
+  async function initDB() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open('VideoHubCache', 1);
+      req.onerror = () => rej(req.error);
+      req.onsuccess = () => { db = req.result; res(db); };
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('videos'))
+          db.createObjectStore('videos', { keyPath: 'id' });
       };
+    });
+  }
 
-      await putCache(id, payload);
-      renderVideo(payload);
-    }
+  async function getCache(id) {
+    if (!db || !id) return null;
+    return new Promise(res => {
+      const tx = db.transaction('videos', 'readonly');
+      const store = tx.objectStore('videos');
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const d = req.result;
+        res(d && Date.now() - d.ts < CACHE_TTL ? d.payload : null);
+      };
+    });
+  }
 
-    // ---------- Render Video ----------
-    function renderVideo(v) {
-      const performersHtml = (v.performers || []).length
-        ? v.performers.map(p => `
-            <a href="performer.html?name=${encodeURIComponent(p)}" class="text-green-400 hover:underline">
-              ${p}
-            </a>
-          `).join(', ')
-        : '<span class="text-gray-500">Unknown</span>';
+  async function putCache(id, payload) {
+    if (!db || !id) return;
+    const tx = db.transaction('videos', 'readwrite');
+    tx.objectStore('videos').put({ id, payload, ts: Date.now() });
+  }
 
-      const studioHtml = (v.studioChain || [])
-        .map((s, i) => {
-          if (s.id && i === 0) {
-            return `<a href="site.html?id=${s.id}" class="text-green-400 hover:underline">${s.name}</a>`;
-          }
-          return `<span class="text-green-400">${s.name}</span>`;
-        })
-        .join(' → ');
+  // ---------- Load JSON Files ----------
+  async function loadAllData() {
+    const [scenesRes, performersRes, sitesRes] = await Promise.all([
+      fetch('scene_details.json').then(r => r.ok ? r.json() : []),
+      fetch('performer.json').then(r => r.ok ? r.json() : []),
+      fetch('site.json').then(r => r.ok ? r.json() : [])
+    ]);
 
-      videoDetails.innerHTML = `
-        <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden">
-          <iframe src="https://purn.upn.one/#${v.videoIdForEmbed}"
-                  class="w-full h-full" frameborder="0"
-                  allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
-          </iframe>
-        </div>
-
-        <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${v.title}</h1>
-        <p class="text-gray-300 mb-4 leading-relaxed">${v.description}</p>
-        <p class="text-sm text-gray-400 mb-1">Studio: ${studioHtml}</p>
-        <p class="text-sm text-gray-400 mb-6">Performers: ${performersHtml}</p>
-
-        ${v.trailer ? `
-          <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4">
-            <source src="${v.trailer}" type="video/mp4">
-            Your browser does not support video.
-          </video>
-        ` : ''}
-      `;
-    }
-
-    // ---------- Search Index ----------
-    async function ensureSearchIndex() {
-      if (localStorage.getItem('searchIndex')) return;
-      const scenes = await loadSceneDetails();
-      const index = scenes.map(s => {
-        const performers = extractPerformers(s.data?.performers);
-        return {
-          id: String(s.data._id),
-          title: (s.data.title || '').trim(),
-          thumbnail: s.data.background?.full || '',
-          performers: performers
-        };
-      });
-      localStorage.setItem('searchIndex', JSON.stringify(index));
-    }
-
-    function debouncedSearch() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(handleSearch, 300);
-    }
-
-    async function handleSearch() {
-      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-      if (!q) { hideSuggestions(); return; }
-
-      await ensureSearchIndex();
-      const index = JSON.parse(localStorage.getItem('searchIndex') || '[]');
-      const results = index
-        .filter(v => v.title.toLowerCase().includes(q) || v.performers.some(p => p.toLowerCase().includes(q)))
-        .slice(0, 5);
-
-      renderSuggestions(searchSuggestions, results);
-      renderSuggestions(searchSuggestionsMobile, results);
-    }
-
-    function renderSuggestions(container, list) {
-      container.innerHTML = list.length
-        ? list.map(v => `
-            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded" onclick="location.href='video.html?id=${v.id}'">
-              <img src="${v.thumbnail || 'https://via.placeholder.com/40x40'}" class="w-10 h-10 rounded object-cover mr-3">
-              <div class="flex-1 min-w-0">
-                <div class="text-sm text-white truncate">${v.title}</div>
-                <div class="text-xs text-green-400">${v.performers.join(', ')}</div>
-              </div>
-            </div>
-          `).join('')
-        : '<div class="p-2 text-sm text-gray-400">No results</div>';
-      container.classList.toggle('hidden', list.length === 0);
-    }
-
-    function hideSuggestions() {
-      searchSuggestions.classList.add('hidden');
-      searchSuggestionsMobile.classList.add('hidden');
-    }
-
-    function handleEnter(e) {
-      if (e.key === 'Enter') {
-        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
-        if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
-      }
-    }
-
-    function syncInputs(src) {
-      if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
-      if (src === searchInputMobile && searchInput) searchInput.value = src.value;
-    }
-
-    // ---------- Init ----------
-    initDB().then(() => {
-      loadVideo();
-      ensureSearchIndex();
-    }).catch(() => {
-      loadVideo();
-      ensureSearchIndex();
+    const performersById = {};
+    performersRes.forEach(p => {
+      if (p._id != null) performersById[p._id] = p;
     });
 
-    searchInput?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInput); });
-    searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInputMobile); });
-    document.addEventListener('keydown', handleEnter);
-  </script>
+    const sitesById = {};
+    sitesRes.forEach(s => {
+      if (s.id != null) sitesById[s.id] = s;
+    });
+
+    return { scenes: scenesRes, performersById, sitesById };
+  }
+
+  // ---------- Load Video ----------
+  async function loadVideo() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) {
+      videoDetails.innerHTML = '<p class="text-red-400">No video ID</p>';
+      return;
+    }
+
+    const cached = await getCache(id);
+    if (cached) {
+      renderVideo(cached);
+      return;
+    }
+
+    const { scenes, performersById, sitesById } = await loadAllData();
+    const sceneItem = scenes.find(s => String(s.data?._id) === id);
+    if (!sceneItem) {
+      videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>';
+      return;
+    }
+
+    const d = sceneItem.data;
+
+    // === PERFORMER: Robust handling ===
+    let actressName = 'Unknown Performer';
+    let actressId = null;
+
+    const perfRaw = d.performers || [];
+    const perfArray = Array.isArray(perfRaw) ? perfRaw : (perfRaw && typeof perfRaw === 'object') ? [perfRaw] : [];
+
+    for (const perf of perfArray) {
+      const pid = perf?.parent?._id;
+      if (!pid) continue;
+
+      const performer = performersById[pid];
+      if (!performer) continue;
+
+      // Prefer female
+      if (performer.extras?.gender === 'Female') {
+        actressName = performer.name || 'Unknown';
+        actressId = pid;
+        break; // stop at first female
+      }
+
+      // Fallback: first valid performer
+      if (!actressId) {
+        actressName = performer.name || 'Unknown';
+        actressId = pid;
+      }
+    }
+
+    // === STUDIO CHAIN ===
+    const siteId = d.site?.id;
+    const site = siteId != null ? sitesById[siteId] : null;
+    const chain = [];
+
+    if (site?.name) chain.push({ name: site.name, id: site.id });
+
+    // Parent
+    let parentName = null, parentId = null;
+    if (d.site?.parent_id != null) {
+      const p = sitesById[d.site.parent_id];
+      if (p?.name) { parentName = p.name; parentId = p.id; }
+    }
+    if (!parentName && site?.parent?.name) {
+      parentName = site.parent.name;
+      parentId = site.parent.id;
+    }
+    if (parentName && parentName !== chain[0]?.name)
+      chain.push({ name: parentName, id: parentId || 0 });
+
+    // Network
+    let networkName = null, networkId = null;
+    if (d.site?.network_id != null) {
+      const n = sitesById[d.site.network_id];
+      if (n?.name) { networkName = n.name; networkId = n.id; }
+    }
+    if (!networkName && site?.network?.name) {
+      networkName = site.network.name;
+      networkId = site.network.id;
+    }
+    if (networkName && networkName !== chain[0]?.name && networkName !== chain[1]?.name)
+      chain.push({ name: networkName, id: networkId || 0 });
+
+    if (!chain.length) chain.push({ name: 'Unknown Studio', id: 0 });
+
+    const payload = {
+      id: String(d._id),
+      title: (d.title || 'Untitled').trim(),
+      description: d.description || 'No description.',
+      thumbnail: d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+      trailer: d.trailer || '',
+      videoIdForEmbed: sceneItem.video_Id?.trim() || '',
+      actressName,
+      actressId,
+      studioChain: chain
+    };
+
+    await putCache(id, payload);
+    renderVideo(payload);
+  }
+
+  // ---------- Render Video ----------
+  function renderVideo(v) {
+    const actressHtml = v.actressId
+      ? `<a href="performer.html?name=${encodeURIComponent(v.actressName)}" class="text-green-400 hover:underline">${escapeHtml(v.actressName)}</a>`
+  : `<span class="text-gray-500">${escapeHtml(v.actressName)}</span>`;
+
+    const studioHtml = v.studioChain
+      .map((s, i) => {
+        if (s.id && i === 0) {
+          return `<a href="site.html?id=${s.id}" class="text-green-400 hover:underline">${escapeHtml(s.name)}</a>`;
+        }
+        return `<span class="text-green-400">${escapeHtml(s.name)}</span>`;
+      })
+      .join(' → ');
+
+    videoDetails.innerHTML = `
+      <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+        <iframe src="https://purn.upn.one/#${v.videoIdForEmbed}"
+                class="w-full h-full" frameborder="0"
+                allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
+        </iframe>
+      </div>
+
+      <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${escapeHtml(v.title)}</h1>
+      <p class="text-gray-300 mb-4 leading-relaxed">${escapeHtml(v.description)}</p>
+      <p class="text-sm text-gray-400 mb-1">Studio: ${studioHtml}</p>
+      <p class="text-sm text-gray-400 mb-6">Performer: ${actressHtml}</p>
+
+      ${v.trailer ? `
+        <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4 shadow-md">
+          <source src="${v.trailer}" type="video/mp4">
+          Your browser does not support video.
+        </video>
+      ` : ''}
+    `;
+  }
+
+  // ---------- Search Index (Fixed: uses same performer logic) ----------
+  async function ensureSearchIndex() {
+    if (localStorage.getItem('searchIndex')) return;
+
+    const { scenes, performersById } = await loadAllData();
+    const index = scenes
+      .map(s => {
+        const d = s.data;
+        if (!d?._id) return null;
+
+        let actress = 'Unknown';
+        const perfRaw = d.performers || [];
+        const perfArray = Array.isArray(perfRaw) ? perfRaw : (perfRaw && typeof perfRaw === 'object') ? [perfRaw] : [];
+
+        for (const perf of perfArray) {
+          const pid = perf?.parent?._id;
+          if (!pid) continue;
+          const p = performersById[pid];
+          if (!p) continue;
+          if (p.extras?.gender === 'Female') {
+            actress = p.name || 'Unknown';
+            break;
+          }
+          if (actress === 'Unknown') actress = p.name || 'Unknown';
+        }
+
+        return {
+          id: String(d._id),
+          title: (d.title || '').trim(),
+          thumbnail: d.background?.full || '',
+          actress
+        };
+      })
+      .filter(Boolean);
+
+    localStorage.setItem('searchIndex', JSON.stringify(index));
+  }
+
+  function debouncedSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(handleSearch, 300);
+  }
+
+  async function handleSearch() {
+    const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+    if (!q) { hideSuggestions(); return; }
+
+    await ensureSearchIndex();
+    const index = JSON.parse(localStorage.getItem('searchIndex') || '[]');
+    const results = index
+      .filter(v => v.title.toLowerCase().includes(q) || v.actress.toLowerCase().includes(q))
+      .slice(0, 5);
+
+    renderSuggestions(searchSuggestions, results);
+    renderSuggestions(searchSuggestionsMobile, results);
+  }
+
+  function renderSuggestions(container, list) {
+    container.innerHTML = list.length
+      ? list.map(v => `
+          <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded" onclick="location.href='video.html?id=${v.id}'">
+            <img src="${v.thumbnail || 'https://via.placeholder.com/40x40'}" class="w-10 h-10 rounded object-cover mr-3"
+                 onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm text-white truncate">${escapeHtml(v.title)}</div>
+              <div class="text-xs text-green-400">${escapeHtml(v.actress)}</div>
+            </div>
+          </div>
+        `).join('')
+      : '<div class="p-2 text-sm text-gray-400">No results</div>';
+    container.classList.toggle('hidden', list.length === 0);
+  }
+
+  function hideSuggestions() {
+    searchSuggestions.classList.add('hidden');
+    searchSuggestionsMobile.classList.add('hidden');
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+      if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
+    }
+  }
+
+  function syncInputs(src) {
+    if (src === searchInput && searchInputMobile) searchInputMobile.value = src.value;
+    if (src === searchInputMobile && searchInput) searchInput.value = src.value;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---------- Init ----------
+  initDB().then(() => {
+    loadVideo();
+    ensureSearchIndex();
+  }).catch(() => {
+    loadVideo();
+    ensureSearchIndex();
+  });
+
+  searchInput?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInput); });
+  searchInputMobile?.addEventListener('input', () => { debouncedSearch(); syncInputs(searchInputMobile); });
+  document.addEventListener('keydown', handleEnter);
+</script>
 </body>
 </html>

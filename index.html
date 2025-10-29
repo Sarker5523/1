@@ -113,14 +113,16 @@
         const data = await res.json();
 
         allVideos = data.map(item => ({
-          id: item.data._id,                 // <-- numeric _id (e.g. 8018745)
-          video_Id: item.video_Id,           // keep for player in video.html
+          id: item.data._id,
+          video_Id: item.video_Id,
           title: (item.data.title || 'Untitled').trim(),
-          thumbnail: item.data.image || 'https://via.placeholder.com/300x200?text=No+Image',
-          actressName: item.data.performers?.[0]?.parent?.name?.trim() || 'Unknown'
+          thumbnail: item.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+          actressName: item.data.performers?.[0]?.name?.trim() || 'Unknown'
         }));
 
-        allVideos.sort((a, b) => a.video_Id.localeCompare(b.video_Id));
+        // CHANGE: Reverse order → newest (last in JSON) first
+        allVideos.reverse();
+
         filteredVideos = [...allVideos];
         renderPage();
         renderPagination();

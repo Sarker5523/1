@@ -3,21 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- FIXED CSP: Brave-safe, allows https: and self -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
     style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
     font-src https://fonts.gstatic.com;
-    img-src * data: https:;
-    media-src *;
-    connect-src 'self';
+    img-src 'self' https:;
+    media-src 'self' https:;
+    connect-src 'self' https:;
   ">
+  
   <title>VideoHub</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <!-- iOS/Brave Fix: Force lazy-load on all images -->
+  <script>
+    // Brave iOS sometimes ignores loading="lazy" without explicit JS
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('img').forEach(img => {
+        if (!img.loading) img.loading = 'lazy';
+      });
+    });
+  </script>
+
   <!-- Navbar -->
   <nav>
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -86,8 +100,9 @@
   <!-- Pagination Bottom -->
   <div class="pagination" id="pagination-bottom"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
-  <script>
+  <!-- Flowbite + App (deferred) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
+  <script defer>
     // ------------------------------------------------------------
     // CONFIG & GLOBAL STATE
     // ------------------------------------------------------------
@@ -108,40 +123,37 @@
     const suggestionsMobile = document.getElementById('search-suggestions-mobile');
 
     let performersById = {};
-    let searchTimeout;
+    let searchTimeout = null;
+    let currentSearchPromise = null;
 
     // ------------------------------------------------------------
-    // LOAD ALL JSON FILES
+    // LOAD ALL JSON FILES (with error fallback)
     // ------------------------------------------------------------
     async function loadAllData() {
       try {
         const [sceneRes, perfRes] = await Promise.all([
-          fetch('scene_details.json').then(r => r.ok ? r.json() : Promise.reject('scene_details.json missing')),
+          fetch('scene_details.json').then(r => r.ok ? r.json() : []),
           fetch('performer.json').then(r => r.ok ? r.json() : [])
         ]);
 
-        // Build performer lookup: _id → full object
+        // Build performer lookup
         performersById = {};
         perfRes.forEach(p => {
           if (p._id != null) performersById[p._id] = p;
         });
 
-        // Transform scenes – **100% ROBUST**
+        // Transform scenes
         allVideos = sceneRes.map(item => {
           const d = item.data || {};
           const performers = d.performers || [];
 
-          // === TITLE ===
           const title = (typeof d.title === 'string' && d.title.trim()) ? d.title.trim() : 'Untitled Video';
 
-          // === PERFORMER: Handle object OR array ===
           let actressName = 'Unknown';
           let allPerformerIds = [];
 
-          // Normalize to array
           const perfArray = Array.isArray(performers) ? performers : (performers && typeof performers === 'object') ? [performers] : [];
 
-          // Find first female performer
           for (const perf of perfArray) {
             const perfId = perf?.parent?._id;
             if (perfId != null) {
@@ -149,7 +161,7 @@
               const p = performersById[perfId];
               if (p && (p.extras?.gender === 'Female' || !p.extras?.gender)) {
                 actressName = p.name || 'Unknown';
-                break; // stop at first female
+                break;
               }
             }
           }
@@ -163,16 +175,13 @@
             allPerformerIds: allPerformerIds,
             raw: item
           };
-        });
-
-        // Newest first
-        allVideos.reverse();
+        }).reverse(); // newest first
 
         filteredVideos = [...allVideos];
         renderPage();
         renderPagination();
       } catch (err) {
-        videoList.innerHTML = `<p class="text-red-400 p-4">Error: ${err}</p>`;
+        videoList.innerHTML = `<p class="text-red-400 p-4">Error loading data: ${err.message}</p>`;
         console.error(err);
       }
     }
@@ -197,7 +206,9 @@
         div.innerHTML = `
           <a href="video.html?id=${v.id}">
             <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
-                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                 loading="lazy"
+                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
+                 class="w-full h-auto object-cover rounded">
             <h3 class="line-clamp-2">${escapeHtml(v.title)}</h3>
             <div class="actress-box">${escapeHtml(v.actressName)}</div>
           </a>`;
@@ -206,7 +217,7 @@
     }
 
     // ------------------------------------------------------------
-    // PAGINATION (unchanged)
+    // PAGINATION
     // ------------------------------------------------------------
     function renderPagination() {
       const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
@@ -237,18 +248,24 @@
     }
 
     // ------------------------------------------------------------
-    // SEARCH + SUGGESTIONS
+    // SEARCH + SUGGESTIONS (iOS-safe)
     // ------------------------------------------------------------
     function debouncedSearch() {
+      if (currentSearchPromise) currentSearchPromise.ignore = true;
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(handleSearch, 300);
+      searchTimeout = setTimeout(() => {
+        const p = handleSearch();
+        currentSearchPromise = p;
+        p.finally(() => { if (currentSearchPromise === p) currentSearchPromise = null; });
+      }, 350);
     }
 
-    function handleSearch() {
+    async function handleSearch() {
       const query = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
       hideSuggestions();
 
       if (!query) {
+        if (currentSearchPromise?.ignore) return;
         filteredVideos = [...allVideos];
         currentPage = 1;
         renderPage();
@@ -257,13 +274,13 @@
       }
 
       filteredVideos = allVideos.filter(v => {
-        if (v.title.toLowerCase().includes(query)) return true;
-        if (v.actressName.toLowerCase().includes(query)) return true;
-        return v.allPerformerIds.some(id => {
-          const p = performersById[id];
-          return p?.name?.toLowerCase().includes(query);
-        });
+        if (currentSearchPromise?.ignore) return false;
+        return v.title.toLowerCase().includes(query) ||
+               v.actressName.toLowerCase().includes(query) ||
+               v.allPerformerIds.some(id => performersById[id]?.name?.toLowerCase().includes(query));
       });
+
+      if (currentSearchPromise?.ignore) return;
 
       currentPage = 1;
       renderPage();
@@ -287,6 +304,7 @@
           <div class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                onclick="window.location.href='video.html?id=${v.id}'">
             <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
+                 loading="lazy"
                  class="w-10 h-10 object-cover rounded mr-2"
                  onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
             <div class="flex-1 min-w-0">

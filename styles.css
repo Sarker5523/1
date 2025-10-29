@@ -61,17 +61,16 @@ nav {
     Video Title – smaller
     ------------------------------------------------- */
 .video-title {
-  font-size: 1.125rem; /* text-lg */
+  font-size: 1.125rem;
   font-weight: bold;
   color: white;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
-/* Mobile landscape – even smaller */
 @media (max-width: 768px) and (orientation: landscape) {
   .video-title {
-    font-size: 1rem; /* text-base */
+    font-size: 1rem;
   }
 }
 
@@ -113,7 +112,6 @@ nav {
   margin-right: 0.75rem;
 }
 
-/* Mobile */
 @media (max-width: 600px) {
   .search-suggestions img {
     width: 28px;
@@ -180,7 +178,7 @@ nav {
 }
 
 /* -------------------------------------------------
-    Actress Box
+    Actress Box (on index.html)
     ------------------------------------------------- */
 .actress-box {
   position: absolute;
@@ -200,6 +198,43 @@ nav {
   padding: 0 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.712), inset 0 0 8px rgb(0, 0, 0);
   font-family: 'Inter', sans-serif;
+}
+
+/* -------------------------------------------------
+    Performer Count Box
+    ------------------------------------------------- */
+.performer-count-box {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: hsl(152, 76%, 45%);
+  color: #fff;
+  min-width: 36px;
+  height: 22px;
+  line-height: 22px;
+  border-radius: 11px;
+  font-size: 0.65rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.7);
+  font-family: 'Inter', sans-serif;
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .performer-count-box {
+    min-width: 30px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 0.58rem;
+    padding: 0 5px;
+    border-radius: 9px;
+    top: 2px;
+    left: 2px;
+  }
 }
 
 /* -------------------------------------------------
@@ -242,7 +277,7 @@ nav {
 }
 
 /* -------------------------------------------------
-    Video Details Page (Legacy – kept for compatibility)
+    Video Details Page
     ------------------------------------------------- */
 .video-details-container {
   max-width: 1280px;
@@ -306,7 +341,7 @@ nav {
 }
 
 /* -------------------------------------------------
-    Performer Page Specific
+    Performer Page – Image + Info Side-by-Side
     ------------------------------------------------- */
 .performer-container {
   display: flex;
@@ -315,18 +350,25 @@ nav {
 }
 
 .performer-details {
-  display: flex;
-  flex-direction: row;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: 420px 1fr;   /* Image | Info */
+  gap: 2rem;
+  align-items: start;
   margin-bottom: 2rem;
 }
 
 .performer-image {
-  max-width: 300px;
+  max-width: 420px;
   width: 100%;
   height: auto;
   object-fit: contain;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.performer-image:hover {
+  transform: scale(1.02);
 }
 
 .performer-info {
@@ -334,34 +376,80 @@ nav {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  min-height: 100%; /* Full height of image */
 }
 
 .performer-info h1 {
-  font-size: 2.25rem; /* Matches text-4xl */
+  font-size: 2.25rem;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.5rem;
 }
 
 .performer-info h2 {
-  font-size: 1.25rem; /* Matches text-xl */
+  font-size: 1.25rem;
   font-weight: 600;
   color: #ffffff;
   margin-bottom: 0.5rem;
   margin-top: 1.5rem;
 }
 
+/* -------------------------------------------------
+    Metadata – 3 columns, small font
+    ------------------------------------------------- */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.2rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.72rem;
+}
+
+@media (min-width: 768px) {
+  .metadata-grid {
+    grid-template-columns: repeat(3, max-content 1fr);
+    gap: 0.5rem 1.8rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .metadata-grid {
+    grid-template-columns: 1fr;
+    gap: 0.2rem 0;
+  }
+  .metadata-label::after {
+    content: ":";
+  }
+}
+
+.metadata-label {
+  font-weight: 600;
+  color: #a5f3fc;
+  white-space: nowrap;
+  font-size: 0.72rem;
+}
+.metadata-value {
+  color: #e5e7eb;
+  font-size: 0.72rem;
+}
+
+/* -------------------------------------------------
+    Biography – smaller font
+    ------------------------------------------------- */
 .performer-info p {
-  color: #d1d5db; /* Matches text-gray-300 */
+  color: #d1d5db;
   line-height: 1.6;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .performer-back-link {
   display: inline-block;
   margin-bottom: 1.5rem;
-  color: #10b981; /* Matches text-green-500 */
+  color: #10b981;
   text-decoration: none;
-  font-size: 0.875rem; /* Matches text-sm */
+  font-size: 0.875rem;
 }
 
 .performer-back-link:hover {
@@ -383,38 +471,31 @@ nav {
   100% { transform: rotate(360deg); }
 }
 
-/* Performer metadata – two-column layout */
-.metadata-grid {
-  display: grid;
-  grid-template-columns: max-content 1fr; /* label | value */
-  gap: 0.5rem 1.5rem; /* vertical | horizontal */
-  align-items: center;
-  margin-top: 1rem;
-  font-size: 0.95rem;
-}
-
-.metadata-label {
-  font-weight: 600;
-  color: #a5f3fc; /* light-cyan for the label */
-  white-space: nowrap;
-}
-
-.metadata-value {
-  color: #e5e7eb; /* light-gray for the value */
-}
-
-/* Responsive adjustments for performer page */
+/* -------------------------------------------------
+    Mobile: 2-column grid + stacked layout
+    ------------------------------------------------- */
 @media (max-width: 768px) {
   .performer-details {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   .performer-image {
     max-width: 100%;
+    border-radius: 0.5rem;
   }
+  .video-list,
   .related-videos {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+  .video-item h3 {
+    font-size: clamp(0.4em, 2.5vw, 0.55em) !important;
+    padding: 3px;
+  }
+  .video-item {
+    flex: none;
+    max-width: 100%;
   }
 }
 
@@ -432,27 +513,7 @@ nav {
   }
 }
 
-/* Responsive Grid */
 @media (max-width: 600px) {
-  .video-list,
-  .related-videos {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .video-item h3 {
-    font-size: clamp(0.4em, 2.5vw, 0.55em) !important;
-    padding: 3px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-  }
-
-  .video-item {
-    flex: none;
-    max-width: 100%;
-  }
-
   .actress-box {
     min-width: 36px;
     height: 18px;
@@ -462,27 +523,14 @@ nav {
     border-radius: 5px;
     top: 1.5px;
     left: 2px;
-    font-family: 'Inter', sans-serif;
   }
-
-  .max-w-screen-xl {
-    padding: 6px;
-  }
-
+  .max-w-screen-xl { padding: 6px; }
   .video-details-container,
-  .video-details {
-    padding: 12px;
-  }
-
-  .video-trailer video {
-    max-height: 300px;
-  }
-
+  .video-details { padding: 12px; }
+  .video-trailer video { max-height: 300px; }
   .studios-section,
   .performers-section,
-  .description {
-    font-size: 0.8em; /* Adjusted from 05em (likely a typo) */
-  }
+  .description { font-size: 0.8em; }
 }
 
 @media (max-width: 480px) {

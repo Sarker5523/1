@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline';
-    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+    font-src https://fonts.gstatic.com;
     img-src * data: https:;
     media-src *;
+    connect-src 'self';
   ">
   <title>VideoHub</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -16,7 +18,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <!-- Navbar -->
   <nav>
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -52,7 +53,6 @@
           </svg>
         </button>
       </div>
-
       <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
         <div class="relative mt-3 md:hidden">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -88,7 +88,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
-    const itemsPerPage = 10;
+    // ------------------------------------------------------------
+    // CONFIG & GLOBAL STATE
+    // ------------------------------------------------------------
+    const itemsPerPage = 12;
     let allVideos = [];
     let filteredVideos = [];
     let currentPage = 1;
@@ -101,44 +104,89 @@
     const paginationBottom = document.getElementById('pagination-bottom');
     const searchInput = document.getElementById('search-navbar');
     const searchInputMobile = document.getElementById('search-navbar-mobile');
-    const searchSuggestions = document.getElementById('search-suggestions');
-    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+    const suggestions = document.getElementById('search-suggestions');
+    const suggestionsMobile = document.getElementById('search-suggestions-mobile');
+
+    let performersById = {};
     let searchTimeout;
 
-    // === Load scene_details.json ===
-    async function loadData() {
+    // ------------------------------------------------------------
+    // LOAD ALL JSON FILES
+    // ------------------------------------------------------------
+    async function loadAllData() {
       try {
-        const res = await fetch('scene_details.json');
-        if (!res.ok) throw new Error('scene_details.json not found');
-        const data = await res.json();
+        const [sceneRes, perfRes] = await Promise.all([
+          fetch('scene_details.json').then(r => r.ok ? r.json() : Promise.reject('scene_details.json missing')),
+          fetch('performer.json').then(r => r.ok ? r.json() : [])
+        ]);
 
-        allVideos = data.map(item => ({
-          id: item.data._id,
-          video_Id: item.video_Id,
-          title: (item.data.title || 'Untitled').trim(),
-          thumbnail: item.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
-          actressName: item.data.performers?.[0]?.name?.trim() || 'Unknown'
-        }));
+        // Build performer lookup: _id → full object
+        performersById = {};
+        perfRes.forEach(p => {
+          if (p._id != null) performersById[p._id] = p;
+        });
 
-        // CHANGE: Reverse order → newest (last in JSON) first
+        // Transform scenes – **100% ROBUST**
+        allVideos = sceneRes.map(item => {
+          const d = item.data || {};
+          const performers = d.performers || [];
+
+          // === TITLE ===
+          const title = (typeof d.title === 'string' && d.title.trim()) ? d.title.trim() : 'Untitled Video';
+
+          // === PERFORMER: Handle object OR array ===
+          let actressName = 'Unknown';
+          let allPerformerIds = [];
+
+          // Normalize to array
+          const perfArray = Array.isArray(performers) ? performers : (performers && typeof performers === 'object') ? [performers] : [];
+
+          // Find first female performer
+          for (const perf of perfArray) {
+            const perfId = perf?.parent?._id;
+            if (perfId != null) {
+              allPerformerIds.push(perfId);
+              const p = performersById[perfId];
+              if (p && (p.extras?.gender === 'Female' || !p.extras?.gender)) {
+                actressName = p.name || 'Unknown';
+                break; // stop at first female
+              }
+            }
+          }
+
+          return {
+            id: d._id || '',
+            video_Id: item.video_Id || '',
+            title: title,
+            thumbnail: d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+            actressName: actressName,
+            allPerformerIds: allPerformerIds,
+            raw: item
+          };
+        });
+
+        // Newest first
         allVideos.reverse();
 
         filteredVideos = [...allVideos];
         renderPage();
         renderPagination();
       } catch (err) {
-        videoList.innerHTML = `<p class="text-red-400 p-4">Error: ${err.message}</p>`;
+        videoList.innerHTML = `<p class="text-red-400 p-4">Error: ${err}</p>`;
+        console.error(err);
       }
     }
 
-    // === Render Grid ===
+    // ------------------------------------------------------------
+    // RENDER GRID
+    // ------------------------------------------------------------
     function renderPage() {
       const start = (currentPage - 1) * itemsPerPage;
       const end = start + itemsPerPage;
       const pageVideos = filteredVideos.slice(start, end);
 
       videoList.innerHTML = '';
-      if (pageVideos.length === 0) {
+      if (!pageVideos.length) {
         videoList.innerHTML = '<p class="text-gray-400 p-4">No videos found.</p>';
         return;
       }
@@ -148,33 +196,37 @@
         div.className = 'video-item';
         div.innerHTML = `
           <a href="video.html?id=${v.id}">
-            <img src="${v.thumbnail}" alt="${v.title}"
+            <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
                  onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-            <h3>${v.title}</h3>
-            <div class="actress-box">${v.actressName}</div>
+            <h3 class="line-clamp-2">${escapeHtml(v.title)}</h3>
+            <div class="actress-box">${escapeHtml(v.actressName)}</div>
           </a>`;
         videoList.appendChild(div);
       });
     }
 
-    // === Pagination ===
+    // ------------------------------------------------------------
+    // PAGINATION (unchanged)
+    // ------------------------------------------------------------
     function renderPagination() {
       const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
       [paginationTop, paginationBottom].forEach(container => {
         container.innerHTML = '';
         if (totalPages <= 1) return;
 
-        const max = 5;
-        let start = Math.max(1, currentPage - Math.floor(max / 2));
-        let end = Math.min(totalPages, start + max - 1);
-        if (end - start < max - 1) start = Math.max(1, end - max + 1);
+        const maxButtons = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let end = Math.min(totalPages, start + maxButtons - 1);
+        if (end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
 
-        const btn = (page, text, disabled = false, active = false) => {
+        const btn = (page, txt, disabled = false, active = false) => {
           const a = document.createElement('a');
           a.href = disabled ? '#' : `index.html?page=${page}`;
-          a.textContent = text;
-          if (active) a.classList.add('active');
-          if (disabled) a.classList.add('disabled');
+          a.textContent = txt;
+          a.className = 'px-3 py-2 text-sm font-medium rounded-md';
+          if (active) a.className += ' bg-green-700 text-white';
+          else a.className += ' text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+          if (disabled) a.className += ' opacity-50 cursor-not-allowed';
           return a;
         };
 
@@ -184,7 +236,9 @@
       });
     }
 
-    // === Search ===
+    // ------------------------------------------------------------
+    // SEARCH + SUGGESTIONS
+    // ------------------------------------------------------------
     function debouncedSearch() {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(handleSearch, 300);
@@ -192,19 +246,24 @@
 
     function handleSearch() {
       const query = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+      hideSuggestions();
+
       if (!query) {
         filteredVideos = [...allVideos];
         currentPage = 1;
         renderPage();
         renderPagination();
-        hideSuggestions();
         return;
       }
 
-      filteredVideos = allVideos.filter(v =>
-        v.title.toLowerCase().includes(query) ||
-        v.actressName.toLowerCase().includes(query)
-      );
+      filteredVideos = allVideos.filter(v => {
+        if (v.title.toLowerCase().includes(query)) return true;
+        if (v.actressName.toLowerCase().includes(query)) return true;
+        return v.allPerformerIds.some(id => {
+          const p = performersById[id];
+          return p?.name?.toLowerCase().includes(query);
+        });
+      });
 
       currentPage = 1;
       renderPage();
@@ -215,34 +274,42 @@
     function showSuggestions(query) {
       const results = allVideos
         .filter(v => v.title.toLowerCase().includes(query) || v.actressName.toLowerCase().includes(query))
-        .slice(0, 5);
+        .slice(0, 6);
 
       const render = (container) => {
-        container.innerHTML = results.length === 0
-          ? '<div class="p-2 text-sm text-gray-400">No results</div>'
-          : results.map(v => `
-              <div onclick="window.location.href='video.html?id=${v.id}'">
-                <img src="${v.thumbnail}" alt="${v.title}"
-                     onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
-                <div>
-                  <div class="text-sm font-medium truncate">${v.title}</div>
-                  <div class="text-xs text-green-400">${v.actressName}</div>
-                </div>
-              </div>
-            `).join('');
-        container.classList.toggle('hidden', results.length === 0);
+        if (!results.length) {
+          container.innerHTML = '<div class="p-2 text-sm text-gray-400">No results</div>';
+          container.classList.add('hidden');
+          return;
+        }
+
+        container.innerHTML = results.map(v => `
+          <div class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+               onclick="window.location.href='video.html?id=${v.id}'">
+            <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
+                 class="w-10 h-10 object-cover rounded mr-2"
+                 onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate">${escapeHtml(v.title)}</div>
+              <div class="text-xs text-green-400">${escapeHtml(v.actressName)}</div>
+            </div>
+          </div>
+        `).join('');
+        container.classList.remove('hidden');
       };
 
-      render(searchSuggestions);
-      render(searchSuggestionsMobile);
+      render(suggestions);
+      render(suggestionsMobile);
     }
 
     function hideSuggestions() {
-      searchSuggestions.classList.add('hidden');
-      searchSuggestionsMobile.classList.add('hidden');
+      suggestions.classList.add('hidden');
+      suggestionsMobile.classList.add('hidden');
     }
 
-    // Sync desktop/mobile inputs
+    // ------------------------------------------------------------
+    // SYNC INPUTS + ENTER
+    // ------------------------------------------------------------
     searchInput?.addEventListener('input', () => {
       if (searchInputMobile) searchInputMobile.value = searchInput.value;
       debouncedSearch();
@@ -252,7 +319,6 @@
       debouncedSearch();
     });
 
-    // Enter → go to search.html
     document.addEventListener('keydown', e => {
       if (e.key === 'Enter' && (document.activeElement === searchInput || document.activeElement === searchInputMobile)) {
         const q = (searchInput?.value || searchInputMobile?.value || '').trim();
@@ -260,8 +326,19 @@
       }
     });
 
-    // === Init ===
-    loadData();
+    // ------------------------------------------------------------
+    // UTILS
+    // ------------------------------------------------------------
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ------------------------------------------------------------
+    // INIT
+    // ------------------------------------------------------------
+    loadAllData();
   </script>
 </body>
 </html>

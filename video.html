@@ -73,17 +73,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script>
-    /* ================================================================
-       video.html – FINAL, BULLETPROOF
-       • Studio chain is always built (deduped) → "Site → Network → Parent"
-       • Performers are always an array of {name}
-       • No map/undefined errors
-       • Works with every JSON you posted
-       ================================================================ */
-
     const CACHE_TTL = 24 * 60 * 60 * 1000;
     let db = null;
-; let searchTimeout;
+    let searchTimeout;
 
     const searchInput            = document.getElementById('search-navbar');
     const searchInputMobile      = document.getElementById('search-navbar-mobile');
@@ -139,23 +131,30 @@
       }
     }
 
-    // ---------- Performers ----------
-    function extractPerformers(perf) {
-      if (!perf) return [];
-      if (Array.isArray(perf)) {
-        return perf.map(p => p?.parent?.name).filter(Boolean);
+    // ---------- Performers – FIXED ----------
+    function extractPerformers(performers) {
+      if (!performers) return [];
+
+      // Accept both: array of objects **or** a single object
+      const names = new Set();
+
+      if (Array.isArray(performers)) {
+        performers.forEach(p => p?.name?.trim() && names.add(p.name.trim()));
+      } else if (performers.name) {
+        names.add(performers.name.trim());
       }
-      return perf.parent?.name ? [perf.parent.name] : [];
+
+      return Array.from(names);
     }
 
-    // ---------- Studio chain (deduped) ----------
+    // ---------- Studio chain ----------
     function buildStudioChain(site) {
       const seen = new Set();
       const parts = [];
 
       if (site?.name && !seen.has(site.name)) {
         seen.add(site.name);
-        parts.push({ name: site.name, id: site.site_id || 0 });
+        parts.push({ name: site.name, id: site._id || 0 });
       }
       if (site?.network?.name && !seen.has(site.network.name)) {
         seen.add(site.network.name);
@@ -182,31 +181,33 @@
       if (!scene) { videoDetails.innerHTML = '<p class="text-red-400">Video not found</p>'; return; }
 
       const performers = extractPerformers(scene.data?.performers);
-      const studioChain = buildStudioChain(scene.site);   // top-level site
+      const studioChain = buildStudioChain(scene.data?.site);
 
       const payload = {
         id: String(scene.data._id),
         title: (scene.data.title || 'Untitled').trim(),
         description: scene.data.description || 'No description.',
-        thumbnail: scene.data.image || 'https://via.placeholder.com/300x200?text=No+Image',
+        thumbnail: scene.data.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
         trailer: scene.data.trailer || '',
         videoIdForEmbed: scene.video_Id?.trim() || 'pupt5r',
-        performers: performers.map(name => ({ name })),   // ALWAYS array
-        studioChain: studioChain                         // ALWAYS array
+        performers: performers,
+        studioChain: studioChain
       };
 
       await putCache(id, payload);
       renderVideo(payload);
     }
 
-    // ---------- Render ----------
+    // ---------- Render Video ----------
     function renderVideo(v) {
-      // ---- Performers ----
       const performersHtml = (v.performers || []).length
-        ? v.performers.map(p => `<a href="performer.html?name=${encodeURIComponent(p.name)}" class="text-green-400 hover:underline">${p.name}</a>`).join(', ')
+        ? v.performers.map(p => `
+            <a href="performer.html?name=${encodeURIComponent(p)}" class="text-green-400 hover:underline">
+              ${p}
+            </a>
+          `).join(', ')
         : '<span class="text-gray-500">Unknown</span>';
 
-      // ---- Studio ----
       const studioHtml = (v.studioChain || [])
         .map((s, i) => {
           if (s.id && i === 0) {
@@ -238,17 +239,17 @@
       `;
     }
 
-    // ---------- Search ----------
+    // ---------- Search Index ----------
     async function ensureSearchIndex() {
       if (localStorage.getItem('searchIndex')) return;
       const scenes = await loadSceneDetails();
       const index = scenes.map(s => {
-        const names = extractPerformers(s.data?.performers);
+        const performers = extractPerformers(s.data?.performers);
         return {
           id: String(s.data._id),
           title: (s.data.title || '').trim(),
-          thumbnail: s.data.image || '',
-          performers: names
+          thumbnail: s.data.background?.full || '',
+          performers: performers
         };
       });
       localStorage.setItem('searchIndex', JSON.stringify(index));

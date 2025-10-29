@@ -106,7 +106,11 @@
     const searchSuggestions = document.getElementById('search-suggestions');
     const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
 
-    function toArray(x) { return Array.isArray(x) ? x : (x == null ? [] : [x]); }
+    function toArray(x) {
+      if (Array.isArray(x)) return x;
+      if (x === null || x === undefined) return [];
+      return [x];
+    }
 
     /* --------------------------------------------------------------
        Load Performers
@@ -118,7 +122,7 @@
       }
 
       try {
-        const cached = localStorage.getItem('female_performers_v2');
+        const cached = localStorage.getItem('female_performers_v3');
         if (cached) {
           allPerformers = JSON.parse(cached);
           if (allPerformers.length > 0) {
@@ -138,37 +142,52 @@
         for (const s of scenes) {
           const sceneId = s.data?._id;
           const sceneTitle = s.data?.title || 'Untitled';
-          const sceneThumb = s.data?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-          const studio = s.site?.name || 'Unknown';
+          const sceneThumb = s.data?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+          const studio = s.data?.site?.name || 'Unknown';
           const performers = toArray(s.data?.performers);
 
           for (const p of performers) {
-            const name = p?.parent?.name || p?.name;
+            const name = p?.name?.trim();
             if (!name) continue;
 
-            const gender = (p?.parent?.extras?.gender || p?.extras?.gender || '').toLowerCase();
+            const gender = (p?.extras?.gender || '').toLowerCase();
             if (!['female', 'f', 'woman'].includes(gender)) continue;
 
-            const image = p?.parent?.image || p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-            const bio = p?.parent?.bio || '';
-            const extras = p?.parent?.extras || {};
+            const image = p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
+            const bio = p?.bio || '';
+            const extras = p?.extras || {};
 
             const key = name.toLowerCase();
             if (!map.has(key)) {
-              map.set(key, { name, image, bio, extras, videoCount: 0, scenes: [] });
+              map.set(key, {
+                name,
+                image,
+                bio,
+                extras,
+                videoCount: 0,
+                scenes: []
+              });
             }
+
             const entry = map.get(key);
             entry.videoCount++;
             if (!entry.scenes.find(sc => sc.id === sceneId)) {
-              entry.scenes.push({ id: sceneId, title: sceneTitle, thumb: sceneThumb, studio });
+              entry.scenes.push({
+                id: sceneId,
+                title: sceneTitle,
+                thumb: sceneThumb,
+                studio
+              });
             }
-            if (image && !image.includes('placeholder')) entry.image = image;
+            if (image && !image.includes('placeholder')) {
+              entry.image = image;
+            }
           }
         }
 
         allPerformers = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
         performerMap = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-        localStorage.setItem('female_performers_v2', JSON.stringify(allPerformers));
+        localStorage.setItem('female_performers_v3', JSON.stringify(allPerformers));
 
         updatePageFromURL();
         renderPagination();
@@ -188,7 +207,10 @@
         return;
       }
 
-      const performer = performerMap.get(name.toLowerCase()) || (await rebuildPerformerMap(name));
+      let performer = performerMap.get(name.toLowerCase());
+      if (!performer) {
+        performer = await rebuildPerformerMap(name);
+      }
       if (!performer) {
         performerList.innerHTML = `<p class="error-message">Performer "${name}" not found.</p>`;
         return;
@@ -199,7 +221,8 @@
 
       performerList.innerHTML = `
         <div class="performer-container content-wrapper">
-          <a href="performer.html" class="performer-back-link">← All Female Performers</a>
+          <a href="performer.html" class="performer-back-link">All Female Performers</a>
+
           <div class="performer-details">
             <div>
               <img src="${p.image}"
@@ -207,8 +230,10 @@
                    class="performer-image"
                    onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
             </div>
+
             <div class="performer-info">
               <h1>${p.name}</h1>
+
               <div class="metadata-grid">
                 ${extras.gender ? `<span class="metadata-label">Gender</span><span class="metadata-value">${extras.gender}</span>` : ''}
                 ${extras.birthday ? `<span class="metadata-label">Birthday</span><span class="metadata-value">${extras.birthday}</span>` : ''}
@@ -225,19 +250,27 @@
                 ${extras.piercings ? `<span class="metadata-label">Piercings</span><span class="metadata-value">${extras.piercings}</span>` : ''}
                 ${extras.career_start_year ? `<span class="metadata-label">Career Start</span><span class="metadata-value">${extras.career_start_year}</span>` : ''}
               </div>
-              ${p.bio ? `<div><h2>Biography</h2><p>${p.bio}</p></div>` : ''}
+
+              ${p.bio ? `
+                <div class="mt-6">
+                  <h2 class="text-xl font-semibold mb-2">Biography</h2>
+                  <p class="text-gray-300">${p.bio}</p>
+                </div>
+              ` : ''}
             </div>
           </div>
+
           ${p.scenes.length > 0 ? `
-            <div>
-              <h2>Related Videos (${p.scenes.length})</h2>
+            <div class="mt-8">
+              <h2 class="text-xl font-semibold mb-4">Related Videos (${p.scenes.length})</h2>
               <div class="related-videos">
                 ${p.scenes.map(s => `
                   <div class="video-item">
                     <a href="video.html?id=${s.id}">
-                      <img src="${s.thumb}" alt="${s.title}" class="w-full h-48 object-cover" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                      <h3>${s.title}</h3>
-                      <div class="video-count">${s.studio}</div>
+                      <img src="${s.thumb}" alt="${s.title}" class="w-full h-48 object-cover"
+                           onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                      <h3 class="mt-2 text-sm font-medium">${s.title}</h3>
+                      <div class="video-count text-xs text-gray-400">${s.studio}</div>
                     </a>
                   </div>
                 `).join('')}
@@ -259,19 +292,19 @@
       for (const s of scenes) {
         const sceneId = s.data?._id;
         const sceneTitle = s.data?.title || 'Untitled';
-        const sceneThumb = s.data?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-        const studio = s.site?.name || 'Unknown';
+        const sceneThumb = s.data?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+        const studio = s.data?.site?.name || 'Unknown';
         const performers = toArray(s.data?.performers);
 
         for (const p of performers) {
-          const name = p?.parent?.name || p?.name;
+          const name = p?.name?.trim();
           if (!name) continue;
-          const gender = (p?.parent?.extras?.gender || p?.extras?.gender || '').toLowerCase();
+          const gender = (p?.extras?.gender || '').toLowerCase();
           if (!['female', 'f', 'woman'].includes(gender)) continue;
 
-          const image = p?.parent?.image || p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-          const bio = p?.parent?.bio || '';
-          const extras = p?.parent?.extras || {};
+          const image = p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
+          const bio = p?.bio || '';
+          const extras = p?.extras || {};
 
           const key = name.toLowerCase();
           if (!map.has(key)) {
@@ -288,7 +321,7 @@
 
       allPerformers = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
       performerMap = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-      localStorage.setItem('female_performers_v2', JSON.stringify(allPerformers));
+      localStorage.setItem('female_performers_v3', JSON.stringify(allPerformers));
       return performerMap.get(targetName.toLowerCase());
     }
 
@@ -315,7 +348,7 @@
                 <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover"
                      onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=No+Image';">
                 <h3>${p.name}</h3>
-                <div class="video-count">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
+                <div class="performer-count-box">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
               </a>
             </div>`).join('')
         : '<p class="error-message">No female performers found.</p>';
@@ -432,7 +465,7 @@
     }
 
     document.getElementById('clear-cache-btn').addEventListener('click', () => {
-      localStorage.removeItem('female_performers_v2');
+      localStorage.removeItem('female_performers_v3');
       showToast('Cache cleared! Reloading...', 'success');
       setTimeout(() => location.reload(), 1000);
     });

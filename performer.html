@@ -90,409 +90,359 @@
   <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
-  <script>
-    const itemsPerPage = 10;
-    let currentPage = 1;
-    let allPerformers = [];
-    let performerMap = new Map();
-    let searchTimeout;
-    const urlParams = new URLSearchParams(window.location.search);
-    const singleName = urlParams.get('name');
-    const performerList = document.getElementById('performer-list');
-    const paginationTop = document.getElementById('pagination-top');
-    const paginationBottom = document.getElementById('pagination-bottom');
-    const searchInput = document.getElementById('search-navbar');
-    const searchInputMobile = document.getElementById('search-navbar-mobile');
-    const searchSuggestions = document.getElementById('search-suggestions');
-    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+ <script>
+  const itemsPerPage = 12;
+  let currentPage = 1;
+  let allPerformers = [];
+  let performerMap = new Map();   // id → performer
+  let searchTimeout;
 
-    function toArray(x) {
-      if (Array.isArray(x)) return x;
-      if (x === null || x === undefined) return [];
-      return [x];
+  const performerList      = document.getElementById('performer-list');
+  const paginationTop      = document.getElementById('pagination-top');
+  const paginationBottom   = document.getElementById('pagination-bottom');
+  const searchInput        = document.getElementById('search-navbar');
+  const searchInputMobile  = document.getElementById('search-navbar-mobile');
+  const searchSuggestions  = document.getElementById('search-suggestions');
+  const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+
+  /* --------------------------------------------------------------
+     Helper – current URL parameters (refreshed on popstate)
+  -------------------------------------------------------------- */
+  function getParams() {
+    return new URLSearchParams(window.location.search);
+  }
+
+  function getSingleName() {
+    return getParams().get('name');
+  }
+
+  /* --------------------------------------------------------------
+     Build the full performer list (cache → fresh)
+  -------------------------------------------------------------- */
+  async function buildPerformerList() {
+    const cached = localStorage.getItem('female_performers_v5');
+    if (cached) {
+      const data = JSON.parse(cached);
+      allPerformers = data.performers || [];
+      performerMap = new Map(allPerformers.map(p => [p.id, p]));
+      if (allPerformers.length) return;
     }
 
-    /* --------------------------------------------------------------
-       Load Performers
-    -------------------------------------------------------------- */
-    async function loadPerformers() {
-      if (singleName) {
-        await loadSinglePerformer();
-        return;
-      }
+    const [performersRes, scenesRes] = await Promise.all([
+      fetch('performer.json').then(r => r.ok ? r.json() : []),
+      fetch('scene_details.json').then(r => r.ok ? r.json() : [])
+    ]);
 
-      try {
-        const cached = localStorage.getItem('female_performers_v3');
-        if (cached) {
-          allPerformers = JSON.parse(cached);
-          if (allPerformers.length > 0) {
-            performerMap = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-            updatePageFromURL();
-            renderPagination();
-            return;
-          }
+    const baseMap = new Map();
+    performersRes.forEach(p => {
+      if (p._id == null) return;
+      const gender = (p.extras?.gender || '').toLowerCase();
+      if (!['female', 'f', 'woman'].includes(gender)) return;
+
+      baseMap.set(p._id, {
+        id: p._id,
+        name: p.name || 'Unknown',
+        image: p.image || 'https://via.placeholder.com/300x200?text=No+Image',
+        bio: p.bio || '',
+        extras: p.extras || {},
+        videoCount: 0,
+        scenes: []
+      });
+    });
+
+    for (const s of scenesRes) {
+      const d = s.data;
+      if (!d?._id) continue;
+
+      const sceneId   = d._id;
+      const sceneTitle = d.title || 'Untitled';
+      const sceneThumb = d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+      const studio    = d.site?.name || 'Unknown';
+
+      const perfArray = Array.isArray(d.performers)
+        ? d.performers
+        : (d.performers && typeof d.performers === 'object') ? [d.performers] : [];
+
+      for (const perf of perfArray) {
+        const pid = perf?.parent?._id;
+        if (!pid || !baseMap.has(pid)) continue;
+
+        const entry = baseMap.get(pid);
+        entry.videoCount++;
+        if (!entry.scenes.some(sc => sc.id === sceneId)) {
+          entry.scenes.push({ id: sceneId, title: sceneTitle, thumb: sceneThumb, studio });
         }
-
-        const res = await fetch('scene_details.json');
-        if (!res.ok) throw new Error('scene_details.json not found');
-        const scenes = await res.json();
-
-        const map = new Map();
-
-        for (const s of scenes) {
-          const sceneId = s.data?._id;
-          const sceneTitle = s.data?.title || 'Untitled';
-          const sceneThumb = s.data?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-          const studio = s.data?.site?.name || 'Unknown';
-          const performers = toArray(s.data?.performers);
-
-          for (const p of performers) {
-            const name = p?.name?.trim();
-            if (!name) continue;
-
-            const gender = (p?.extras?.gender || '').toLowerCase();
-            if (!['female', 'f', 'woman'].includes(gender)) continue;
-
-            const image = p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-            const bio = p?.bio || '';
-            const extras = p?.extras || {};
-
-            const key = name.toLowerCase();
-            if (!map.has(key)) {
-              map.set(key, {
-                name,
-                image,
-                bio,
-                extras,
-                videoCount: 0,
-                scenes: []
-              });
-            }
-
-            const entry = map.get(key);
-            entry.videoCount++;
-            if (!entry.scenes.find(sc => sc.id === sceneId)) {
-              entry.scenes.push({
-                id: sceneId,
-                title: sceneTitle,
-                thumb: sceneThumb,
-                studio
-              });
-            }
-            if (image && !image.includes('placeholder')) {
-              entry.image = image;
-            }
-          }
-        }
-
-        allPerformers = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-        performerMap = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-        localStorage.setItem('female_performers_v3', JSON.stringify(allPerformers));
-
-        updatePageFromURL();
-        renderPagination();
-      } catch (e) {
-        performerList.innerHTML = `<p class="error-message">Error: ${e.message}</p>`;
-        console.error(e);
       }
     }
 
-    /* --------------------------------------------------------------
-       Single Performer View
-    -------------------------------------------------------------- */
-    async function loadSinglePerformer() {
-      const name = decodeURIComponent(singleName).trim();
-      if (!name) {
-        performerList.innerHTML = `<p class="error-message">Invalid name.</p>`;
-        return;
-      }
+    allPerformers = Array.from(baseMap.values())
+      .filter(p => p.videoCount > 0)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-      let performer = performerMap.get(name.toLowerCase());
-      if (!performer) {
-        performer = await rebuildPerformerMap(name);
-      }
-      if (!performer) {
-        performerList.innerHTML = `<p class="error-message">Performer "${name}" not found.</p>`;
-        return;
-      }
+    performerMap = new Map(allPerformers.map(p => [p.id, p]));
+    localStorage.setItem('female_performers_v5', JSON.stringify({ performers: allPerformers }));
+  }
 
-      const p = performer;
-      const extras = p.extras;
+  /* --------------------------------------------------------------
+     Render SINGLE performer
+  -------------------------------------------------------------- */
+  function renderSinglePerformer(p) {
+    const e = p.extras || {};
 
-      performerList.innerHTML = `
-        <div class="performer-container content-wrapper">
-          <a href="performer.html" class="performer-back-link">All Female Performers</a>
+    performerList.innerHTML = `
+      <div class="performer-container content-wrapper">
+        <a href="performer.html" class="performer-back-link">All Female Performers</a>
 
-          <div class="performer-details">
-            <div>
-              <img src="${p.image}"
-                   alt="${p.name}"
-                   class="performer-image"
-                   onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
-            </div>
-
-            <div class="performer-info">
-              <h1>${p.name}</h1>
-
-              <div class="metadata-grid">
-                ${extras.gender ? `<span class="metadata-label">Gender</span><span class="metadata-value">${extras.gender}</span>` : ''}
-                ${extras.birthday ? `<span class="metadata-label">Birthday</span><span class="metadata-value">${extras.birthday}</span>` : ''}
-                ${extras.birthplace ? `<span class="metadata-label">Birthplace</span><span class="metadata-value">${extras.birthplace}</span>` : ''}
-                ${extras.height ? `<span class="metadata-label">Height</span><span class="metadata-value">${extras.height}</span>` : ''}
-                ${extras.weight ? `<span class="metadata-label">Weight</span><span class="metadata-value">${extras.weight}</span>` : ''}
-                ${extras.measurements ? `<span class="metadata-label">Measurements</span><span class="metadata-value">${extras.measurements}</span>` : ''}
-                ${extras.cupsize ? `<span class="metadata-label">Cup Size</span><span class="metadata-value">${extras.cupsize}</span>` : ''}
-                ${extras.hair_colour ? `<span class="metadata-label">Hair</span><span class="metadata-value">${extras.hair_colour}</span>` : ''}
-                ${extras.eye_colour ? `<span class="metadata-label">Eyes</span><span class="metadata-value">${extras.eye_colour}</span>` : ''}
-                ${extras.ethnicity ? `<span class="metadata-label">Ethnicity</span><span class="metadata-value">${extras.ethnicity}</span>` : ''}
-                ${extras.nationality ? `<span class="metadata-label">Nationality</span><span class="metadata-value">${extras.nationality}</span>` : ''}
-                ${extras.tattoos ? `<span class="metadata-label">Tattoos</span><span class="metadata-value">${extras.tattoos}</span>` : ''}
-                ${extras.piercings ? `<span class="metadata-label">Piercings</span><span class="metadata-value">${extras.piercings}</span>` : ''}
-                ${extras.career_start_year ? `<span class="metadata-label">Career Start</span><span class="metadata-value">${extras.career_start_year}</span>` : ''}
-              </div>
-
-              ${p.bio ? `
-                <div class="mt-6">
-                  <h2 class="text-xl font-semibold mb-2">Biography</h2>
-                  <p class="text-gray-300">${p.bio}</p>
-                </div>
-              ` : ''}
-            </div>
+        <div class="performer-details grid md:grid-cols-3 gap-6 mt-6">
+          <div class="md:col-span-1">
+            <img src="${p.image}"
+                 alt="${p.name}"
+                 class="performer-image w-full rounded-lg shadow-lg"
+                 onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
           </div>
 
-          ${p.scenes.length > 0 ? `
-            <div class="mt-8">
-              <h2 class="text-xl font-semibold mb-4">Related Videos (${p.scenes.length})</h2>
-              <div class="related-videos">
-                ${p.scenes.map(s => `
-                  <div class="video-item">
-                    <a href="video.html?id=${s.id}">
-                      <img src="${s.thumb}" alt="${s.title}" class="w-full h-48 object-cover"
-                           onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                      <h3 class="mt-2 text-sm font-medium">${s.title}</h3>
-                      <div class="video-count text-xs text-gray-400">${s.studio}</div>
-                    </a>
-                  </div>
-                `).join('')}
-              </div>
+          <div class="md:col-span-2 performer-info">
+            <h1 class="text-3xl font-bold text-white mb-4">${escapeHtml(p.name)}</h1>
+
+            <div class="metadata-grid text-sm">
+              ${e.gender ? `<span class="metadata-label">Gender</span><span class="metadata-value">${e.gender}</span>` : ''}
+              ${e.birthday ? `<span class="metadata-label">Birthday</span><span class="metadata-value">${e.birthday}</span>` : ''}
+              ${e.birthplace ? `<span class="metadata-label">Birthplace</span><span class="metadata-value">${e.birthplace}</span>` : ''}
+              ${e.height ? `<span class="metadata-label">Height</span><span class="metadata-value">${e.height}</span>` : ''}
+              ${e.weight ? `<span class="metadata-label">Weight</span><span class="metadata-value">${e.weight}</span>` : ''}
+              ${e.measurements ? `<span class="metadata-label">Measurements</span><span class="metadata-value">${e.measurements}</span>` : ''}
+              ${e.cupsize ? `<span class="metadata-label">Cup Size</span><span class="metadata-value">${e.cupsize}</span>` : ''}
+              ${e.hair_colour ? `<span class="metadata-label">Hair</span><span class="metadata-value">${e.hair_colour}</span>` : ''}
+              ${e.eye_colour ? `<span class="metadata-label">Eyes</span><span class="metadata-value">${e.eye_colour}</span>` : ''}
+              ${e.ethnicity ? `<span class="metadata-label">Ethnicity</span><span class="metadata-value">${e.ethnicity}</span>` : ''}
+              ${e.nationality ? `<span class="metadata-label">Nationality</span><span class="metadata-value">${e.nationality}</span>` : ''}
+              ${e.tattoos ? `<span class="metadata-label">Tattoos</span><span class="metadata-value">${e.tattoos}</span>` : ''}
+              ${e.piercings ? `<span class="metadata-label">Piercings</span><span class="metadata-value">${e.piercings}</span>` : ''}
+              ${e.career_start_year ? `<span class="metadata-label">Career Start</span><span class="metadata-value">${e.career_start_year}</span>` : ''}
             </div>
-          ` : ''}
-        </div>`;
 
-      paginationTop.classList.add('hidden');
-      paginationBottom.classList.add('hidden');
-    }
+            ${p.bio ? `
+              <div class="mt-6">
+                <h2 class="text-xl font-semibold text-white mb-2">Biography</h2>
+                <p class="text-gray-300 leading-relaxed">${escapeHtml(p.bio)}</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
 
-    async function rebuildPerformerMap(targetName) {
-      const res = await fetch('scene_details.json');
-      if (!res.ok) return null;
-      const scenes = await res.json();
-      const map = new Map();
+        ${p.scenes.length ? `
+          <div class="mt-10">
+            <h2 class="text-xl font-semibold text-white mb-4">Videos (${p.scenes.length})</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              ${p.scenes.map(s => `
+                <a href="video.html?id=${s.id}" class="block group">
+                  <img src="${s.thumb}" alt="${s.title}"
+                       class="w-full h-40 object-cover rounded-lg group-hover:opacity-90 transition"
+                       onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                  <h3 class="mt-2 text-sm font-medium text-white truncate">${escapeHtml(s.title)}</h3>
+                  <p class="text-xs text-gray-400">${s.studio}</p>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>`;
 
-      for (const s of scenes) {
-        const sceneId = s.data?._id;
-        const sceneTitle = s.data?.title || 'Untitled';
-        const sceneThumb = s.data?.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-        const studio = s.data?.site?.name || 'Unknown';
-        const performers = toArray(s.data?.performers);
+    // hide pagination in single view
+    paginationTop.classList.add('hidden');
+    paginationBottom.classList.add('hidden');
+  }
 
-        for (const p of performers) {
-          const name = p?.name?.trim();
-          if (!name) continue;
-          const gender = (p?.extras?.gender || '').toLowerCase();
-          if (!['female', 'f', 'woman'].includes(gender)) continue;
+  /* --------------------------------------------------------------
+     Main loader – decides list or single view
+  -------------------------------------------------------------- */
+  async function loadPerformers() {
+    const singleName = getSingleName();
 
-          const image = p?.image || 'https://via.placeholder.com/300x200?text=No+Image';
-          const bio = p?.bio || '';
-          const extras = p?.extras || {};
+    // always build the list first (cache or fresh)
+    await buildPerformerList();
 
-          const key = name.toLowerCase();
-          if (!map.has(key)) {
-            map.set(key, { name, image, bio, extras, videoCount: 0, scenes: [] });
-          }
-          const entry = map.get(key);
-          entry.videoCount++;
-          if (!entry.scenes.find(sc => sc.id === sceneId)) {
-            entry.scenes.push({ id: sceneId, title: sceneTitle, thumb: sceneThumb, studio });
-          }
-          if (image && !image.includes('placeholder')) entry.image = image;
-        }
-      }
-
-      allPerformers = Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-      performerMap = new Map(allPerformers.map(p => [p.name.toLowerCase(), p]));
-      localStorage.setItem('female_performers_v3', JSON.stringify(allPerformers));
-      return performerMap.get(targetName.toLowerCase());
-    }
-
-    /* --------------------------------------------------------------
-       Pagination & URL Sync
-    -------------------------------------------------------------- */
-    function updatePageFromURL() {
-      const params = new URLSearchParams(location.search);
-      const page = parseInt(params.get('page')) || 1;
-      if (page !== currentPage) currentPage = page;
-      renderCurrentPage();
-      renderPagination();
-    }
-
-    function renderCurrentPage() {
-      const start = (currentPage - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      const page = allPerformers.slice(start, end);
-
-      performerList.innerHTML = page.length
-        ? page.map(p => `
-            <div class="video-item">
-              <a href="performer.html?name=${encodeURIComponent(p.name)}" class="block">
-                <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover"
-                     onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200?text=No+Image';">
-                <h3>${p.name}</h3>
-                <div class="performer-count-box">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
-              </a>
-            </div>`).join('')
-        : '<p class="error-message">No female performers found.</p>';
-    }
-
-    function renderPagination() {
-      const totalPages = Math.ceil(allPerformers.length / itemsPerPage);
-      if (totalPages <= 1) {
-        paginationTop.innerHTML = '';
-        paginationBottom.innerHTML = '';
+    if (singleName) {
+      const decoded = decodeURIComponent(singleName).trim();
+      const performer = allPerformers.find(p => p.name.toLowerCase() === decoded.toLowerCase());
+      if (!performer) {
+        performerList.innerHTML = `<p class="error-message">Performer not found: ${escapeHtml(decoded)}</p>`;
+        paginationTop.classList.add('hidden');
+        paginationBottom.classList.add('hidden');
         return;
       }
+      renderSinglePerformer(performer);
+    } else {
+      updatePageFromURL();
+      renderPagination();
+    }
+  }
 
-      const createLink = (page, text, isDisabled = false, isActive = false) => {
-        const el = document.createElement(page === '...' ? 'span' : 'a');
-        el.textContent = text;
-        if (page !== '...') el.href = '#';
-        el.className = page === '...' ? 'ellipsis' : isDisabled ? 'disabled' : isActive ? 'active' : '';
-        return { el, page, isDisabled };
-      };
+  /* --------------------------------------------------------------
+     List view helpers
+  -------------------------------------------------------------- */
+  function updatePageFromURL() {
+    const page = parseInt(getParams().get('page')) || 1;
+    if (page !== currentPage) currentPage = page;
+    renderCurrentPage();
+    renderPagination();
+  }
 
-      const fragment = document.createDocumentFragment();
-      fragment.appendChild(createLink(currentPage - 1, 'Prev', currentPage === 1).el);
+  function renderCurrentPage() {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end   = start + itemsPerPage;
+    const page  = allPerformers.slice(start, end);
 
-      if (currentPage > 3) {
-        fragment.appendChild(createLink(1, '1').el);
-        if (currentPage > 4) fragment.appendChild(createLink('...', '...').el);
-      }
+    performerList.innerHTML = page.length
+      ? page.map(p => `
+          <div class="video-item">
+            <a href="performer.html?name=${encodeURIComponent(p.name)}" class="block">
+              <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover rounded-lg"
+                   onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+              <h3 class="mt-2 text-sm font-medium text-white">${escapeHtml(p.name)}</h3>
+              <div class="performer-count-box">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
+            </a>
+          </div>`).join('')
+      : '<p class="error-message">No performers found.</p>';
+  }
 
-      const start = Math.max(1, currentPage - 2);
-      const end = Math.min(totalPages, currentPage + 2);
-      for (let i = start; i <= end; i++) {
-        fragment.appendChild(createLink(i, i, false, i === currentPage).el);
-      }
+  function renderPagination() {
+    const totalPages = Math.ceil(allPerformers.length / itemsPerPage);
+    if (totalPages <= 1) {
+      paginationTop.innerHTML = paginationBottom.innerHTML = '';
+      return;
+    }
 
-      if (currentPage < totalPages - 3) {
-        if (currentPage < totalPages - 4) fragment.appendChild(createLink('...', '...').el);
-        fragment.appendChild(createLink(totalPages, totalPages).el);
-      }
+    const createLink = (page, txt, disabled = false, active = false) => {
+      const el = document.createElement(page === '...' ? 'span' : 'a');
+      el.textContent = txt;
+      if (page !== '...') el.href = '#';
+      el.className = page === '...' ? 'ellipsis' : disabled ? 'disabled' : active ? 'active' : '';
+      return { el, page, disabled };
+    };
 
-      fragment.appendChild(createLink(currentPage + 1, 'Next', currentPage === totalPages).el);
+    const frag = document.createDocumentFragment();
+    frag.appendChild(createLink(currentPage - 1, 'Prev', currentPage === 1).el);
 
-      paginationTop.innerHTML = '';
-      paginationBottom.innerHTML = '';
-      paginationTop.appendChild(fragment.cloneNode(true));
-      paginationBottom.appendChild(fragment.cloneNode(true));
+    if (currentPage > 3) {
+      frag.appendChild(createLink(1, '1').el);
+      if (currentPage > 4) frag.appendChild(createLink('...', '...').el);
+    }
 
-      [paginationTop, paginationBottom].forEach(container => {
-        container.querySelectorAll('a:not(.disabled)').forEach(link => {
-          const page = parseInt(link.textContent) || (link.textContent === 'Prev' ? currentPage - 1 : currentPage + 1);
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            currentPage = page;
-            const url = new URL(location);
-            url.searchParams.set('page', page);
-            history.pushState({ page }, '', url);
-            renderCurrentPage();
-            renderPagination();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          });
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+      frag.appendChild(createLink(i, i, false, i === currentPage).el);
+    }
+
+    if (currentPage < totalPages - 3) {
+      if (currentPage < totalPages - 4) frag.appendChild(createLink('...', '...').el);
+      frag.appendChild(createLink(totalPages, totalPages).el);
+    }
+
+    frag.appendChild(createLink(currentPage + 1, 'Next', currentPage === totalPages).el);
+
+    paginationTop.innerHTML = '';
+    paginationBottom.innerHTML = '';
+    paginationTop.appendChild(frag.cloneNode(true));
+    paginationBottom.appendChild(frag.cloneNode(true));
+
+    [paginationTop, paginationBottom].forEach(c => {
+      c.querySelectorAll('a:not(.disabled)').forEach(a => {
+        const pg = a.textContent === 'Prev' ? currentPage - 1 :
+                   a.textContent === 'Next' ? currentPage + 1 :
+                   parseInt(a.textContent);
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          currentPage = pg;
+          const url = new URL(location);
+          url.searchParams.set('page', pg);
+          history.pushState({ page: pg }, '', url);
+          renderCurrentPage();
+          renderPagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         });
       });
+    });
+  }
+
+  /* --------------------------------------------------------------
+     Search
+  -------------------------------------------------------------- */
+  function debouncedSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(handleSearch, 300);
+  }
+
+  function handleSearch() {
+    const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+    const results = allPerformers
+      .filter(p => p.name.toLowerCase().includes(q))
+      .slice(0, 5);
+
+    const render = container => {
+      container.innerHTML = results.length
+        ? results.map(p => `
+            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded"
+                 onclick="location.href='performer.html?name=${encodeURIComponent(p.name)}'">
+              <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded object-cover mr-2"
+                   onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
+              <div>
+                <div class="text-sm text-white">${escapeHtml(p.name)}</div>
+                <div class="text-xs text-gray-400">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
+              </div>
+            </div>`).join('')
+        : '<div class="p-2 text-sm text-gray-400">No results</div>';
+      container.classList.toggle('hidden', results.length === 0);
+    };
+    render(searchSuggestions);
+    render(searchSuggestionsMobile);
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+      if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
     }
+  }
 
-    /* --------------------------------------------------------------
-       Search
-    -------------------------------------------------------------- */
-    function debouncedSearch() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(handleSearch, 300);
-    }
+  /* --------------------------------------------------------------
+     Cache & Toast
+  -------------------------------------------------------------- */
+  function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-white rounded-lg shadow animate-fade-in ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`;
+    toast.innerHTML = `<span class="text-sm">${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
 
-    function handleSearch() {
-      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-      const results = allPerformers
-        .filter(p => p.name.toLowerCase().includes(q))
-        .slice(0, 5);
+  document.getElementById('clear-cache-btn').addEventListener('click', () => {
+    localStorage.removeItem('female_performers_v5');
+    showToast('Cache cleared – reloading…', 'success');
+    setTimeout(() => location.reload(), 1000);
+  });
 
-      const render = (container) => {
-        container.innerHTML = results.length
-          ? results.map(p => `
-              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700"
-                   onclick="location.href='performer.html?name=${encodeURIComponent(p.name)}'">
-                <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded mr-2 object-cover"
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <span class="text-white text-sm">${p.name} <span class="text-xs text-gray-400">(${p.videoCount} video${p.videoCount > 1 ? 's' : ''})</span></span>
-              </div>`).join('')
-          : '<div class="p-2 text-white text-sm">No results</div>';
-        container.classList.toggle('hidden', results.length === 0);
-      };
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
-      render(searchSuggestions);
-      render(searchSuggestionsMobile);
-    }
+  /* --------------------------------------------------------------
+     Init
+  -------------------------------------------------------------- */
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPerformers();
 
-    function handleEnter(e) {
-      if (e.key === 'Enter') {
-        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
-        if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
-      }
-    }
-
-    /* --------------------------------------------------------------
-       Cache Clear
-    -------------------------------------------------------------- */
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      const bg = type === 'error' ? 'bg-red-600' : 'bg-green-600';
-      toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-white rounded-lg shadow ${bg} animate-fade-in`;
-      toast.innerHTML = `<span class="text-sm">${message}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    document.getElementById('clear-cache-btn').addEventListener('click', () => {
-      localStorage.removeItem('female_performers_v3');
-      showToast('Cache cleared! Reloading...', 'success');
-      setTimeout(() => location.reload(), 1000);
+    window.addEventListener('popstate', () => {
+      loadPerformers();   // re-run everything on back/forward
     });
 
-    /* --------------------------------------------------------------
-       Init
-    -------------------------------------------------------------- */
-    document.addEventListener('DOMContentLoaded', () => {
-      loadPerformers();
-
-      window.addEventListener('popstate', () => {
-        const params = new URLSearchParams(location.search);
-        const page = parseInt(params.get('page')) || 1;
-        if (page !== currentPage) {
-          currentPage = page;
-          if (!singleName) {
-            renderCurrentPage();
-            renderPagination();
-          }
-        }
-      });
-
-      searchInput?.addEventListener('input', debouncedSearch);
-      searchInputMobile?.addEventListener('input', debouncedSearch);
-      searchInput?.addEventListener('keydown', handleEnter);
-      searchInputMobile?.addEventListener('keydown', handleEnter);
-    });
-  </script>
+    searchInput?.addEventListener('input', debouncedSearch);
+    searchInputMobile?.addEventListener('input', debouncedSearch);
+    searchInput?.addEventListener('keydown', handleEnter);
+    searchInputMobile?.addEventListener('keydown', handleEnter);
+  });
+</script>
 </body>
 </html>

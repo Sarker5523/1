@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- FIXED CSP: Brave-safe, allows https: and self -->
+
+  <!-- BRAVE-SAFE CSP -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
@@ -14,29 +14,28 @@
     media-src 'self' https:;
     connect-src 'self' https:;
   ">
-  
+
   <title>VideoHub</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- iOS/Brave Fix: Force lazy-load on all images -->
+  <!-- FORCE LAZY LOAD (Brave iOS ignores loading="lazy" without JS) -->
   <script>
-    // Brave iOS sometimes ignores loading="lazy" without explicit JS
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('img').forEach(img => {
-        if (!img.loading) img.loading = 'lazy';
+        img.loading = 'lazy';
       });
     });
   </script>
 
-  <!-- Navbar -->
+  <!-- NAVBAR (unchanged) -->
   <nav>
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3">
-        <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
+        <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo">
         <span class="self-center text-2xl font-semibold whitespace-nowrap">VideoHub</span>
       </a>
       <div class="flex md:order-2 space-x-3">
@@ -57,7 +56,7 @@
           <input type="text" id="search-navbar"
                  class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
                  placeholder="Search videos, performers, studios..." oninput="debouncedSearch()">
-          <div id="search-suggestions" class="search-suggestions hidden"></div>
+          <div id="search-suggestions" class="search-suggestions hidden z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg"></div>
         </div>
         <button data-collapse-toggle="navbar-search" type="button"
                 class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
@@ -78,7 +77,7 @@
           <input type="text" id="search-navbar-mobile"
                  class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
                  placeholder="Search..." oninput="debouncedSearch()">
-          <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
+          <div id="search-suggestions-mobile" class="search-suggestions hidden z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg"></div>
         </div>
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded md:bg-transparent md:text-green-700 md:p-0">Home</a></li>
@@ -89,78 +88,59 @@
     </div>
   </nav>
 
-  <!-- Pagination Top -->
   <div class="pagination" id="pagination-top"></div>
-
-  <!-- Video Grid -->
   <div class="video-list-container">
     <div class="video-list" id="video-list"></div>
   </div>
-
-  <!-- Pagination Bottom -->
   <div class="pagination" id="pagination-bottom"></div>
 
-  <!-- Flowbite + App (deferred) -->
+  <!-- DEFERRED SCRIPTS -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script defer>
     // ------------------------------------------------------------
-    // CONFIG & GLOBAL STATE
+    // STATE
     // ------------------------------------------------------------
-    const itemsPerPage = 12;
-    let allVideos = [];
-    let filteredVideos = [];
-    let currentPage = 1;
+    const PER_PAGE = 12;
+    let all = [], filtered = [], page = 1;
+    const params = new URLSearchParams(location.search);
+    if (params.has('page')) page = Math.max(1, +params.get('page'));
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('page')) currentPage = Math.max(1, parseInt(urlParams.get('page')) || 1);
+    const list = document.getElementById('video-list');
+    const pagT = document.getElementById('pagination-top');
+    const pagB = document.getElementById('pagination-bottom');
+    const inp = document.getElementById('search-navbar');
+    const inpM = document.getElementById('search-navbar-mobile');
+    const sug = document.getElementById('search-suggestions');
+    const sugM = document.getElementById('search-suggestions-mobile');
 
-    const videoList = document.getElementById('video-list');
-    const paginationTop = document.getElementById('pagination-top');
-    const paginationBottom = document.getElementById('pagination-bottom');
-    const searchInput = document.getElementById('search-navbar');
-    const searchInputMobile = document.getElementById('search-navbar-mobile');
-    const suggestions = document.getElementById('search-suggestions');
-    const suggestionsMobile = document.getElementById('search-suggestions-mobile');
-
-    let performersById = {};
-    let searchTimeout = null;
-    let currentSearchPromise = null;
+    let perfMap = {}, timeout, searchPromise;
 
     // ------------------------------------------------------------
-    // LOAD ALL JSON FILES (with error fallback)
+    // LOAD + ERROR UI
     // ------------------------------------------------------------
-    async function loadAllData() {
+    async function load() {
       try {
-        const [sceneRes, perfRes] = await Promise.all([
-          fetch('scene_details.json').then(r => r.ok ? r.json() : []),
-          fetch('performer.json').then(r => r.ok ? r.json() : [])
+        const [scenes, perfs] = await Promise.all([
+          fetch('scene_details.json', { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : []),
+          fetch('performer.json', { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : [])
         ]);
 
-        // Build performer lookup
-        performersById = {};
-        perfRes.forEach(p => {
-          if (p._id != null) performersById[p._id] = p;
-        });
+        perfs.forEach(p => { if (p._id) perfMap[p._id] = p; });
 
-        // Transform scenes
-        allVideos = sceneRes.map(item => {
-          const d = item.data || {};
-          const performers = d.performers || [];
+        all = scenes.map(s => {
+          const d = s.data || {};
+          const ps = d.performers || [];
+          const arr = Array.isArray(ps) ? ps : (ps?.parent ? [ps] : []);
 
-          const title = (typeof d.title === 'string' && d.title.trim()) ? d.title.trim() : 'Untitled Video';
-
-          let actressName = 'Unknown';
-          let allPerformerIds = [];
-
-          const perfArray = Array.isArray(performers) ? performers : (performers && typeof performers === 'object') ? [performers] : [];
-
-          for (const perf of perfArray) {
-            const perfId = perf?.parent?._id;
-            if (perfId != null) {
-              allPerformerIds.push(perfId);
-              const p = performersById[perfId];
-              if (p && (p.extras?.gender === 'Female' || !p.extras?.gender)) {
-                actressName = p.name || 'Unknown';
+          let actress = 'Unknown';
+          const ids = [];
+          for (const p of arr) {
+            const id = p?.parent?._id;
+            if (id) {
+              ids.push(id);
+              const full = perfMap[id];
+              if (full && (full.extras?.gender === 'Female' || !full.extras?.gender)) {
+                actress = full.name || 'Unknown';
                 break;
               }
             }
@@ -168,195 +148,147 @@
 
           return {
             id: d._id || '',
-            video_Id: item.video_Id || '',
-            title: title,
-            thumbnail: d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
-            actressName: actressName,
-            allPerformerIds: allPerformerIds,
-            raw: item
+            title: (d.title?.trim()) || 'Untitled',
+            thumb: d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
+            actress,
+            perfIds: ids
           };
-        }).reverse(); // newest first
+        }).reverse();
 
-        filteredVideos = [...allVideos];
-        renderPage();
-        renderPagination();
-      } catch (err) {
-        videoList.innerHTML = `<p class="text-red-400 p-4">Error loading data: ${err.message}</p>`;
-        console.error(err);
+        filtered = [...all];
+        render();
+      } catch (e) {
+        list.innerHTML = `<p class="text-red-500 p-4">Failed to load data. Try Safari or check files.</p>`;
+        console.error(e);
       }
     }
 
     // ------------------------------------------------------------
-    // RENDER GRID
+    // RENDER
     // ------------------------------------------------------------
-    function renderPage() {
-      const start = (currentPage - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      const pageVideos = filteredVideos.slice(start, end);
+    function render() {
+      const start = (page-1)*PER_PAGE;
+      const end = start + PER_PAGE;
+      const slice = filtered.slice(start, end);
 
-      videoList.innerHTML = '';
-      if (!pageVideos.length) {
-        videoList.innerHTML = '<p class="text-gray-400 p-4">No videos found.</p>';
-        return;
-      }
+      list.innerHTML = slice.length
+        ? slice.map(v => `
+          <div class="video-item">
+            <a href="video.html?id=${v.id}">
+              <img src="${v.thumb}" alt="${esc(v.title)}" loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
+                   class="w-full h-auto object-cover rounded">
+              <h3 class="line-clamp-2">${esc(v.title)}</h3>
+              <div class="actress-box">${esc(v.actress)}</div>
+            </a>
+          </div>`).join('')
+        : '<p class="text-gray-400 p-4">No videos found.</p>';
 
-      pageVideos.forEach(v => {
-        const div = document.createElement('div');
-        div.className = 'video-item';
-        div.innerHTML = `
-          <a href="video.html?id=${v.id}">
-            <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
-                 loading="lazy"
-                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'"
-                 class="w-full h-auto object-cover rounded">
-            <h3 class="line-clamp-2">${escapeHtml(v.title)}</h3>
-            <div class="actress-box">${escapeHtml(v.actressName)}</div>
-          </a>`;
-        videoList.appendChild(div);
-      });
+      renderPag();
     }
 
-    // ------------------------------------------------------------
-    // PAGINATION
-    // ------------------------------------------------------------
-    function renderPagination() {
-      const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
-      [paginationTop, paginationBottom].forEach(container => {
-        container.innerHTML = '';
-        if (totalPages <= 1) return;
+    function renderPag() {
+      const total = Math.ceil(filtered.length / PER_PAGE);
+      [pagT, pagB].forEach(c => {
+        c.innerHTML = '';
+        if (total <= 1) return;
 
-        const maxButtons = 5;
-        let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let end = Math.min(totalPages, start + maxButtons - 1);
-        if (end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
+        const max = 5;
+        let s = Math.max(1, page - Math.floor(max/2));
+        let e = Math.min(total, s + max - 1);
+        if (e - s < max-1) s = Math.max(1, e - max + 1);
 
-        const btn = (page, txt, disabled = false, active = false) => {
-          const a = document.createElement('a');
-          a.href = disabled ? '#' : `index.html?page=${page}`;
-          a.textContent = txt;
-          a.className = 'px-3 py-2 text-sm font-medium rounded-md';
-          if (active) a.className += ' bg-green-700 text-white';
-          else a.className += ' text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
-          if (disabled) a.className += ' opacity-50 cursor-not-allowed';
+        const btn = (p,t,dis=false,act=false) => {
+          const a = Object.assign(document.createElement('a'), {
+            href: dis ? '#' : `index.html?page=${p}`,
+            textContent: t,
+            className: `px-3 py-2 text-sm font-medium rounded-md ${act?'bg-green-700 text-white':'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'} ${dis?'opacity-50 cursor-not-allowed':''}`
+          });
           return a;
         };
 
-        if (currentPage > 1) container.appendChild(btn(currentPage - 1, 'Prev'));
-        for (let i = start; i <= end; i++) container.appendChild(btn(i, i, false, i === currentPage));
-        if (currentPage < totalPages) container.appendChild(btn(currentPage + 1, 'Next'));
+        if (page>1) c.appendChild(btn(page-1,'Prev'));
+        for (let i=s; i<=e; i++) c.appendChild(btn(i,i,false,i===page));
+        if (page<total) c.appendChild(btn(page+1,'Next'));
       });
     }
 
     // ------------------------------------------------------------
-    // SEARCH + SUGGESTIONS (iOS-safe)
+    // SEARCH (cancelable)
     // ------------------------------------------------------------
     function debouncedSearch() {
-      if (currentSearchPromise) currentSearchPromise.ignore = true;
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        const p = handleSearch();
-        currentSearchPromise = p;
-        p.finally(() => { if (currentSearchPromise === p) currentSearchPromise = null; });
+      if (searchPromise) searchPromise.ignore = true;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const p = search();
+        searchPromise = p;
+        p.finally(() => { if (searchPromise === p) searchPromise = null; });
       }, 350);
     }
 
-    async function handleSearch() {
-      const query = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-      hideSuggestions();
+    async function search() {
+      const q = (inp?.value || inpM?.value || '').trim().toLowerCase();
+      hideSug();
 
-      if (!query) {
-        if (currentSearchPromise?.ignore) return;
-        filteredVideos = [...allVideos];
-        currentPage = 1;
-        renderPage();
-        renderPagination();
-        return;
+      if (!q) {
+        if (searchPromise?.ignore) return;
+        filtered = [...all]; page = 1; render(); return;
       }
 
-      filteredVideos = allVideos.filter(v => {
-        if (currentSearchPromise?.ignore) return false;
-        return v.title.toLowerCase().includes(query) ||
-               v.actressName.toLowerCase().includes(query) ||
-               v.allPerformerIds.some(id => performersById[id]?.name?.toLowerCase().includes(query));
+      filtered = all.filter(v => {
+        if (searchPromise?.ignore) return false;
+        return v.title.toLowerCase().includes(q) ||
+               v.actress.toLowerCase().includes(q) ||
+               v.perfIds.some(id => perfMap[id]?.name?.toLowerCase().includes(q));
       });
 
-      if (currentSearchPromise?.ignore) return;
-
-      currentPage = 1;
-      renderPage();
-      renderPagination();
-      showSuggestions(query);
+      if (searchPromise?.ignore) return;
+      page = 1; render(); showSug(q);
     }
 
-    function showSuggestions(query) {
-      const results = allVideos
-        .filter(v => v.title.toLowerCase().includes(query) || v.actressName.toLowerCase().includes(query))
-        .slice(0, 6);
-
-      const render = (container) => {
-        if (!results.length) {
-          container.innerHTML = '<div class="p-2 text-sm text-gray-400">No results</div>';
-          container.classList.add('hidden');
-          return;
-        }
-
-        container.innerHTML = results.map(v => `
+    function showSug(q) {
+      const hits = all.filter(v => v.title.toLowerCase().includes(q) || v.actress.toLowerCase().includes(q)).slice(0,6);
+      const html = hits.length
+        ? hits.map(v => `
           <div class="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-               onclick="window.location.href='video.html?id=${v.id}'">
-            <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"
-                 loading="lazy"
+               onclick="location.href='video.html?id=${v.id}'">
+            <img src="${v.thumb}" alt="${esc(v.title)}" loading="lazy"
                  class="w-10 h-10 object-cover rounded mr-2"
                  onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium truncate">${escapeHtml(v.title)}</div>
-              <div class="text-xs text-green-400">${escapeHtml(v.actressName)}</div>
+              <div class="text-sm font-medium truncate">${esc(v.title)}</div>
+              <div class="text-xs text-green-400">${esc(v.actress)}</div>
             </div>
-          </div>
-        `).join('');
-        container.classList.remove('hidden');
-      };
+          </div>`).join('')
+        : '<div class="p-2 text-sm text-gray-400">No results</div>';
 
-      render(suggestions);
-      render(suggestionsMobile);
+      [sug, sugM].forEach(el => {
+        el.innerHTML = html;
+        el.classList.toggle('hidden', !hits.length);
+      });
     }
 
-    function hideSuggestions() {
-      suggestions.classList.add('hidden');
-      suggestionsMobile.classList.add('hidden');
-    }
+    function hideSug() { [sug, sugM].forEach(e => e.classList.add('hidden')); }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     // ------------------------------------------------------------
-    // SYNC INPUTS + ENTER
+    // INPUT SYNC
     // ------------------------------------------------------------
-    searchInput?.addEventListener('input', () => {
-      if (searchInputMobile) searchInputMobile.value = searchInput.value;
-      debouncedSearch();
-    });
-    searchInputMobile?.addEventListener('input', () => {
-      if (searchInput) searchInput.value = searchInputMobile.value;
-      debouncedSearch();
-    });
+    inp?.addEventListener('input', () => { if (inpM) inpM.value = inp.value; debouncedSearch(); });
+    inpM?.addEventListener('input', () => { if (inp) inp.value = inpM.value; debouncedSearch(); });
 
     document.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (document.activeElement === searchInput || document.activeElement === searchInputMobile)) {
-        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
-        if (q) window.location.href = `search.html?query=${encodeURIComponent(q)}`;
+      if (e.key === 'Enter' && (document.activeElement === inp || document.activeElement === inpM)) {
+        const q = (inp?.value || inpM?.value || '').trim();
+        if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
       }
     });
 
     // ------------------------------------------------------------
-    // UTILS
+    // START
     // ------------------------------------------------------------
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    // ------------------------------------------------------------
-    // INIT
-    // ------------------------------------------------------------
-    loadAllData();
+    load();
   </script>
 </body>
 </html>

@@ -64,6 +64,22 @@
                    }
     },
     {
+        "id":  2096,
+        "parent_id":  1953,
+        "network_id":  1953,
+        "name":  "VogoV",
+        "description":  "VogoV is a part of the Teen Mega World network.",
+        "logo":  "https://cdn.theporndb.net/sites/f2/87/49/d600dcf7e7350d445c03c00dbfef044/logo/01JSSN4BB8SYE5QXHFDG35349C.png",
+        "network":  {
+                        "id":  1953,
+                        "name":  "Teen Mega World"
+                    },
+        "parent":  {
+                       "id":  1953,
+                       "name":  "Teen Mega World"
+                   }
+    },
+    {
         "id":  200,
         "parent_id":  36826,
         "network_id":  36826,
@@ -385,6 +401,21 @@
         "parent":  {
                        "id":  353,
                        "name":  "Kink"
+                   }
+    },{
+        "id":  126,
+        "parent_id":  203,
+        "network_id":  127,
+        "name":  "Bratty Sis",
+        "description":  "Welcome to BrattySis.com, your favorite family taboo porn site! Step brothers fuck sisters until they behave. Watch to find out if stepsiblings get caught!",
+        "logo":  "https://cdn.theporndb.net/sites/15/4c/c9/ce02d6599e21c3a2e4016222be3a2ac/logo/01JEE72GMY2WMEH9RQBG56V0D0.png",
+        "network":  {
+                        "id":  127,
+                        "name":  "Nubiles"
+                    },
+        "parent":  {
+                       "id":  203,
+                       "name":  "Nubile Films"
                    }
     },
     {

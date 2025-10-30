@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- BRAVE-SAFE CSP -->
+  <!-- Brave‑safe CSP – no data: URIs, only self + https -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
@@ -22,30 +22,25 @@
 </head>
 <body>
 
-  <!-- FORCE LAZY LOAD (Brave iOS ignores loading="lazy" without JS) -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('img').forEach(img => {
-        img.loading = 'lazy';
-      });
-    });
-  </script>
-
-  <!-- NAVBAR (unchanged) -->
+  <!-- NAVBAR -->
   <nav>
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3">
         <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo">
         <span class="self-center text-2xl font-semibold whitespace-nowrap">VideoHub</span>
       </a>
+
       <div class="flex md:order-2 space-x-3">
-        <button type="button" data-collapse-toggle="navbar-search" aria-controls="navbar-search"
-                class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-green-300 rounded-lg text-sm p-2.5">
+        <!-- Mobile search toggle -->
+        <button type="button" data-collapse-toggle="navbar-search"
+                class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2.5">
           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
           </svg>
         </button>
+
+        <!-- Desktop search -->
         <div class="relative hidden md:block">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -58,14 +53,18 @@
                  placeholder="Search videos, performers, studios..." oninput="debouncedSearch()">
           <div id="search-suggestions" class="search-suggestions hidden z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg"></div>
         </div>
+
+        <!-- Mobile menu toggle -->
         <button data-collapse-toggle="navbar-search" type="button"
-                class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
+                class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 dark:hover:bg-gray-700">
           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M1 1h15M1 7h15M1 13h15"/>
           </svg>
         </button>
       </div>
+
+      <!-- Mobile search + menu -->
       <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
         <div class="relative mt-3 md:hidden">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -79,6 +78,7 @@
                  placeholder="Search..." oninput="debouncedSearch()">
           <div id="search-suggestions-mobile" class="search-suggestions hidden z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg shadow-lg"></div>
         </div>
+
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-white bg-green-700 rounded md:bg-transparent md:text-green-700 md:p-0">Home</a></li>
           <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 md:p-0 dark:text-white dark:hover:bg-gray-700">Studio</a></li>
@@ -88,13 +88,18 @@
     </div>
   </nav>
 
+  <!-- Pagination (top) -->
   <div class="pagination" id="pagination-top"></div>
+
+  <!-- Video grid -->
   <div class="video-list-container">
     <div class="video-list" id="video-list"></div>
   </div>
+
+  <!-- Pagination (bottom) -->
   <div class="pagination" id="pagination-bottom"></div>
 
-  <!-- DEFERRED SCRIPTS -->
+  <!-- Flowbite + App (deferred) -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
   <script defer>
     // ------------------------------------------------------------
@@ -105,24 +110,24 @@
     const params = new URLSearchParams(location.search);
     if (params.has('page')) page = Math.max(1, +params.get('page'));
 
-    const list = document.getElementById('video-list');
-    const pagT = document.getElementById('pagination-top');
-    const pagB = document.getElementById('pagination-bottom');
-    const inp = document.getElementById('search-navbar');
-    const inpM = document.getElementById('search-navbar-mobile');
-    const sug = document.getElementById('search-suggestions');
-    const sugM = document.getElementById('search-suggestions-mobile');
+    const list   = document.getElementById('video-list');
+    const pagT   = document.getElementById('pagination-top');
+    const pagB   = document.getElementById('pagination-bottom');
+    const inp    = document.getElementById('search-navbar');
+    const inpM   = document.getElementById('search-navbar-mobile');
+    const sug    = document.getElementById('search-suggestions');
+    const sugM   = document.getElementById('search-suggestions-mobile');
 
     let perfMap = {}, timeout, searchPromise;
 
     // ------------------------------------------------------------
-    // LOAD + ERROR UI
+    // LOAD DATA
     // ------------------------------------------------------------
     async function load() {
       try {
         const [scenes, perfs] = await Promise.all([
-          fetch('scene_details.json', { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : []),
-          fetch('performer.json', { signal: AbortSignal.timeout(8000) }).then(r => r.ok ? r.json() : [])
+          fetch('scene_details.json', { signal: AbortSignal.timeout?.(8000) || new AbortController().signal }).then(r => r.ok ? r.json() : []),
+          fetch('performer.json',    { signal: AbortSignal.timeout?.(8000) || new AbortController().signal }).then(r => r.ok ? r.json() : [])
         ]);
 
         perfs.forEach(p => { if (p._id) perfMap[p._id] = p; });
@@ -158,7 +163,7 @@
         filtered = [...all];
         render();
       } catch (e) {
-        list.innerHTML = `<p class="text-red-500 p-4">Failed to load data. Try Safari or check files.</p>`;
+        list.innerHTML = `<p class="text-red-500 p-4">Failed to load data. Check files / network.</p>`;
         console.error(e);
       }
     }
@@ -168,7 +173,7 @@
     // ------------------------------------------------------------
     function render() {
       const start = (page-1)*PER_PAGE;
-      const end = start + PER_PAGE;
+      const end   = start + PER_PAGE;
       const slice = filtered.slice(start, end);
 
       list.innerHTML = slice.length
@@ -214,19 +219,19 @@
     }
 
     // ------------------------------------------------------------
-    // SEARCH (cancelable)
+    // SEARCH (cancelable, no storage)
     // ------------------------------------------------------------
     function debouncedSearch() {
       if (searchPromise) searchPromise.ignore = true;
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        const p = search();
+        const p = doSearch();
         searchPromise = p;
         p.finally(() => { if (searchPromise === p) searchPromise = null; });
       }, 350);
     }
 
-    async function search() {
+    async function doSearch() {
       const q = (inp?.value || inpM?.value || '').trim().toLowerCase();
       hideSug();
 
@@ -273,7 +278,7 @@
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     // ------------------------------------------------------------
-    // INPUT SYNC
+    // INPUT SYNC + ENTER
     // ------------------------------------------------------------
     inp?.addEventListener('input', () => { if (inpM) inpM.value = inp.value; debouncedSearch(); });
     inpM?.addEventListener('input', () => { if (inp) inp.value = inpM.value; debouncedSearch(); });

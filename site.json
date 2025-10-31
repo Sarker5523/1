@@ -233,6 +233,52 @@
                         "id":  5360,
                         "name":  "Oktogon Media"
                     }
+    },{
+        "id":  1480,
+        "parent_id":  2601,
+        "network_id":  278,
+        "name":  "Shoplyfter Mylf",
+        "description":  "Shoplyfter Mylf is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/c7/f7/c8/33fb3d64a7e7ae31770f6ed429f681d/logo/5ad82f32-93f1-4f73-9821-060b816d887c[1]",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  2601,
+                       "name":  "MYLF"
+                   }
+    },{
+        "id":  2585,
+        "parent_id":  325,
+        "network_id":  325,
+        "name":  "Milfed",
+        "description":  "Milfed is a part of the Mile High Media network.",
+        "logo":  "https://cdn.theporndb.net/sites/d9/e2/d0/94f2dd50db040223b7b4ca1d73ae5ec/logo/5eac7a53-67e4-44e9-a3b1-e0ce66cc2824[1]",
+        "network":  {
+                        "id":  325,
+                        "name":  "Mile High Media"
+                    },
+        "parent":  {
+                       "id":  325,
+                       "name":  "Mile High Media"
+                   }
+    },
+    {
+        "id":  5319,
+        "parent_id":  2601,
+        "network_id":  278,
+        "name":  "Mom Swap",
+        "description":  "Mom Swap is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/42/48/8c/1ddfb18505b67c8f45211c338dd1720/logo/db8gkBlskcTb9zQLSCI5ToQduliDpv-metaTW9tIFN3YXAgLSBMb2dvLnBuZw==-.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  2601,
+                       "name":  "MYLF"
+                   }
     },
     {
         "id":  791,
@@ -746,3 +792,4 @@
                    }
     }
 ]
+

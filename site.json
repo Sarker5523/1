@@ -160,6 +160,37 @@
                    }
     },
     {
+        "id":  3524,
+        "parent_id":  278,
+        "network_id":  278,
+        "name":  "Exxxtra Small",
+        "description":  "Exxxtra Small is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/92/21/44/eef87f8cc0efb6a3c03b1a80cbd5238/logo/NJqtWuoufIkxDIGC4Dob22sFBnwNpZ-metaODJhNzE3YjMtMzdkNy00ZDM5LWJhYWMtNzQzMWY3ZmU5NDJlWzFdLnBuZw==-.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  278,
+                       "name":  "Team Skeet"
+                   }
+    },{
+        "id":  285,
+        "parent_id":  278,
+        "network_id":  278,
+        "name":  "Teen Pies",
+        "description":  "Teen Pies is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/39/4b/67/e6c4f5b8f6efb0e525264ea62687612/logo/teenpies-logo.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  278,
+                       "name":  "Team Skeet"
+                   }
+    },
+    {
         "id":  250,
         "parent_id":  51330,
         "network_id":  197,
@@ -324,6 +355,53 @@
         "name":  "Daughter Swap",
         "description":  "Daughter Swap is a part of the Team Skeet network.",
         "logo":  "https://cdn.theporndb.net/sites/3b/a9/75/d66154166d4f2a8322d3013769f7382/logo/logo.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  278,
+                       "name":  "Team Skeet"
+                   }
+    },
+    {
+        "id":  37749,
+        "parent_id":  786,
+        "network_id":  786,
+        "name":  "Dads Love Porn",
+        "description":  "Dads Love Porn is a part of the Bang Bros network.",
+        "logo":  "https://cdn.theporndb.net/sites/47/da/87/e1c8833f2531cbddafcd6d685bac904/logo/01J87G6BQ7EDNA2SAGV88C8G69.png",
+        "network":  {
+                        "id":  786,
+                        "name":  "Bang Bros"
+                    },
+        "parent":  {
+                       "id":  786,
+                       "name":  "Bang Bros"
+                   }
+    },
+    {
+        "id":  19752,
+        "parent_id":  5502,
+        "network_id":  5502,
+        "name":  "Manyvids: Little Puck",
+        "description":  "Manyvids: Little Puck is a part of the ManyVids network.",
+        "network":  {
+                        "id":  5502,
+                        "name":  "ManyVids"
+                    },
+        "parent":  {
+                       "id":  5502,
+                       "name":  "ManyVids"
+                   }
+    },
+    {
+        "id":  300,
+        "parent_id":  278,
+        "network_id":  278,
+        "name":  "My Babysitters Club",
+        "description":  "My Babysitters Club is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/9f/0f/95/bdef454357b2a52e904e197107bed1f/logo/mybabysittersclub-logo.png",
         "network":  {
                         "id":  278,
                         "name":  "Team Skeet"
@@ -792,4 +870,5 @@
                    }
     }
 ]
+
 

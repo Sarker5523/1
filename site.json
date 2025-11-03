@@ -1,5 +1,67 @@
 ﻿[
     {
+        "id":  72,
+        "parent_id":  65,
+        "network_id":  65,
+        "name":  "Let\u0027s Try Anal",
+        "description":  "Let\u0027s Try Anal is a part of the Mofos network.",
+        "logo":  "https://cdn.theporndb.net/sites/99/8b/5a/9f0219690fa729d45db1072acca3f87/logo/letstryanal-logo.png",
+        "network":  {
+                        "id":  65,
+                        "name":  "Mofos"
+                    },
+        "parent":  {
+                       "id":  65,
+                       "name":  "Mofos"
+                   }
+    },
+    {
+        "id":  7880,
+        "parent_id":  786,
+        "network_id":  786,
+        "name":  "Sex Selector",
+        "description":  "Sex Selector is a part of the Bang Bros network.",
+        "logo":  "https://cdn.theporndb.net/sites/44/1b/37/2f213bdc7e582d81578aba6b6518ea4/logo/EwUxQXTsg9tQVGdc9SroC1QKZMNuyX-metaYmM3ZjdlNjktMTE5Mi00YjY2LWE4ZGYtZjRhZGNkYzY4ZGQ5WzFdLnBuZw==-.png",
+        "network":  {
+                        "id":  786,
+                        "name":  "Bang Bros"
+                    },
+        "parent":  {
+                       "id":  786,
+                       "name":  "Bang Bros"
+                   }
+    },
+    {
+        "id":  10063,
+        "parent_id":  2601,
+        "network_id":  278,
+        "name":  "Perv Principal",
+        "description":  "Perv Principal is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/b3/fd/ed/3cb3e52bf868e02a169d11185db30e3/logo/01J4TSDF07TP3RSHAEBYR6ACDR.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  2601,
+                       "name":  "MYLF"
+                   }
+    },
+    {
+        "id":  19798,
+        "parent_id":  4344,
+        "network_id":  4344,
+        "name":  "Johnny Love",
+        "description":  "Johnny Love is a part of the Anal Vids network.",
+        "network":  {
+                        "id":  4344,
+                        "name":  "Anal Vids"
+                    },
+        "parent":  {
+                       "id":  4344,
+                       "name":  "Anal Vids"
+                   }
+    },{
         "id":  19,
         "parent_id":  278,
         "network_id":  278,
@@ -959,6 +1021,7 @@
                    }
     }
 ]
+
 
 
 

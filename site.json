@@ -14,6 +14,36 @@
                        "id":  278,
                        "name":  "Team Skeet"
                    }
+    },{
+        "id":  2138,
+        "parent_id":  2114,
+        "network_id":  2114,
+        "name":  "Watching My Daughter Go Black",
+        "description":  "Watching My Daughter Go Black is a part of the Dogfart Network network.",
+        "logo":  "https://cdn.theporndb.net/sites/67/6c/af/e02f9f7e2a1616612ae8eb3e8b54433/logo/01HV6ZZEA07TY7S15N8PPGRVW3.png",
+        "network":  {
+                        "id":  2114,
+                        "name":  "Dogfart Network"
+                    },
+        "parent":  {
+                       "id":  2114,
+                       "name":  "Dogfart Network"
+                   }
+    },{
+        "id":  139,
+        "parent_id":  130,
+        "network_id":  130,
+        "name":  "My First Sex Teacher",
+        "description":  "My First Sex Teacher is a part of the Naughty America network.",
+        "logo":  "https://cdn.theporndb.net/sites/ac/10/f0/ffc4b8f28f7642e803972d70c6e18bd/logo/myfirstsexteacher-logo.png",
+        "network":  {
+                        "id":  130,
+                        "name":  "Naughty America"
+                    },
+        "parent":  {
+                       "id":  130,
+                       "name":  "Naughty America"
+                   }
     },
     {
         "id":  6464,
@@ -572,6 +602,22 @@
                    }
     },
     {
+        "id":  1510,
+        "parent_id":  278,
+        "network_id":  278,
+        "name":  "Team Skeet Allstars",
+        "description":  "Team Skeet Allstars is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/ff/d3/83/e0a7687eeea232f42841b830690bbf4/logo/teamskeetallstars-logo.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  278,
+                       "name":  "Team Skeet"
+                   }
+    },
+    {
         "id":  2614,
         "parent_id":  2601,
         "network_id":  278,
@@ -913,6 +959,7 @@
                    }
     }
 ]
+
 
 
 

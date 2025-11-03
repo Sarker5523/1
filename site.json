@@ -1019,8 +1019,88 @@
                        "id":  71743,
                        "name":  "HobbyPorn"
                    }
+    },{
+        "id":  26,
+        "parent_id":  20,
+        "network_id":  20,
+        "name":  "RK Prime",
+        "description":  "RK Prime is a part of the Reality Kings network.",
+        "logo":  "https://cdn.theporndb.net/sites/1c/b5/60/34435b477f1e0a3f3aecde0e8bed84b/logo/rkprime-logo.png",
+        "network":  {
+                        "id":  20,
+                        "name":  "Reality Kings"
+                    },
+        "parent":  {
+                       "id":  20,
+                       "name":  "Reality Kings"
+                   }
+    },
+    {
+        "id":  144,
+        "parent_id":  130,
+        "network_id":  130,
+        "name":  "I Have A Wife",
+        "description":  "I Have A Wife is a part of the Naughty America network.",
+        "logo":  "https://cdn.theporndb.net/sites/68/c9/01/d01198b29be465219b81ce33c7d1118/logo/ihaveawife-logo.png",
+        "network":  {
+                        "id":  130,
+                        "name":  "Naughty America"
+                    },
+        "parent":  {
+                       "id":  130,
+                       "name":  "Naughty America"
+                   }
+    },
+    {
+        "id":  4578,
+        "parent_id":  3374,
+        "network_id":  3374,
+        "name":  "HotwifeXXX",
+        "description":  "HotwifeXXX -  An Elevated \u0026 Exclusive Hotwife Experience",
+        "logo":  "https://cdn.theporndb.net/sites/05/ae/47/b605c3df8b0d681d61ff416c509702a/logo/fxdTZDy2zQk0vcylfGRJNnFv5azcCc-metaSG90IFdpZmUgWFhYIC0gTG9nby5wbmc=-.png",
+        "network":  {
+                        "id":  3374,
+                        "name":  "New Sensations"
+                    },
+        "parent":  {
+                       "id":  3374,
+                       "name":  "New Sensations"
+                   }
+    },
+    {
+        "id":  5062,
+        "parent_id":  8217,
+        "network_id":  8217,
+        "name":  "MILF Trip",
+        "description":  "MILF Trip is a part of the Globe Twatters network.",
+        "logo":  "https://cdn.theporndb.net/sites/0a/3d/f2/44429187a2f6c08707d72d42caaf28f/logo/01J71EJ5W8Y9QCG8AG1MSYPN5P.png",
+        "network":  {
+                        "id":  8217,
+                        "name":  "Globe Twatters"
+                    },
+        "parent":  {
+                       "id":  8217,
+                       "name":  "Globe Twatters"
+                   }
+    },
+    {
+        "id":  7859,
+        "parent_id":  127,
+        "network_id":  127,
+        "name":  "Mom Wants Creampie",
+        "description":  "\u003cdiv\u003eMom knows best and you better listen. When she tells you to cum deep inside of her, to fill her up with all your cream, you better do what Step Mommy says. Mom wants creampie and these mature and horny moms deserve to be satisfied on this MomLover.com series.\u003c/div\u003e",
+        "logo":  "https://cdn.theporndb.net/sites/06/72/7b/bfcb7251bb23236712e892b1eb38a72/logo/Mom-Wants-Creampie---Logo.png",
+        "network":  {
+                        "id":  127,
+                        "name":  "Nubiles"
+                    },
+        "parent":  {
+                       "id":  127,
+                       "name":  "Nubiles"
+                   }
     }
 ]
+
 
 
 

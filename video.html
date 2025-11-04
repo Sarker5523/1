@@ -150,7 +150,7 @@
     }
     const d = sceneItem.data;
 
-    // === ALL PERFORMERS (arrow chain) ===
+    // === ALL PERFORMERS ===
     const perfRaw = d.performers || [];
     const perfArray = Array.isArray(perfRaw) ? perfRaw : [perfRaw].filter(Boolean);
     const performers = [];
@@ -171,7 +171,7 @@
     if (performers.length === 0) performers.push({ name: 'Unknown Performer', id: 0 });
     if (!primaryId && performers[0]) { primaryName = performers[0].name; primaryId = performers[0].id; }
 
-    // === STUDIO CHAIN (unchanged) ===
+    // === STUDIO CHAIN ===
     const siteId = d.site?.id;
     const site = siteId != null ? sitesById[siteId] : null;
     const studioChain = [];
@@ -195,10 +195,11 @@
       description: d.description || 'No description.',
       thumbnail: d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image',
       trailer: d.trailer || '',
-      videoIdForEmbed: sceneItem.video_Id?.trim() || '',
+      videoId: sceneItem.video_Id?.trim() || '',   // for purn.upn.one
+      slug: sceneItem.slug?.trim() || '',          // for short.icu
       actressName: primaryName,
       actressId: primaryId,
-      performers: performers,         // ← NEW: full list
+      performers: performers,
       studioChain: studioChain
     };
 
@@ -222,13 +223,25 @@
       )
       .join(' → ');
 
+    // Choose embed URL
+    let embedUrl = '';
+    if (v.videoId) {
+      embedUrl = `https://purn.upn.one/#${v.videoId}`;
+    } else if (v.slug) {
+      embedUrl = `https://short.icu/${v.slug}`;
+    } else {
+      embedUrl = ''; // no video
+    }
+
     videoDetails.innerHTML = `
-      <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
-        <iframe src="https://purn.upn.one/#${v.videoIdForEmbed}"
-                class="w-full h-full" frameborder="0"
-                allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
-        </iframe>
-      </div>
+      ${embedUrl ? `
+        <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+          <iframe src="${embedUrl}"
+                  class="w-full h-full" frameborder="0"
+                  allow="fullscreen; autoplay; encrypted-media; picture-in-picture">
+          </iframe>
+        </div>
+      ` : '<p class="text-red-400 mb-6">No video source available.</p>'}
 
       <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${escapeHtml(v.title)}</h1>
       <p class="text-gray-300 mb-4 leading-relaxed">${escapeHtml(v.description)}</p>
@@ -245,7 +258,7 @@
     `;
   }
 
-  // ---------- 5. Search (now shows ALL performers) ----------
+  // ---------- 5. Search ----------
   async function ensureSearchIndex() {
     if (localStorage.getItem('searchIndex')) return;
     const { scenes, performersById } = await loadAllData();

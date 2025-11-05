@@ -312,6 +312,21 @@
                        "id":  2114,
                        "name":  "Dogfart Network"
                    }
+    },{
+        "id":  137,
+        "parent_id":  130,
+        "network_id":  130,
+        "name":  "My Friend\u0027s Hot Mom",
+        "description":  "My Friend\u0027s Hot Mom is a part of the Naughty America network.",
+        "logo":  "https://cdn.theporndb.net/sites/cb/7b/fd/661cafa945444383fe198e1a318f2e5/logo/myfriendshotmom-logo.png",
+        "network":  {
+                        "id":  130,
+                        "name":  "Naughty America"
+                    },
+        "parent":  {
+                       "id":  130,
+                       "name":  "Naughty America"
+                   }
     },
     {
         "id":  19349,
@@ -1246,6 +1261,7 @@
                    }
     }
 ]
+
 
 
 

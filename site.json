@@ -1,5 +1,36 @@
 ﻿[
     {
+        "id":  164,
+        "parent_id":  130,
+        "network_id":  130,
+        "name":  "My Dad\u0027s Hot Girlfriend",
+        "description":  "My Dad\u0027s Hot Girlfriend is a part of the Naughty America network.",
+        "logo":  "https://cdn.theporndb.net/sites/6e/cf/3f/c2453fc2a61d65cff338c83e0e2deeb/logo/mydadshotgirlfriend-logo.png",
+        "network":  {
+                        "id":  130,
+                        "name":  "Naughty America"
+                    },
+        "parent":  {
+                       "id":  130,
+                       "name":  "Naughty America"
+                   }
+    },
+    {
+        "id":  2626,
+        "parent_id":  2601,
+        "network_id":  278,
+        "name":  "Mylf X Fucking Awesome",
+        "description":  "Mylf X Fucking Awesome is a part of the Team Skeet network.",
+        "logo":  "https://cdn.theporndb.net/sites/53/21/52/eacb0bd675298eaf110771d06f582ec/logo/mylfxfuckingawesome-logo.png",
+        "network":  {
+                        "id":  278,
+                        "name":  "Team Skeet"
+                    },
+        "parent":  {
+                       "id":  2601,
+                       "name":  "MYLF"
+                   }
+    },{
         "id":  2616,
         "parent_id":  2601,
         "network_id":  278,
@@ -1215,6 +1246,7 @@
                    }
     }
 ]
+
 
 
 

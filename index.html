@@ -232,15 +232,21 @@
         if (end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
 
         const btn = (page, txt, disabled = false, active = false) => {
-          const a = document.createElement('a');
-          a.href = disabled ? '#' : `index.html?page=${page}`;
-          a.textContent = txt;
-          a.className = 'px-3 py-2 text-sm font-medium rounded-md';
-          if (active) a.className += ' bg-green-700 text-white';
-          else a.className += ' text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
-          if (disabled) a.className += ' opacity-50 cursor-not-allowed';
-          return a;
-        };
+  const a = document.createElement('a');
+  a.href = disabled ? '#' : `index.html?page=${page}`;
+  a.textContent = txt;
+  a.className = 'px-3 py-2 text-sm font-medium rounded-md';
+  
+  if (active) {
+    a.classList.add('active');  // This is the key fix — triggers your CSS!
+  }
+  
+  if (disabled) {
+    a.classList.add('disabled');
+  }
+
+  return a;
+};
 
         if (currentPage > 1) container.appendChild(btn(currentPage - 1, 'Prev'));
         for (let i = start; i <= end; i++) container.appendChild(btn(i, i, false, i === currentPage));

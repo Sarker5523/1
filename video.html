@@ -12,7 +12,7 @@
     :root {
       --color-back: #1a1a1a;
     }
-
+   
     .button {
       background: var(--color-back);
       border-radius: 0.5em;
@@ -316,23 +316,34 @@
       `;
 
       if (showSwitcher) {
-        const iframe = document.getElementById('video-iframe');
-        const btnUPN = document.getElementById('btn-upnshare');
-        const btnAbyss = document.getElementById('btn-abyss');
+  const iframe   = document.getElementById('video-iframe');
+  const btnUPN   = document.getElementById('btn-upnshare');
+  const btnAbyss = document.getElementById('btn-abyss');
 
-        const setSource = (src, type) => {
-          if (iframe.src === src) return;
-          iframe.src = src;
-          btnUPN.classList.toggle('active', type === 'upnshare');
-          btnAbyss.classList.toggle('active', type === 'abyss');
-        };
+  const setSource = (src, type) => {
+    if (iframe.src === src) return;
+    iframe.src = src;
+    btnUPN.classList.toggle('active', type === 'upnshare');
+    btnAbyss.classList.toggle('active', type === 'abyss');
+  };
 
-        btnUPN.addEventListener('click', () => setSource(`https://purn.upn.one/#${v.videoId}`, 'upnshare'));
-        btnAbyss.addEventListener('click', () => setSource(`https://short.icu/${v.slug}`, 'abyss'));
+  // Button click handlers
+  btnUPN.addEventListener('click', () => setSource(`https://purn.upn.one/#${v.videoId}`, 'upnshare'));
+  btnAbyss.addEventListener('click', () => setSource(`https://short.icu/${v.slug}`, 'abyss'));
 
-        document.getElementById(hasUPN ? 'btn-upnshare' : 'btn-abyss').classList.add('active');
-      }
-    }
+  // CORRECT initial active state — always prefer UPNShare when available
+  btnUPN.classList.add('active');
+  btnAbyss.classList.remove('active');
+}
+else {
+  // Only one source exists → make sure its button (if present) is active
+  // This fixes the mobile visual bug when only one button exists
+  if (hasUPN) {
+    document.getElementById('btn-upnshare')?.classList.add('active');
+  } else if (hasAbyss) {
+    document.getElementById('btn-abyss')?.classList.add('active');
+  }
+}
 
     // ---------- Search ----------
     async function ensureSearchIndex() {

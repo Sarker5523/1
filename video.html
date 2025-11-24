@@ -266,85 +266,92 @@
     }
 
     // ---------- Render Video ----------
-    function renderVideo(v) {
-      const hasUPN = !!v.videoId;
-      const hasAbyss = !!v.slug;
-      const showSwitcher = hasUPN && hasAbyss;
+    // ---------- Render Video ----------
+function renderVideo(v) {
+  const hasUPN    = !!v.videoId;
+  const hasAbyss  = !!v.slug;
+  const showSwitcher = hasUPN && hasAbyss;
 
-      const defaultSrc = hasUPN
-        ? `https://purn.upn.one/#${v.videoId}`
-        : `https://short.icu/${v.slug}`;
+  // Priority: UPNShare > Abyss > (fallback)
+  const defaultSrc = hasUPN 
+    ? `https://purn.upn.one/#${v.videoId}`
+    : hasAbyss 
+      ? `https://short.icu/${v.slug}`
+      : 'about:blank';
 
-      const performersHtml = v.performers
-        .map(p => p.id
-          ? `<a href="performer.html?name=${encodeURIComponent(p.name)}" class="text-green-400 hover:underline">${escapeHtml(p.name)}</a>`
-          : `<span class="text-gray-500">${escapeHtml(p.name)}</span>`
-        )
-        .join(' , ');
+  const performersHtml = v.performers
+    .map(p => p.id
+      ? `<a href="performer.html?name=${encodeURIComponent(p.name)}" class="text-green-400 hover:underline">${escapeHtml(p.name)}</a>`
+      : `<span class="text-gray-500">${escapeHtml(p.name)}</span>`
+    )
+    .join(' , ');
 
-      const studioHtml = v.studioChain
-        .map((s, i) => s.id && i === 0
-          ? `<a href="site.html?id=${s.id}" class="text-green-400 hover:underline">${escapeHtml(s.name)}</a>`
-          : `<span class="text-green-400">${escapeHtml(s.name)}</span>`
-        )
-        .join(' → ');
+  const studioHtml = v.studioChain
+    .map((s, i) => s.id && i === 0
+      ? `<a href="site.html?id=${s.id}" class="text-green-400 hover:underline">${escapeHtml(s.name)}</a>`
+      : `<span class="text-green-400">${escapeHtml(s.name)}</span>`
+    )
+    .join(' → ');
 
-      videoDetails.innerHTML = `
-        <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
-          <iframe id="video-iframe" src="${defaultSrc}" class="w-full h-full" frameborder="0"
-                  allow="fullscreen; autoplay; encrypted-media; picture-in-picture"></iframe>
-        </div>
+  videoDetails.innerHTML = `
+    <div class="video-embed mb-6 aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+      <iframe id="video-iframe" src="${defaultSrc}" class="w-full h-full" frameborder="0"
+              allow="fullscreen; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
 
-        ${showSwitcher ? `
-          <div id="source-switcher" class="flex justify-center gap-4 my-4">
-            <button id="btn-upnshare" class="button"><div class="text">UPNShare</div></button>
-            <button id="btn-abyss" class="button"><div class="text">Abyss</div></button>
-          </div>
-        ` : ''}
+    ${showSwitcher ? `
+      <div id="source-switcher" class="flex justify-center gap-4 my-4">
+        <button id="btn-upnshare" class="button"><div class="text">UPNShare</div></button>
+        <button id="btn-abyss"    class="button"><div class="text">Abyss</div></button>
+      </div>
+    ` : hasUPN ? `
+      <div id="source-switcher" class="flex justify-center gap-4 my-4">
+        <button id="btn-upnshare" class="button active"><div class="text">UPNShare</div></button>
+      </div>
+    ` : hasAbyss ? `
+      <div id="source-switcher" class="flex justify-center gap-4 my-4">
+        <button id="btn-abyss" class="button active"><div class="text">Abyss</div></button>
+      </div>
+    ` : ''}
 
-        <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${escapeHtml(v.title)}</h1>
-        <p class="text-gray-300 mb-4 leading-relaxed">${escapeHtml(v.description)}</p>
-        <p class="text-sm text-gray-400 mb-1">Studio: ${studioHtml}</p>
-        <p class="text-sm text-gray-400 mb-6">Performers: ${performersHtml}</p>
+    <h1 class="text-2xl md:text-3xl font-bold text-white mb-3">${escapeHtml(v.title)}</h1>
+    <p class="text-gray-300 mb-4 leading-relaxed">${escapeHtml(v.description)}</p>
+    <p class="text-sm text-gray-400 mb-1">Studio: ${studioHtml}</p>
+    <p class="text-sm text-gray-400 mb-6">Performers: ${performersHtml}</p>
 
-        ${v.trailer ? `
-          <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4 shadow-md">
-            <source src="${v.trailer}" type="video/mp4">
-            Your browser does not support video.
-          </video>
-        ` : ''}
-      `;
+    ${v.trailer ? `
+      <video controls poster="${v.thumbnail}" class="w-full rounded-lg mb-4 shadow-md">
+        <source src="${v.trailer}" type="video/mp4">
+        Your browser does not support video.
+      </video>
+    ` : ''}
+  `;
 
-      if (showSwitcher) {
+  // ——— Button logic (runs after DOM is updated) ———
   const iframe   = document.getElementById('video-iframe');
   const btnUPN   = document.getElementById('btn-upnshare');
   const btnAbyss = document.getElementById('btn-abyss');
 
   const setSource = (src, type) => {
-    if (iframe.src === src) return;
-    iframe.src = src;
-    btnUPN.classList.toggle('active', type === 'upnshare');
-    btnAbyss.classList.toggle('active', type === 'abyss');
+    if (iframe.src !== src) iframe.src = src;
+    btnUPN?.classList.toggle('active', type === 'upnshare');
+    btnAbyss?.classList.toggle('active', type === 'abyss');
   };
 
-  // Button click handlers
-  btnUPN.addEventListener('click', () => setSource(`https://purn.upn.one/#${v.videoId}`, 'upnshare'));
-  btnAbyss.addEventListener('click', () => setSource(`https://short.icu/${v.slug}`, 'abyss'));
+  if (showSwitcher) {
+    btnUPN.addEventListener('click', () => setSource(`https://purn.upn.one/#${v.videoId}`, 'upnshare'));
+    btnAbyss.addEventListener('click', () => setSource(`https://short.icu/${v.slug}`, 'abyss'));
 
-  // CORRECT initial active state — always prefer UPNShare when available
-  btnUPN.classList.add('active');
-  btnAbyss.classList.remove('active');
-}
-else {
-  // Only one source exists → make sure its button (if present) is active
-  // This fixes the mobile visual bug when only one button exists
-  if (hasUPN) {
-    document.getElementById('btn-upnshare')?.classList.add('active');
-  } else if (hasAbyss) {
-    document.getElementById('btn-abyss')?.classList.add('active');
+    // Always start with UPNShare active when both exist
+    btnUPN.classList.add('active');
+    btnAbyss.classList.remove('active');
+  } else {
+    // Only one source → button is already marked active in the HTML (see template above)
+    // So we just make sure the iframe is correct (in case of refresh)
+    if (hasUPN) setSource(`https://purn.upn.one/#${v.videoId}`, 'upnshare');
+    else if (hasAbyss) setSource(`https://short.icu/${v.slug}`, 'abyss');
   }
-}
-    }
+} // ← renderVideo closed correctly
 
     // ---------- Search ----------
     async function ensureSearchIndex() {

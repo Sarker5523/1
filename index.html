@@ -248,9 +248,9 @@
   return a;
 };
 
-        if (currentPage > 1) container.appendChild(btn(currentPage - 1, 'Prev'));
+        container.appendChild(btn(1, 'First'));
         for (let i = start; i <= end; i++) container.appendChild(btn(i, i, false, i === currentPage));
-        if (currentPage < totalPages) container.appendChild(btn(currentPage + 1, 'Next'));
+        container.appendChild(btn(totalPages, 'Last'));
       });
     }
 

@@ -359,6 +359,21 @@
                        "id":  325,
                        "name":  "Mile High Media"
                    }
+    },{
+        "id":  2150,
+        "parent_id":  2114,
+        "network_id":  2114,
+        "name":  "Blacks on Cougars",
+        "description":  "Blacks on Cougars is a part of the Dogfart Network network.",
+        "logo":  "https://cdn.theporndb.net/sites/94/39/87/d548322e65e11dc429ee22d605f1cbc/logo/01HV6ZTVN56RJRGRDXHS944BFK.png",
+        "network":  {
+                        "id":  2114,
+                        "name":  "Dogfart Network"
+                    },
+        "parent":  {
+                       "id":  2114,
+                       "name":  "Dogfart Network"
+                   }
     },
     {
         "id":  203,
@@ -1150,6 +1165,30 @@
                    }
     },
     {
+        "id":  4387,
+        "parent_id":  4385,
+        "network_id":  1309,
+        "name":  "Nuru Massage",
+        "description":  "uru Massage is a part of the Gamma Enterprises network.",
+        "logo":  "https://cdn.theporndb.net/sites/46/60/2d/bec5a7a070adef4d39fcd9c949fde4e/logo/s7ccqv3mBJrEZbvNWfiH0XXVict0BC-metaTnVydSBNYXNzYWdlIC0gTG9nby5wbmc=-.png",
+        "network":  {
+                        "id":  1309,
+                        "name":  "Gamma Enterprises"
+                    },
+        "parent":  {
+                       "id":  4387,
+                       "name":  "Fantasy Massage"
+                   }
+    },
+    {
+        "id":  3374,
+        "parent_id":  null,
+        "network_id":  null,
+        "name":  "New Sensations",
+        "description":  null,
+        "logo":  "https://cdn.theporndb.net/sites/10/0d/a9/d659308471404bbf8793ddcd4cc4390/logo/01HPMCJAMG5WXNJPYMGER5120K.png"
+    },
+    {
         "id":  5062,
         "parent_id":  8217,
         "network_id":  8217,
@@ -1261,6 +1300,7 @@
                    }
     }
 ]
+
 
 
 

@@ -13,46 +13,338 @@
     font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
   ">
   <title>Female Performers - VideoHub</title>
+
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  
+
+  <!-- CSS FROM index.html – MODIFIED FOR NAME ON IMAGE -->
+  <style>
+  body { 
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
+    background-color: #111827; 
+    color: #fff; 
+    margin: 0; 
+    padding: 0; 
+  }
+  nav { background-color: #1f2937; border-bottom: 1px solid #374151; }
+  .max-w-screen-xl { max-width: 1280px; margin: 0 auto; padding: 8px; }
+  .video-list-container { max-width: 1920px; margin: 0 auto; padding: 16px; }
+
+  /* PERFORMER LIST & SINGLE VIDEO GRID - UNIFIED GRID */
+  .video-list,
+  .single-video-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 1rem;
+  }
+
+  /* VIDEO ITEM CARD - FREE-FORM IMAGES */
+  .video-item {
+    background-color: transparent;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-item:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8);
+  }
+
+  /* FREE-FORM IMAGES - NO CROPPING, NO FORCED RATIO */
+  .video-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.05);
+    transition: border 0.3s ease;
+  }
+
+  .video-item:hover img {
+    border-color: #10b981;
+  }
+
+  /* TITLE OVERLAY - SAME AS PERFORMER LIST */
+  .video-item .name-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.363);
+    padding: 0.5rem 1rem;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* TOP INFO CONTAINER - HOLDS COUNT + NAME SIDE-BY-SIDE */
+  .top-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between name and badge */
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent bg for readability */
+    padding: 6px 10px;
+    border-radius: 8px;
+    z-index: 10;
+    max-width: calc(100% - 20px); /* Prevent overflow off the image */
+  }
+
+  /* NAME TEXT BESIDE BADGE */
+  .performer-name {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+    white-space: nowrap; /* Keep on one line */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Truncate long names with ... */
+    max-width: 180px; /* Limits name length to fit beside badge */
+    line-height: 1.2; /* Ensure consistent vertical alignment */
+  }
+
+  /* VIDEO COUNT BADGE - NOW HOLDS "Videos: 03" */
+  .performer-count-box {
+    background-color: hsl(152, 76%, 45%);
+    color: #fff;
+    min-width: 70px; /* Wider for "Videos: 03" text */
+    height: 24px;
+    line-height: 24px; /* Center text vertically */
+    border-radius: 12px;
+    font-size: 0.75rem; /* Smaller font to fit longer text */
+    font-weight: 700;
+    text-align: center;
+    padding: 0 8px; /* Balanced padding for the text */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.7);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* No position - flex child in .top-info */
+  }
+
+  /* RESPONSIVE - MOBILE FIRST, FREE-FORM ALWAYS */
+  @media (max-width: 1024px) {
+    .video-list, .single-video-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .video-list, .single-video-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      padding: 0.75rem;
+    }
+    .video-item .name-overlay {
+      padding: 1.6rem 0.8rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .top-info {
+      top: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      gap: 6px;
+    }
+    .performer-name {
+      font-size: 0.8rem;
+      max-width: 140px;
+    }
+    .performer-count-box {
+      min-width: 65px;
+      height: 22px;
+      line-height: 22px;
+      font-size: 0.7rem;
+      padding: 0 6px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .video-list, .single-video-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      padding: 0.5rem;
+    }
+    .video-item .name-overlay {
+      font-size: 1.05rem;
+      padding: 2.2rem 1rem 1rem;
+      line-clamp: 3;
+      -webkit-line-clamp: 3;
+    }
+    .top-info {
+      top: 6px;
+      left: 6px;
+      padding: 3px 6px;
+      gap: 4px;
+      flex-direction: column; /* Stack vertically on tiny screens if needed */
+      align-items: flex-start;
+    }
+    .performer-name {
+      font-size: 0.85rem;
+      max-width: 120px;
+      white-space: normal; /* Allow wrap if stacked */
+    }
+    .performer-count-box {
+      min-width: 60px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 0.65rem;
+      padding: 0 5px;
+    }
+  }
+
+  /* PAGINATION */
+  .pagination { 
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    margin: 30px 0; 
+    gap: 10px;
+  }
+  .pagination a, .pagination span { 
+    padding: 12px 18px; 
+    background-color: #71aaf5; 
+    color: white; 
+    border-radius: 10px; 
+    font-weight: 600;
+    min-width: 48px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .pagination a:hover { 
+    background-color: #006dfc; 
+    transform: translateY(-2px);
+  }
+  .pagination .active { 
+    background-color: #006dfc; 
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+  }
+
+  /* SEARCH SUGGESTIONS */
+  .search-suggestions { 
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    right: 0; 
+    background-color: #374151; 
+    border: 1px solid #4b5563; 
+    border-radius: 0.5rem; 
+    margin-top: 0.25rem; 
+    max-height: 240px; 
+    overflow-y: auto; 
+    z-index: 50; 
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4); 
+  }
+  .search-suggestions div:hover { background-color: #006cab; }
+
+  /* SINGLE PERFORMER HEADER */
+  .performer-info h1 { 
+    font-size: 2.6rem; 
+    font-weight: 900; 
+    text-align: center;
+    margin: 1rem 0;
+    background: linear-gradient(to right, #10b981, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .performer-back-link { 
+    display: block;
+    text-align: center;
+    margin: 2rem 0;
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 0.8rem 2rem;
+    border: 3px solid #10b981;
+    border-radius: 50px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.4s ease;
+  }
+  .performer-back-link:hover { 
+    background-color: #10b981;
+    color: black;
+    transform: scale(1.05);
+  }
+
+  /* MOBILE TAP FEEDBACK */
+  @media (hover: none) {
+    .video-item:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+    }
+  }
+</style>
 </head>
 <body class="bg-gray-900">
 
-  <!-- Navbar -->
+  <!-- NAVBAR -->
   <nav class="bg-white border-gray-200 dark:bg-gray-900">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="index.html" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 w-auto" alt="VideoHub Logo" />
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">VideoHub</span>
       </a>
+
       <div class="flex md:order-2 space-x-3 rtl:space-x-reverse">
-        <button type="button" data-collapse-toggle="navbar-search" class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
+        <button type="button" data-collapse-toggle="navbar-search"
+                class="md:hidden text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
           </svg>
         </button>
+
         <div class="relative hidden md:block">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
           </div>
-          <input type="text" id="search-navbar" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Search female performers..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
+          <input type="text" id="search-navbar"
+                 class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                 placeholder="Search female performers..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions" class="search-suggestions hidden"></div>
         </div>
       </div>
+
       <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
         <div class="relative mt-3 md:hidden">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
             </svg>
           </div>
-          <input type="text" id="search-navbar-mobile" class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Search female performers..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
+          <input type="text" id="search-navbar-mobile"
+                 class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                 placeholder="Search female performers..." oninput="debouncedSearch()" onkeydown="handleEnter(event)">
           <div id="search-suggestions-mobile" class="search-suggestions hidden"></div>
         </div>
+
         <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
           <li><a href="index.html" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 dark:text-white dark:hover:bg-gray-700">Home</a></li>
           <li><a href="studio.html" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-700 dark:text-white dark:hover:bg-gray-700">Studio</a></li>
@@ -62,388 +354,257 @@
     </div>
   </nav>
 
-  <!-- Pagination (Centered) -->
-  <div class="pagination-wrapper">
-    <div class="pagination" id="pagination-top"></div>
-  </div>
+  <!-- PAGINATION TOP -->
+  <div class="pagination-wrapper"><div class="pagination" id="pagination-top"></div></div>
 
-  <!-- Performer List / Single View -->
+  <!-- PERFORMER LIST / SINGLE VIEW -->
   <div class="video-list-container">
-    <div class="video-list" id="performer-list"></div>
+    <div id="performer-list"></div>
   </div>
 
-  <!-- Pagination (Centered) -->
-  <div class="pagination-wrapper">
-    <div class="pagination" id="pagination-bottom"></div>
-  </div>
+  <!-- PAGINATION BOTTOM -->
+  <div class="pagination-wrapper"><div class="pagination" id="pagination-bottom"></div></div>
 
-  <!-- Clear Cache Button -->
-  <div class="fixed bottom-6 right-6 z-50">
-    <button id="clear-cache-btn" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5m10 11v-5h-5m-7 2a9 9 0 1118 0 9 9 0 01-18 0z"/>
-      </svg>
-      Clear Cache
-    </button>
-  </div>
-
-  <!-- Toast -->
-  <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2"></div>
-
+  <!-- FLOWBITE JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
- <script>
-  const itemsPerPage = 12;
-  let currentPage = 1;
-  let allPerformers = [];
-  let performerMap = new Map();   // id → performer
-  let searchTimeout;
 
-  const performerList      = document.getElementById('performer-list');
-  const paginationTop      = document.getElementById('pagination-top');
-  const paginationBottom   = document.getElementById('pagination-bottom');
-  const searchInput        = document.getElementById('search-navbar');
-  const searchInputMobile  = document.getElementById('search-navbar-mobile');
-  const searchSuggestions  = document.getElementById('search-suggestions');
-  const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
+  <!-- MAIN SCRIPT -->
+  <script>
+    const itemsPerPage = 12;
+    let currentPage = 1;
+    let allPerformers = [];
+    let performerMap = new Map();
+    let searchTimeout;
+    const performerList = document.getElementById('performer-list');
+    const paginationTop = document.getElementById('pagination-top');
+    const paginationBottom = document.getElementById('pagination-bottom');
+    const searchInput = document.getElementById('search-navbar');
+    const searchInputMobile = document.getElementById('search-navbar-mobile');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const searchSuggestionsMobile = document.getElementById('search-suggestions-mobile');
 
-  /* --------------------------------------------------------------
-     Helper – current URL parameters (refreshed on popstate)
-  -------------------------------------------------------------- */
-  function getParams() {
-    return new URLSearchParams(window.location.search);
-  }
+    function getParams() { return new URLSearchParams(window.location.search); }
+    function getSingleName() { return getParams().get('name'); }
 
-  function getSingleName() {
-    return getParams().get('name');
-  }
+    async function buildPerformerList() {
+      const [performersRes, scenesRes] = await Promise.all([
+        fetch('performer.json').then(r => r.ok ? r.json() : []),
+        fetch('scene_details.json').then(r => r.ok ? r.json() : [])
+      ]);
 
-  /* --------------------------------------------------------------
-     Build the full performer list (cache → fresh)
-  -------------------------------------------------------------- */
-  async function buildPerformerList() {
-    const cached = localStorage.getItem('female_performers_v5');
-    if (cached) {
-      const data = JSON.parse(cached);
-      allPerformers = data.performers || [];
-      performerMap = new Map(allPerformers.map(p => [p.id, p]));
-      if (allPerformers.length) return;
-    }
-
-    const [performersRes, scenesRes] = await Promise.all([
-      fetch('performer.json').then(r => r.ok ? r.json() : []),
-      fetch('scene_details.json').then(r => r.ok ? r.json() : [])
-    ]);
-
-    const baseMap = new Map();
-    performersRes.forEach(p => {
-      if (p._id == null) return;
-      const gender = (p.extras?.gender || '').toLowerCase();
-      if (!['female', 'f', 'woman'].includes(gender)) return;
-
-      baseMap.set(p._id, {
-        id: p._id,
-        name: p.name || 'Unknown',
-        image: p.image || 'https://via.placeholder.com/300x200?text=No+Image',
-        bio: p.bio || '',
-        extras: p.extras || {},
-        videoCount: 0,
-        scenes: []
-      });
-    });
-
-    for (const s of scenesRes) {
-      const d = s.data;
-      if (!d?._id) continue;
-
-      const sceneId   = d._id;
-      const sceneTitle = d.title || 'Untitled';
-      const sceneThumb = d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
-      const studio    = d.site?.name || 'Unknown';
-
-      const perfArray = Array.isArray(d.performers)
-        ? d.performers
-        : (d.performers && typeof d.performers === 'object') ? [d.performers] : [];
-
-      for (const perf of perfArray) {
-        const pid = perf?.parent?._id;
-        if (!pid || !baseMap.has(pid)) continue;
-
-        const entry = baseMap.get(pid);
-        entry.videoCount++;
-        if (!entry.scenes.some(sc => sc.id === sceneId)) {
-          entry.scenes.push({ id: sceneId, title: sceneTitle, thumb: sceneThumb, studio });
-        }
-      }
-    }
-
-    allPerformers = Array.from(baseMap.values())
-      .filter(p => p.videoCount > 0)
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    performerMap = new Map(allPerformers.map(p => [p.id, p]));
-    localStorage.setItem('female_performers_v5', JSON.stringify({ performers: allPerformers }));
-  }
-
-  /* --------------------------------------------------------------
-     Render SINGLE performer
-  -------------------------------------------------------------- */
-  function renderSinglePerformer(p) {
-    const e = p.extras || {};
-
-    performerList.innerHTML = `
-      <div class="performer-container content-wrapper">
-        <a href="performer.html" class="performer-back-link">All Female Performers</a>
-
-        <div class="performer-details grid md:grid-cols-3 gap-6 mt-6">
-          <div class="md:col-span-1">
-            <img src="${p.image}"
-                 alt="${p.name}"
-                 class="performer-image w-full rounded-lg shadow-lg"
-                 onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
-          </div>
-
-          <div class="md:col-span-2 performer-info">
-            <h1 class="text-3xl font-bold text-white mb-4">${escapeHtml(p.name)}</h1>
-
-            <div class="metadata-grid text-sm">
-              ${e.gender ? `<span class="metadata-label">Gender</span><span class="metadata-value">${e.gender}</span>` : ''}
-              ${e.birthday ? `<span class="metadata-label">Birthday</span><span class="metadata-value">${e.birthday}</span>` : ''}
-              ${e.birthplace ? `<span class="metadata-label">Birthplace</span><span class="metadata-value">${e.birthplace}</span>` : ''}
-              ${e.height ? `<span class="metadata-label">Height</span><span class="metadata-value">${e.height}</span>` : ''}
-              ${e.weight ? `<span class="metadata-label">Weight</span><span class="metadata-value">${e.weight}</span>` : ''}
-              ${e.measurements ? `<span class="metadata-label">Measurements</span><span class="metadata-value">${e.measurements}</span>` : ''}
-              ${e.cupsize ? `<span class="metadata-label">Cup Size</span><span class="metadata-value">${e.cupsize}</span>` : ''}
-              ${e.hair_colour ? `<span class="metadata-label">Hair</span><span class="metadata-value">${e.hair_colour}</span>` : ''}
-              ${e.eye_colour ? `<span class="metadata-label">Eyes</span><span class="metadata-value">${e.eye_colour}</span>` : ''}
-              ${e.ethnicity ? `<span class="metadata-label">Ethnicity</span><span class="metadata-value">${e.ethnicity}</span>` : ''}
-              ${e.nationality ? `<span class="metadata-label">Nationality</span><span class="metadata-value">${e.nationality}</span>` : ''}
-              ${e.tattoos ? `<span class="metadata-label">Tattoos</span><span class="metadata-value">${e.tattoos}</span>` : ''}
-              ${e.piercings ? `<span class="metadata-label">Piercings</span><span class="metadata-value">${e.piercings}</span>` : ''}
-              ${e.career_start_year ? `<span class="metadata-label">Career Start</span><span class="metadata-value">${e.career_start_year}</span>` : ''}
-            </div>
-
-            ${p.bio ? `
-              <div class="mt-6">
-                <h2 class="text-xl font-semibold text-white mb-2">Biography</h2>
-                <p class="text-gray-300 leading-relaxed">${escapeHtml(p.bio)}</p>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-
-        ${p.scenes.length ? `
-          <div class="mt-10">
-            <h2 class="text-xl font-semibold text-white mb-4">Videos (${p.scenes.length})</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              ${p.scenes.map(s => `
-                <a href="video.html?id=${s.id}" class="block group">
-                  <img src="${s.thumb}" alt="${s.title}"
-                       class="w-full h-40 object-cover rounded-lg group-hover:opacity-90 transition"
-                       onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                  <h3 class="mt-2 text-sm font-medium text-white truncate">${escapeHtml(s.title)}</h3>
-                  <p class="text-xs text-gray-400">${s.studio}</p>
-                </a>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-      </div>`;
-
-    // hide pagination in single view
-    paginationTop.classList.add('hidden');
-    paginationBottom.classList.add('hidden');
-  }
-
-  /* --------------------------------------------------------------
-     Main loader – decides list or single view
-  -------------------------------------------------------------- */
-  async function loadPerformers() {
-    const singleName = getSingleName();
-
-    // always build the list first (cache or fresh)
-    await buildPerformerList();
-
-    if (singleName) {
-      const decoded = decodeURIComponent(singleName).trim();
-      const performer = allPerformers.find(p => p.name.toLowerCase() === decoded.toLowerCase());
-      if (!performer) {
-        performerList.innerHTML = `<p class="error-message">Performer not found: ${escapeHtml(decoded)}</p>`;
-        paginationTop.classList.add('hidden');
-        paginationBottom.classList.add('hidden');
-        return;
-      }
-      renderSinglePerformer(performer);
-    } else {
-      updatePageFromURL();
-      renderPagination();
-    }
-  }
-
-  /* --------------------------------------------------------------
-     List view helpers
-  -------------------------------------------------------------- */
-  function updatePageFromURL() {
-    const page = parseInt(getParams().get('page')) || 1;
-    if (page !== currentPage) currentPage = page;
-    renderCurrentPage();
-    renderPagination();
-  }
-
-  function renderCurrentPage() {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end   = start + itemsPerPage;
-    const page  = allPerformers.slice(start, end);
-
-    performerList.innerHTML = page.length
-      ? page.map(p => `
-          <div class="video-item">
-            <a href="performer.html?name=${encodeURIComponent(p.name)}" class="block">
-              <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover rounded-lg"
-                   onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-              <h3 class="mt-2 text-sm font-medium text-white">${escapeHtml(p.name)}</h3>
-              <div class="performer-count-box">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
-            </a>
-          </div>`).join('')
-      : '<p class="error-message">No performers found.</p>';
-  }
-
-  function renderPagination() {
-    const totalPages = Math.ceil(allPerformers.length / itemsPerPage);
-    if (totalPages <= 1) {
-      paginationTop.innerHTML = paginationBottom.innerHTML = '';
-      return;
-    }
-
-    const createLink = (page, txt, disabled = false, active = false) => {
-      const el = document.createElement(page === '...' ? 'span' : 'a');
-      el.textContent = txt;
-      if (page !== '...') el.href = '#';
-      el.className = page === '...' ? 'ellipsis' : disabled ? 'disabled' : active ? 'active' : '';
-      return { el, page, disabled };
-    };
-
-    const frag = document.createDocumentFragment();
-    frag.appendChild(createLink(currentPage - 1, 'Prev', currentPage === 1).el);
-
-    if (currentPage > 3) {
-      frag.appendChild(createLink(1, '1').el);
-      if (currentPage > 4) frag.appendChild(createLink('...', '...').el);
-    }
-
-    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-      frag.appendChild(createLink(i, i, false, i === currentPage).el);
-    }
-
-    if (currentPage < totalPages - 3) {
-      if (currentPage < totalPages - 4) frag.appendChild(createLink('...', '...').el);
-      frag.appendChild(createLink(totalPages, totalPages).el);
-    }
-
-    frag.appendChild(createLink(currentPage + 1, 'Next', currentPage === totalPages).el);
-
-    paginationTop.innerHTML = '';
-    paginationBottom.innerHTML = '';
-    paginationTop.appendChild(frag.cloneNode(true));
-    paginationBottom.appendChild(frag.cloneNode(true));
-
-    [paginationTop, paginationBottom].forEach(c => {
-      c.querySelectorAll('a:not(.disabled)').forEach(a => {
-        const pg = a.textContent === 'Prev' ? currentPage - 1 :
-                   a.textContent === 'Next' ? currentPage + 1 :
-                   parseInt(a.textContent);
-        a.addEventListener('click', e => {
-          e.preventDefault();
-          currentPage = pg;
-          const url = new URL(location);
-          url.searchParams.set('page', pg);
-          history.pushState({ page: pg }, '', url);
-          renderCurrentPage();
-          renderPagination();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+      const baseMap = new Map();
+      performersRes.forEach(p => {
+        if (p._id == null || !p.name) return;
+        baseMap.set(p._id, {
+          id: p._id,
+          name: p.name,
+          image: p.image || 'https://via.placeholder.com/300x200?text=No+Image',
+          videoCount: 0,
+          scenes: []
         });
       });
-    });
-  }
 
-  /* --------------------------------------------------------------
-     Search
-  -------------------------------------------------------------- */
-  function debouncedSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(handleSearch, 300);
-  }
+      for (const s of scenesRes) {
+        const d = s.data;
+        if (!d?._id) continue;
+        const sceneId = d._id;
+        const sceneTitle = d.title || 'Untitled';
+        const sceneThumb = d.background?.full || 'https://via.placeholder.com/300x200?text=No+Image';
+        const perfArray = Array.isArray(d.performers)
+          ? d.performers
+          : (d.performers && typeof d.performers === 'object') ? [d.performers] : [];
 
-  function handleSearch() {
-    const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
-    const results = allPerformers
-      .filter(p => p.name.toLowerCase().includes(q))
-      .slice(0, 5);
+        for (const perf of perfArray) {
+          const pid = perf?.parent?._id;
+          if (!pid || !baseMap.has(pid)) continue;
+          const entry = baseMap.get(pid);
+          entry.videoCount++;
+          if (!entry.scenes.some(sc => sc.id === sceneId)) {
+            entry.scenes.push({ id: sceneId, title: sceneTitle, thumb: sceneThumb });
+          }
+        }
+      }
 
-    const render = container => {
-      container.innerHTML = results.length
-        ? results.map(p => `
-            <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded"
-                 onclick="location.href='performer.html?name=${encodeURIComponent(p.name)}'">
-              <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded object-cover mr-2"
-                   onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
-              <div>
-                <div class="text-sm text-white">${escapeHtml(p.name)}</div>
-                <div class="text-xs text-gray-400">${p.videoCount} video${p.videoCount > 1 ? 's' : ''}</div>
-              </div>
-            </div>`).join('')
-        : '<div class="p-2 text-sm text-gray-400">No results</div>';
-      container.classList.toggle('hidden', results.length === 0);
-    };
-    render(searchSuggestions);
-    render(searchSuggestionsMobile);
-  }
-
-  function handleEnter(e) {
-    if (e.key === 'Enter') {
-      const q = (searchInput?.value || searchInputMobile?.value || '').trim();
-      if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
+      allPerformers = Array.from(baseMap.values())
+        .sort((a, b) => a.name.localeCompare(b.name));
+      performerMap = new Map(allPerformers.map(p => [p.id, p]));
     }
-  }
 
-  /* --------------------------------------------------------------
-     Cache & Toast
-  -------------------------------------------------------------- */
-  function showToast(msg, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `flex items-center w-full max-w-xs p-4 mb-4 text-white rounded-lg shadow animate-fade-in ${type === 'error' ? 'bg-red-600' : 'bg-green-600'}`;
-    toast.innerHTML = `<span class="text-sm">${msg}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
+    function renderSinglePerformer(p) {
+      performerList.innerHTML = `
+        <main class="max-w-6xl mx-auto px-4 py-8 md:px-6">
+          <a href="performer.html" class="performer-back-link">All Female Performers</a>
 
-  document.getElementById('clear-cache-btn').addEventListener('click', () => {
-    localStorage.removeItem('female_performers_v5');
-    showToast('Cache cleared – reloading…', 'success');
-    setTimeout(() => location.reload(), 1000);
-  });
+          <div class="performer-info">
+            <h1>${escapeHtml(p.name)}</h1>
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+            ${p.scenes.length ? `
+              <h2 style="margin-top:2rem; font-size:1.5rem; color:#fff;">Videos</h2>
+              <div class="single-video-grid">
+                ${p.scenes.map(s => `
+                  <div class="video-item">
+                    <a href="video.html?id=${s.id}">
+                      <img src="${s.thumb}" alt="${escapeHtml(s.title)}"
+                           loading="lazy"
+                           onerror="this.src='https://via.placeholder.com/300x169?text=No+Image'">
+                      <div class="name-overlay">${escapeHtml(s.title)}</div>
+                    </a>
+                  </div>`).join('')}
+              </div>`
+            : `<p style="margin-top:2rem; color:#9ca3af;">No videos yet.</p>`}
+          </div>
+        </main>`;
 
-  /* --------------------------------------------------------------
-     Init
-  -------------------------------------------------------------- */
-  document.addEventListener('DOMContentLoaded', () => {
-    loadPerformers();
+      paginationTop.classList.add('hidden');
+      paginationBottom.classList.add('hidden');
+    }
 
-    window.addEventListener('popstate', () => {
-      loadPerformers();   // re-run everything on back/forward
+    function updatePageFromURL() {
+      const page = parseInt(getParams().get('page')) || 1;
+      if (page !== currentPage) currentPage = page;
+      renderCurrentPage();
+      renderPagination();
+    }
+
+    function renderCurrentPage() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end   = start + itemsPerPage;
+      const page  = allPerformers.slice(start, end);
+
+      performerList.innerHTML = page.length
+        ? `<div class="video-list">
+             ${page.map(p => `
+               <div class="video-item">
+                 <a href="performer.html?name=${encodeURIComponent(p.name)}">
+                   <img src="${p.image}"
+                        alt="${escapeHtml(p.name)}"
+                        loading="lazy"
+                        onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                   <div class="top-info">
+                     <div class="performer-name">${escapeHtml(p.name)}</div>
+                     ${p.videoCount > 0 ? `<div class="performer-count-box">Videos: ${p.videoCount.toString().padStart(2, '0')}</div>` : ''}
+                   </div>
+                 </a>
+               </div>`).join('')}
+           </div>`
+        : '<p style="text-align:center; color:#f87171; padding:2rem;">No performers found.</p>';
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(allPerformers.length / itemsPerPage);
+      if (totalPages <= 1) {
+        paginationTop.innerHTML = paginationBottom.innerHTML = '';
+        return;
+      }
+
+      const createLink = (page, txt, disabled = false, active = false) => {
+        const el = document.createElement(page === '...' ? 'span' : 'a');
+        el.textContent = txt;
+        if (page !== '...') el.href = '#';
+        el.className = page === '...' ? 'ellipsis' :
+                       disabled ? 'disabled' :
+                       active ? 'active' : '';
+        return { el, page, disabled };
+      };
+
+      const frag = document.createDocumentFragment();
+      frag.appendChild(createLink(currentPage - 1, 'Prev', currentPage === 1).el);
+      if (currentPage > 3) { frag.appendChild(createLink(1, '1').el); if (currentPage > 4) frag.appendChild(createLink('...', '...').el); }
+      for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        frag.appendChild(createLink(i, i, false, i === currentPage).el);
+      }
+      if (currentPage < totalPages - 3) { if (currentPage < totalPages - 4) frag.appendChild(createLink('...', '...').el); frag.appendChild(createLink(totalPages, totalPages).el); }
+      frag.appendChild(createLink(currentPage + 1, 'Next', currentPage === totalPages).el);
+
+      paginationTop.innerHTML = '';
+      paginationBottom.innerHTML = '';
+      paginationTop.appendChild(frag.cloneNode(true));
+      paginationBottom.appendChild(frag.cloneNode(true));
+
+      [paginationTop, paginationBottom].forEach(c => {
+        c.querySelectorAll('a:not(.disabled)').forEach(a => {
+          const pg = a.textContent === 'Prev' ? currentPage - 1 :
+                     a.textContent === 'Next' ? currentPage + 1 :
+                     parseInt(a.textContent);
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            currentPage = pg;
+            const url = new URL(location);
+            url.searchParams.set('page', pg);
+            history.pushState({ page: pg }, '', url);
+            renderCurrentPage();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        });
+      });
+    }
+
+    function debouncedSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(handleSearch, 300);
+    }
+
+    function handleSearch() {
+      const q = (searchInput?.value || searchInputMobile?.value || '').trim().toLowerCase();
+      const results = allPerformers.filter(p => p.name.toLowerCase().includes(q)).slice(0, 5);
+      const render = container => {
+        container.innerHTML = results.length
+          ? results.map(p => `
+              <div class="flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded"
+                   onclick="location.href='performer.html?name=${encodeURIComponent(p.name)}'">
+                <img src="${p.image}" alt="${p.name}" class="w-10 h-10 rounded object-cover mr-2"
+                     onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
+                <div class="text-sm text-white">${escapeHtml(p.name)}</div>
+              </div>`).join('')
+          : '<div class="p-2 text-sm text-gray-400">No results</div>';
+        container.classList.toggle('hidden', results.length === 0);
+      };
+      render(searchSuggestions);
+      render(searchSuggestionsMobile);
+    }
+
+    function handleEnter(e) {
+      if (e.key === 'Enter') {
+        const q = (searchInput?.value || searchInputMobile?.value || '').trim();
+        if (q) location.href = `search.html?query=${encodeURIComponent(q)}`;
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    async function loadPerformers() {
+      const singleName = getSingleName();
+      await buildPerformerList();
+
+      if (singleName) {
+        const decoded = decodeURIComponent(singleName).trim();
+        const performer = allPerformers.find(p => p.name.toLowerCase() === decoded.toLowerCase());
+        if (!performer) {
+          performerList.innerHTML = `<p style="text-align:center; color:#f87171; padding:2rem;">Performer not found: ${escapeHtml(decoded)}</p>`;
+          paginationTop.classList.add('hidden');
+          paginationBottom.classList.add('hidden');
+          return;
+        }
+        renderSinglePerformer(performer);
+      } else {
+        updatePageFromURL();
+        renderPagination();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPerformers();
+      window.addEventListener('popstate', loadPerformers);
+      searchInput?.addEventListener('input', debouncedSearch);
+      searchInputMobile?.addEventListener('input', debouncedSearch);
+      searchInput?.addEventListener('keydown', handleEnter);
+      searchInputMobile?.addEventListener('keydown', handleEnter);
     });
-
-    searchInput?.addEventListener('input', debouncedSearch);
-    searchInputMobile?.addEventListener('input', debouncedSearch);
-    searchInput?.addEventListener('keydown', handleEnter);
-    searchInputMobile?.addEventListener('keydown', handleEnter);
-  });
-</script>
+  </script>
 </body>
 </html>

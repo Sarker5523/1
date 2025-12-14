@@ -13,14 +13,11 @@
     font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
   ">
   <title>Female Performers - VideoHub</title>
-
-  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet">
 
-  <!-- CSS FROM index.html – MODIFIED FOR NAME ON IMAGE -->
   <style>
   body { 
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
@@ -30,10 +27,9 @@
     padding: 0; 
   }
   nav { background-color: #1f2937; border-bottom: 1px solid #374151; }
-  .max-w-screen-xl { max-width: 1280px; margin: 0 auto; padding: 8px; }
   .video-list-container { max-width: 1920px; margin: 0 auto; padding: 16px; }
 
-  /* PERFORMER LIST & SINGLE VIDEO GRID - UNIFIED GRID */
+  /* UNIFIED GRID FOR BOTH LISTS */
   .video-list,
   .single-video-grid {
     display: grid;
@@ -42,7 +38,7 @@
     padding: 1rem;
   }
 
-  /* VIDEO ITEM CARD - FREE-FORM IMAGES */
+  /* VIDEO ITEM CARD */
   .video-item {
     background-color: transparent;
     border-radius: 12px;
@@ -58,7 +54,6 @@
     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8);
   }
 
-  /* FREE-FORM IMAGES - NO CROPPING, NO FORCED RATIO */
   .video-item img {
     width: 100%;
     height: auto;
@@ -72,16 +67,15 @@
     border-color: #10b981;
   }
 
-  /* TITLE OVERLAY - SAME AS PERFORMER LIST */
-  .video-item .name-overlay {
+  .video-item .title-overlay {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.363);
     padding: 0.5rem 1rem;
     color: white;
-    font-size: 0.95rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-align: center;
     text-shadow: 0 2px 8px rgba(0,0,0,0.9);
@@ -93,55 +87,88 @@
     text-overflow: ellipsis;
   }
 
-  /* TOP INFO CONTAINER - HOLDS COUNT + NAME SIDE-BY-SIDE */
+  /* TOP INFO OVERLAY (used on performer cards) */
   .top-info {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between name and badge */
-    background: rgba(0, 0, 0, 0.6); /* Semi-transparent bg for readability */
-    padding: 6px 10px;
-    border-radius: 8px;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 4px 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
     z-index: 10;
-    max-width: calc(100% - 20px); /* Prevent overflow off the image */
   }
 
-  /* NAME TEXT BESIDE BADGE */
   .performer-name {
     color: white;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-    white-space: nowrap; /* Keep on one line */
-    overflow: hidden;
-    text-overflow: ellipsis; /* Truncate long names with ... */
-    max-width: 180px; /* Limits name length to fit beside badge */
-    line-height: 1.2; /* Ensure consistent vertical alignment */
-  }
-
-  /* VIDEO COUNT BADGE - NOW HOLDS "Videos: 03" */
-  .performer-count-box {
-    background-color: hsl(152, 76%, 45%);
-    color: #fff;
-    min-width: 70px; /* Wider for "Videos: 03" text */
-    height: 24px;
-    line-height: 24px; /* Center text vertically */
-    border-radius: 12px;
-    font-size: 0.75rem; /* Smaller font to fit longer text */
+    font-size: 0.7rem;
     font-weight: 700;
-    text-align: center;
-    padding: 0 8px; /* Balanced padding for the text */
-    box-shadow: 0 3px 10px rgba(0,0,0,0.7);
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* No position - flex child in .top-info */
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
   }
 
-  /* RESPONSIVE - MOBILE FIRST, FREE-FORM ALWAYS */
+  .performer-count-box {
+    background: linear-gradient(135deg, #1045b9, #34d399);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 4px 2px;
+    border-radius: 9999px;
+    box-shadow: 0 4px 12px rgba(4, 117, 223, 0.5);
+    min-width: 90px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* RESPONSIVE TOP INFO */
+  @media (max-width: 768px) {
+    .top-info {
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      padding: 7px 12px;
+    }
+    .performer-name {
+      font-size: 0.95rem;
+    }
+    .performer-count-box {
+      font-size: 0.8rem;
+      padding: 5px 12px;
+      min-width: 80px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .top-info {
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      padding: 6px 10px;
+      flex-direction: row;
+      gap: 8px;
+    }
+    .performer-name {
+      font-size: 0.9rem;
+      max-width: 65%;
+    }
+    .performer-count-box {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      min-width: 70px;
+    }
+  }
+
+  /* RESPONSIVE GRID */
   @media (max-width: 1024px) {
     .video-list, .single-video-grid {
       grid-template-columns: repeat(3, 1fr);
@@ -155,27 +182,6 @@
       gap: 14px;
       padding: 0.75rem;
     }
-    .video-item .name-overlay {
-      padding: 1.6rem 0.8rem 0.8rem;
-      font-size: 0.85rem;
-    }
-    .top-info {
-      top: 8px;
-      left: 8px;
-      padding: 4px 8px;
-      gap: 6px;
-    }
-    .performer-name {
-      font-size: 0.8rem;
-      max-width: 140px;
-    }
-    .performer-count-box {
-      min-width: 65px;
-      height: 22px;
-      line-height: 22px;
-      font-size: 0.7rem;
-      padding: 0 6px;
-    }
   }
 
   @media (max-width: 480px) {
@@ -183,32 +189,6 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 18px;
       padding: 0.5rem;
-    }
-    .video-item .name-overlay {
-      font-size: 1.05rem;
-      padding: 2.2rem 1rem 1rem;
-      line-clamp: 3;
-      -webkit-line-clamp: 3;
-    }
-    .top-info {
-      top: 6px;
-      left: 6px;
-      padding: 3px 6px;
-      gap: 4px;
-      flex-direction: column; /* Stack vertically on tiny screens if needed */
-      align-items: flex-start;
-    }
-    .performer-name {
-      font-size: 0.85rem;
-      max-width: 120px;
-      white-space: normal; /* Allow wrap if stacked */
-    }
-    .performer-count-box {
-      min-width: 60px;
-      height: 20px;
-      line-height: 20px;
-      font-size: 0.65rem;
-      padding: 0 5px;
     }
   }
 
@@ -223,7 +203,7 @@
   .pagination a, .pagination span { 
     padding: 12px 18px; 
     background-color: #71aaf5; 
-    color: white; 
+    color: white;
     border-radius: 10px; 
     font-weight: 600;
     min-width: 48px;
@@ -239,7 +219,6 @@
     box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
   }
 
-  /* SEARCH SUGGESTIONS */
   .search-suggestions { 
     position: absolute; 
     top: 100%; 
@@ -254,49 +233,95 @@
     z-index: 50; 
     box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4); 
   }
-  .search-suggestions div:hover { background-color: #006cab; }
 
-  /* SINGLE PERFORMER HEADER */
-  .performer-info h1 { 
-    font-size: 2.6rem; 
-    font-weight: 900; 
-    text-align: center;
-    margin: 1rem 0;
-    background: linear-gradient(to right, #10b981, #34d399);
+  /* SINGLE PERFORMER HEADER - NAME AND COUNT ON SAME LINE */
+  .performer-header-line {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 1rem;
+    margin: 0.5rem 0 1.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  .performer-header-name {
+    font-size: 2rem;
+    font-weight: 900;
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, #6b98cc, #1aeea0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-  .performer-back-link { 
-    display: block;
-    text-align: center;
-    margin: 2rem 0;
-    color: #10b981;
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-    padding: 0.8rem 2rem;
-    border: 3px solid #10b981;
-    border-radius: 50px;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-    transition: all 0.4s ease;
-  }
-  .performer-back-link:hover { 
-    background-color: #10b981;
-    color: black;
-    transform: scale(1.05);
+    margin: 0;
+    line-height: 1.2;
   }
 
-  /* MOBILE TAP FEEDBACK */
+  .performer-header-count {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: 'Oswald', sans-serif;
+  background: linear-gradient(90deg, #ffffff, #ff7b00, #ffffff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+
+  /* RETURN BUTTON - ZERO SPACE ABOVE */
+  .performer-back-link { 
+    display: block;
+    width: fit-content;
+    margin: 0 auto 1rem auto !important;  /* Top margin = 0 */
+    padding: 14px 40px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #111827, #1f2937);
+    border: 2px solid #10b981;
+    border-radius: 9999px;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 20px rgba(16,185,129,0.15);
+    transition: all 0.4s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .performer-back-link:hover { 
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: #000;
+    transform: translateY(-6px) scale(1.06);
+    box-shadow: 0 15px 35px rgba(16,185,129,0.4);
+  }
+
+  .performer-back-link:active {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  /* SINGLE PERFORMER CONTAINER - NO TOP SPACE AT ALL */
+  .single-performer-container {
+    padding-top: 0 !important;
+    margin-top: -1rem;  /* Pulls content up to eliminate any possible gap */
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   @media (hover: none) {
     .video-item:active {
       transform: scale(0.96);
       opacity: 0.85;
     }
   }
-</style>
+  </style>
 </head>
 <body class="bg-gray-900">
 
@@ -365,10 +390,8 @@
   <!-- PAGINATION BOTTOM -->
   <div class="pagination-wrapper"><div class="pagination" id="pagination-bottom"></div></div>
 
-  <!-- FLOWBITE JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
 
-  <!-- MAIN SCRIPT -->
   <script>
     const itemsPerPage = 12;
     let currentPage = 1;
@@ -431,33 +454,41 @@
     }
 
     function renderSinglePerformer(p) {
-      performerList.innerHTML = `
-        <main class="max-w-6xl mx-auto px-4 py-8 md:px-6">
-          <a href="performer.html" class="performer-back-link">All Female Performers</a>
+    // Set the page title to the performer's name
+    document.title = `${escapeHtml(p.name)} - VideoHub`;
 
-          <div class="performer-info">
-            <h1>${escapeHtml(p.name)}</h1>
+    performerList.innerHTML = `
+      <div class="single-performer-container">
+        <a href="performer.html" class="performer-back-link">← All Female Performers</a>
 
-            ${p.scenes.length ? `
-              <h2 style="margin-top:2rem; font-size:1.5rem; color:#fff;">Videos</h2>
-              <div class="single-video-grid">
-                ${p.scenes.map(s => `
-                  <div class="video-item">
-                    <a href="video.html?id=${s.id}">
-                      <img src="${s.thumb}" alt="${escapeHtml(s.title)}"
-                           loading="lazy"
-                           onerror="this.src='https://via.placeholder.com/300x169?text=No+Image'">
-                      <div class="name-overlay">${escapeHtml(s.title)}</div>
-                    </a>
-                  </div>`).join('')}
-              </div>`
-            : `<p style="margin-top:2rem; color:#9ca3af;">No videos yet.</p>`}
+        <div class="performer-info">
+          <div class="performer-header-line">
+            <h1 class="performer-header-name">${escapeHtml(p.name)}</h1>
+            ${p.scenes.length ? `<span class="performer-header-count">Videos (${p.scenes.length})</span>` : ''}
           </div>
-        </main>`;
 
-      paginationTop.classList.add('hidden');
-      paginationBottom.classList.add('hidden');
-    }
+          ${p.scenes.length ? `
+            <div class="single-video-grid">
+              ${p.scenes.map(s => `
+                <div class="video-item">
+                  <a href="video.html?id=${s.id}">
+                    <img src="${s.thumb}" alt="${escapeHtml(s.title)}"
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <div class="title-overlay">${escapeHtml(s.title)}</div>
+                  </a>
+                </div>`).join('')}
+            </div>`
+          : `<p style="margin-top:2rem; color:#9ca3af; text-align:center;">No videos yet.</p>`}
+        </div>
+      </div>`;
+
+    paginationTop.classList.add('hidden');
+    paginationBottom.classList.add('hidden');
+  }
+
+    // ... rest of the script remains exactly the same as before ...
+    // (renderCurrentPage, renderPagination, debouncedSearch, etc. - unchanged)
 
     function updatePageFromURL() {
       const page = parseInt(getParams().get('page')) || 1;
